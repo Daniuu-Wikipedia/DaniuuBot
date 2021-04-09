@@ -15,22 +15,21 @@ import urllib
 import time
 import re #Regex
 import datetime as dt #Import support for dates and times
-from requests_oauthlib import OAuth1
 
 class Page:
     "This is a class that allows the processing of a given request page"
-    testdate = {'january':'01',
-            'february':'02',
-            'march':'03',
-            'april':'04',
-            'may':'05',
-            'june':'06',
-            'july':'07',
-            'august':'08',
-            'september':'09',
-            'october':'10',
-            'november':'11',
-            "december":'12'}
+    nldate = {'jan':'01',
+            'feb':'02',
+            'mrt':'03',
+            'apr':'04',
+            'mei':'05',
+            'jun':'06',
+            'jul':'07',
+            'aug':'08',
+            'sep':'09',
+            'okt':'10',
+            'nov':'11',
+            "dec":'12'}
     
     donetemp = {'done', 'd', 'nd'}
     
@@ -230,4 +229,9 @@ class Request:
             k = i['params']
             if self.target in k['ids']: #the revision involved was queried here
                 if 'content' in k['new']: #Will check whether the content of the revision was removed
+                    self._user = i['user']
                     return i['user']
+    
+    def done_string(self):
+        "This function will generate a string that can be used to indicate that the request has been done"
+        return f"De versie(s) is/zijn verborgen door {self._user if self._user is not None else 'een moderator'}"
