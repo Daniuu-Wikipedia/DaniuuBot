@@ -42,6 +42,9 @@ class Page:
     def __str__(self):
         return self.name
     
+    def __call__(self):
+        return self.update()
+    
     def get_page_content(self):
         "This function will get the last revision of the request page"
         d = {'action':'query',
@@ -72,12 +75,12 @@ class Page:
         self._done = self._content[hs:]
         return self._queue
     
-    def filter_queue(self, pattern=r'((diff=\d{1,7}\&)?oldid=\d{1,7}|Permalink:\d{1,7}|\{\{diff\|\d{1,7})'):
+    def filter_queue(self, pattern=r'((diff=\d{1,9}\&)?oldid=\d{1,9}|Permalink:\d{1,9}|\{\{diff\|\d{1,9})'):
         "This function will convert the strings in the queue to a requests that can be handled"
         if not self._queue:
             #This means that the split was not yet done
             self.separate()
-        #start = 1
+        start = 1
         try:
             for i, j in enumerate(self._queue[1:]):
                 #Skip the first one, this only contains a header for this section
@@ -90,7 +93,7 @@ class Page:
                         z.append(k)
                 z = [k for k in z if k]
                 if z:
-                    if i > 1:
+                    if i >= 1:
                         self.requests.update({l:(start, i + 1)})
                     l = tuple((Request(i) for i in z)) #Generate a tuple with the requests
                     start = i + 1
@@ -132,7 +135,7 @@ class Page:
             self.separate()
         #Filter the requests (see also above)
         l, start, now = [], 1, dt.datetime.now()  #Check what time it is
-        pat = r'(\d{1,2} ' + f'({"|".join(Page.testdate.keys())}) ' + r'\d{4})'
+        pat = r'(\d{1,2} ' + f'({"|".join(Page.nldate.keys())}) ' + r'\d{4})'
         for i, j in enumerate(self._done):
             if i > 0:
                 if any(('{{%s}}'%k in j for k in Page.donetemp)):
@@ -140,8 +143,8 @@ class Page:
                     matches = re.findall(pat, j.lower())
                     #The date was found, now convert it to a format that Python acutally understands
                     date = matches[0][0]
-                    for k in Page.testdate:
-                        date = date.replace(k, Page.testdate[k])
+                    for k in Page.nldate:
+                        date = date.replace(k, Page.nldate[k])
                     d = dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
                     
                     #check whether we can get rid of this request
@@ -171,7 +174,8 @@ class Page:
                     'bot':True,
                     'minor':True,
                     'nocreate':True}
-        self.bot.post(edit_dic) #Make the post request
+        #self.bot.post(edit_dic) #Make the post request - comment this rule for log only
+        print(y, z)
                 
 class Request:
     "This object class will implement the main functionalities for a certain request"
@@ -196,7 +200,7 @@ class Request:
     
     def process(self, inp):
         "This function will process the input fed to the constructor"
-        if 'diff=' in inp: #Beware for a very special case
+        if 'diff=' in inp and 'diff=prev' not in inp: #Beware for a very special case
             return int(inp.split('&')[0].lower().replace('diff=', '').strip())
         return int(inp.lower().replace('oldid=', '').replace('permalink:', '').replace('diff', ''))
     
@@ -233,3 +237,6 @@ class Request:
     def done_string(self):
         "This function will generate a string that can be used to indicate that the request has been done"
         return f"De versie(s) is/zijn verborgen door {self._user if self._user is not None else 'een moderator'}"
+
+t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen", "https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/Versies_verbergen")
+t()
