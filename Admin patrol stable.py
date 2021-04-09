@@ -10,9 +10,7 @@ This script is designed to run under the account 'DaniuuBot'.
 Some functions were specifically modified for this little tool.
 """
 
-import requests
 import urllib
-import time
 import re #Regex
 import datetime as dt #Import support for dates and times
 
