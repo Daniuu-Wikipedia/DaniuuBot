@@ -9,7 +9,7 @@ This bot uses designated OAuth keys (which are for obvious reasons stored in ano
 This script is designed to run under the account 'DaniuuBot'.
 Some functions were specifically modified for this little tool.
 """
-
+from Core import NlBot
 import urllib
 import re #Regex
 import datetime as dt #Import support for dates and times
@@ -36,7 +36,7 @@ class Page:
         self._content = []
         self._preamble, self._queue, self._done = [], [], [] #three lists for three parts of the request page
         self.requests = {} #This is a list of requests that are in the queue
-        self.bot = TestBot() #Initialize a bot to do operations on Testwiki
+        self.bot = NlBot() #Initialize a bot to do operations on Testwiki
         self.id = None
     
     def __str__(self):
