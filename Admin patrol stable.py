@@ -200,7 +200,6 @@ class Page:
         
         #Process the final request
         process((start, i + 1), matches)
-        print(l)
         for i, j in l[::-1]:
             del self._done[i:j]
         return len(l) #Return the amount of requests that were deleted
