@@ -213,7 +213,7 @@ class Page:
         new = '\n'.join(t)
         
         #Prepare the edit summary
-        summary = (f'{z} gemarkeerd als afgehandeld' if z else '') + (' & '*(bool(y*z))) + (f'{y} weggebezemd' if y else '')
+        summary = (f'{z} verzoeken gemarkeerd als afgehandeld' if z else '') + (' & '*(bool(y*z))) + (f'{y} verzoeken weggebezemd' if y else '')
         edit_dic = {'action':'edit',
                     'pageid':self.id,
                     'text':new,
