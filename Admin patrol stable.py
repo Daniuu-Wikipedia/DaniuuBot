@@ -152,7 +152,7 @@ class Page:
                     prefix = '*'*(pre.count('*') + 1)
                 else:
                     prefix = ':'
-                self._done.append(prefix + '{{done}} - ' + f'Gevraagde versie(s) zijn verborgen door {u}. Dank voor de melding. ~~~~')
+                self._done.append(prefix + '{{d}} - ' + f'Gevraagde versie(s) zijn verborgen door {u}. Dank voor de melding. ~~~~')
         for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
             del self._queue[i:j]
         return len(sto) #Return the number of processed requests
