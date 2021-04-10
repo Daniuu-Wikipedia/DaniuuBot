@@ -185,6 +185,10 @@ class Page:
                         temp = self.check_request_on_line(self._done[i - 1].lower(), pat)
                         if temp:
                             matches = temp
+                        else:
+                            temp = self.check_request_on_line(j.lower(), pat)
+                            if temp:
+                                matches = temp
                     process((start, i), matches) #rely on the closure to process the request
                     start = i #Set for the processing of the next request
                     mark = False #Reset this
