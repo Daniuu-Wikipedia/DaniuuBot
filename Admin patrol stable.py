@@ -59,7 +59,7 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=\d{1,9}\&)?oldid=\d{1,9}|Permalink:\d{1,9}|\{\{diff\|\d{1,9})'):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|Permalink:\d{1,9}|\{\{diff\|\d{1,9})'):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line) #this will unleash the regex on the poor little line
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
@@ -105,7 +105,7 @@ class Page:
                             self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 1)]
                         else:
                             self.requests.update({l:(start, i + 1)})
-                    l = tuple((Request(i) for i in z)) #Generate a tuple with the requests
+                    l = tuple((Request(i) for i in z if any((j.isdigit() for j in i)))) #Generate a tuple with the requests
                     start = i + 1
                     manually_flagged = False
                 elif any(((('{{' + k + '}}') in j) for k in Page.donetemp)):
@@ -212,6 +212,11 @@ class Page:
              '\n'.join(self._done))
         new = '\n'.join(t)
         
+        if y == 0 and z == 0:
+            print('Nothing to be done!')
+            print(self.requests)
+            return None #No need to go through the remainder of the function
+        
         #Prepare the edit summary
         summary = (f'{z} verzoeken gemarkeerd als afgehandeld' if z else '') + (' & '*(bool(y*z))) + (f'{y} verzoeken weggebezemd' if y else '')
         edit_dic = {'action':'edit',
@@ -234,11 +239,14 @@ class Page:
                 
 class Request:
     "This object class will implement the main functionalities for a certain request"
-    def __init__(self, target):
+    rbot = NlBot()
+    def __init__(self, target, types=(int,)):
         self.target = self.process(target) #This object stores the main target (this could be an oldid)
         self.done, self.trash = False, False #this indicates whether 
         self._user = None #Fill in the user who processed the request
         self._page = None #Store the name of the page
+        if not isinstance(self.target, types):
+            raise TypeError('The target should be of the specified type!')
         
     def __bool__(self):
         return self.done #This function will return whether the request was done or not
@@ -255,9 +263,13 @@ class Request:
     
     def process(self, inp):
         "This function will process the input fed to the constructor"
-        if 'diff=' in inp and 'diff=prev' not in inp: #Beware for a very special case
+        if 'diff=' in inp and 'diff=prev' not in inp and 'diff=next' not in inp: #Beware for a very special case
             return int(inp.split('&')[0].lower().replace('diff=', '').strip())
-        return int(inp.lower().replace('oldid=', '').replace('permalink:', '').replace('diff', ''))
+        #Make sure that we don't accidently query the &next revision (requires additional query)
+        k = inp.lower()
+        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev'):
+            k = k.replace(i, '') #Remove all these shitty stuff
+        return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
     
     def check_done(self, bot):
         if self.done is False:
@@ -292,6 +304,22 @@ class Request:
     def done_string(self):
         "This function will generate a string that can be used to indicate that the request has been done"
         return f"De versie(s) is/zijn verborgen door {self._user if self._user is not None else 'een moderator'}"
+    
+    def get_next_revision(self, prev):
+        d1 = {'action':'query',
+              'prop':'revisions',
+              'revids':prev,
+              'rvprop':'ids'}
+        jos = next(iter(Request.rbot.get(d1)['query']['pages'].keys()))
+        d2 = {'action':'query',
+              'prop':'revisions',
+              'rvlimit':500,
+              'rvprop':'ids',
+              'pageids':jos}
+        jef = next(iter(Request.rbot.get(d2)['query']['pages'].values()))['revisions']
+        for i in jef:
+            if i['parentid'] == prev:
+                return i['revid'] #Revision found, should be enough
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen", "https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/Versies_verbergen")
 t(True) #Script in log-only 
