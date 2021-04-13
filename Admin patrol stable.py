@@ -197,10 +197,11 @@ class Page:
                     mark = True
                     matches = self.check_request_on_line(j.lower(), pat)
         
-        #Process the final request
-        process((start, i + 1), matches)
-        for i, j in l[::-1]:
-            del self._done[i:j]
+        if i > 0:
+            #Process the final request
+            process((start, i + 1), matches)
+            for i, j in l[::-1]:
+                del self._done[i:j]
         return len(l) #Return the amount of requests that were deleted
                 
     def update(self, logonly=False):
