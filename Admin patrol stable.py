@@ -59,9 +59,9 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|Permalink:\d{1,9}|\{\{diff\|\d{1,9})'):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|special:diff/\d{1,9})'):
         "Checks whether the line passed as an argument contains any kind of requests"
-        raw = re.findall(pattern, line) #this will unleash the regex on the poor little line
+        raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
         for i in raw: #Go through all returned matches
             if isinstance(i, (tuple, list)):
@@ -268,7 +268,7 @@ class Request:
             return int(inp.split('&')[0].lower().replace('diff=', '').strip())
         #Make sure that we don't accidently query the &next revision (requires additional query)
         k = inp.lower()
-        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev'):
+        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', '/', ':'):
             k = k.replace(i, '') #Remove all these shitty stuff
         return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
     
@@ -323,4 +323,4 @@ class Request:
                 return i['revid'] #Revision found, should be enough
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen", "https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/Versies_verbergen")
-t(True) #Script in log-only 
+t() #Script in log-only 
