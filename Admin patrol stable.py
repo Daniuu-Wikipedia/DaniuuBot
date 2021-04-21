@@ -372,4 +372,4 @@ class UserRequest(Request):
         return self._user #Just return None, as this function doesn't really do something
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
-t(True) #Script in log-only 
+t() #Script in log-only 
