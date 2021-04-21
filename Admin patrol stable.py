@@ -59,7 +59,7 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|special:diff/\d{1,9})'):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|special:diff/\d{1,9})', check=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
@@ -71,18 +71,20 @@ class Page:
             else: #We found a string or so, can just be added if not empty
                 if i:
                     z.append(j)
-        if 'speci' in line.lower():
+        if check is True:
             z += self.check_user_request(line)
         return z #Returns the list with non-empty matches of the regex
     
     def check_user_request(self, line):
         "This function will check whether a request is made to hide all edits from a given user"
-        matches, s = ('speciaal:bijdragen', 'special:contributions'), line.lower() #Prepare the pattern and remove all capitals
-        out = [] #Empty list for the output
-        for i in matches:
-            if i in s:
-                user = s[s.index(i):].split(' ')[0].replace(f'{i}/', '') #Just some formatting
-                out.append(UserRequest(user)) #Add the UserRequest to the list
+        s = line.lower() #Prepare the pattern and remove all capitals
+        out, pattern = [], r'((s|S)peci(a){1,2}l:((b|B)ijdragen|(c|C)ontributions)\/\S+)' #Empty list for the output, pattern for the detection
+        match = re.findall(pattern, line)
+        for i in match:
+            if isinstance(i, tuple):
+                for j in i:
+                    if len(j) > 15: #Check whether Special:... is in the text (if not, it's fake news)
+                        out.append(UserRequest(j))
         return out
     
     def separate(self, pend='Nieuwe verzoeken', hstart='Afgehandelde verzoeken'):
@@ -110,7 +112,7 @@ class Page:
         try:
             for i, j in enumerate(self._queue[1:]):
                 #Skip the first one, this only contains a header for this section
-                z = self.check_request_on_line(j) #Will also include IP's from now
+                z = self.check_request_on_line(j, check=True) #Will also include IP's from now
                 if z:
                     if i >= 1:
                         if manually_flagged is True: #the request has been flagged in a manual manner
@@ -196,7 +198,7 @@ class Page:
         pat = r'(\d{1,2} ' + f'({"|".join(Page.nldate.keys())}) ' + r'\d{4})'
         for i, j in enumerate(self._done):
             if i > 1: #Ignore the first line (and second line, to make things easier)
-                if self.check_request_on_line(j):
+                if self.check_request_on_line(j, check=True):
                     #We ended searching our current request, add it to the list if it can be deleted
                     if mark is False:
                         temp = self.check_request_on_line(self._done[i - 1].lower(), pat)
@@ -370,4 +372,4 @@ class UserRequest(Request):
         return self._user #Just return None, as this function doesn't really do something
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
-t() #Script in log-only 
+t(True) #Script in log-only 
