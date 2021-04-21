@@ -30,8 +30,8 @@ class Page:
     
     donetemp = {'done', 'd', 'nd'}
     
-    def __init__(self, name, url):
-        self.name, self.url = name, url
+    def __init__(self, name):
+        self.name = name
         self._content = []
         self._preamble, self._queue, self._done = [], [], [] #three lists for three parts of the request page
         self.requests = {} #This is a list of requests that are in the queue
@@ -71,7 +71,19 @@ class Page:
             else: #We found a string or so, can just be added if not empty
                 if i:
                     z.append(j)
+        if 'speci' in line.lower():
+            z += self.check_user_request(line)
         return z #Returns the list with non-empty matches of the regex
+    
+    def check_user_request(self, line):
+        "This function will check whether a request is made to hide all edits from a given user"
+        matches, s = ('speciaal:bijdragen', 'special:contributions'), line.lower() #Prepare the pattern and remove all capitals
+        out = [] #Empty list for the output
+        for i in matches:
+            if i in s:
+                user = s[s.index(i):].split(' ')[0].replace(f'{i}/', '') #Just some formatting
+                out.append(UserRequest(user)) #Add the UserRequest to the list
+        return out
     
     def separate(self, pend='Nieuwe verzoeken', hstart='Afgehandelde verzoeken'):
         "This function will separate the contents of the page into preamble, actual requests and handled ones"
@@ -98,14 +110,20 @@ class Page:
         try:
             for i, j in enumerate(self._queue[1:]):
                 #Skip the first one, this only contains a header for this section
-                z = self.check_request_on_line(j)
+                z = self.check_request_on_line(j) #Will also include IP's from now
                 if z:
                     if i >= 1:
                         if manually_flagged is True: #the request has been flagged in a manual manner
                             self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 1)]
                         else:
-                            self.requests.update({l:(start, i + 1)})
-                    l = tuple((Request(i) for i in z if any((j.isdigit() for j in i)))) #Generate a tuple with the requests
+                            self.requests.update({tuple(l):(start, i + 1)})
+                    l = [] #Initialize empty list
+                    for k in z:
+                        if isinstance(k, UserRequest):
+                            l.append(k) #Just append the request
+                        else:
+                            l += [Request(i) for i in z if any((j.isdigit() for j in i))]
+                    #l = tuple((Request(i) for i in z if any((j.isdigit() for j in i)))) #Generate a tuple with the requests (code is present for historical reasons)
                     start = i + 1
                     manually_flagged = False
                 elif any(((('{{' + k + '}}') in j) for k in Page.donetemp)):
@@ -115,7 +133,7 @@ class Page:
             if manually_flagged is True:
                 self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 2)]
             else:
-                self.requests.update({l:(start, i + 2)})
+                self.requests.update({tuple(l):(start, i + 2)})
         except UnboundLocalError:
             return None #Do nothing (this is due to the fact that the )
         return self.requests
@@ -233,7 +251,6 @@ class Page:
             if 'error' in result: #An error occured
                 if result['error']['code'] == 'editconflict':
                     print('An edit conflict occured during the processing. I will wait for ten seconds')
-                    time.sleep(10)
                     print('Redoing the things.')
                     return self() #Rerun the script, we found a nice little new request
         print(f'Removed {y}, processed {z}') #Just some code for maintenance purposes
@@ -268,7 +285,7 @@ class Request:
             return int(inp.split('&')[0].lower().replace('diff=', '').strip())
         #Make sure that we don't accidently query the &next revision (requires additional query)
         k = inp.lower()
-        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', '/', ':'):
+        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', '/', ':', '{', '|'):
             k = k.replace(i, '') #Remove all these shitty stuff
         return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
     
@@ -322,5 +339,35 @@ class Request:
             if i['parentid'] == prev:
                 return i['revid'] #Revision found, should be enough
 
-t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen", "https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/Versies_verbergen")
+class UserRequest(Request):
+    def __init__(self, user):
+        super().__init__(user, (str,))
+        self._contribs, self._user = [], 'een moderator'
+        
+    def process(self, u):
+        return u.upper().strip()
+    
+    def check_done(self, bot):
+        limit = dt.datetime.now().replace(microsecond=0) - dt.timedelta(200) #Only check past 48 hours
+        qdic = {'ucuser':self.target,
+                'action':'query',
+                'list':'usercontribs',
+                'ucprop':'ids',
+                'uclimit':500,
+                'ucend':limit.isoformat()}
+        q = bot.get(qdic)['query']['usercontribs']
+        for i in q:
+            if i['revid'] not in self._contribs:
+                self._contribs.append(i['revid'])
+        self.done = all(('texthidden' in i for i in q))
+        return bool(self)
+    
+    def done_string(self):
+        "This function won't explicitly check who hid the revisions"
+        return "De bijdragen van deze gebruiker zijn verborgen. Met dank voor de melding."
+    
+    def check_person(self, bot=None):
+        return self._user #Just return None, as this function doesn't really do something
+
+t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
 t() #Script in log-only 
