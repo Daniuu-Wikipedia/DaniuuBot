@@ -118,7 +118,7 @@ class Page:
                         if manually_flagged is True: #the request has been flagged in a manual manner
                             self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 1)]
                         else:
-                            self.requests.update({tuple(l):(start, i + 1)})
+                            self.requests.update({tuple(set(l)):(start, i + 1)})
                     l = [] #Initialize empty list
                     for k in z:
                         if isinstance(k, UserRequest):
@@ -135,7 +135,7 @@ class Page:
             if manually_flagged is True:
                 self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 2)]
             else:
-                self.requests.update({tuple(l):(start, i + 2)})
+                self.requests.update({tuple(set(l)):(start, i + 2)})
         except UnboundLocalError:
             return None #Do nothing (this is due to the fact that the )
         return self.requests
@@ -280,6 +280,12 @@ class Request:
     
     def __repr__(self): #Not really what it should be
         return str(self.target)
+    
+    def __eq__(self, other):
+        return self.target == other.target
+    
+    def __hash__(self):
+        return self.target.__hash__()
     
     def process(self, inp):
         "This function will process the input fed to the constructor"
