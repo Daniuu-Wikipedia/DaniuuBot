@@ -84,7 +84,7 @@ class Page:
             if isinstance(i, tuple):
                 for j in i:
                     if len(j) > 15: #Check whether Special:... is in the text (if not, it's fake news)
-                        out.append(UserRequest(j))
+                        out.append(UserRequest(j.split('/')[1].strip()))
         return out
     
     def separate(self, pend='Nieuwe verzoeken', hstart='Afgehandelde verzoeken'):
@@ -351,9 +351,12 @@ class UserRequest(Request):
     def __init__(self, user):
         super().__init__(user, (str,))
         self._contribs, self._user = [], 'een moderator'
+    
+    def __hash__(self):
+        return self.target.upper().__hash__() #Make this case-insensitive
         
     def process(self, u):
-        return u.upper().strip()
+        return u.strip().replace(']', '')
     
     def check_done(self, bot):
         limit = dt.datetime.now().replace(microsecond=0) - dt.timedelta(200) #Only check past 48 hours
@@ -363,7 +366,7 @@ class UserRequest(Request):
                 'ucprop':'ids',
                 'uclimit':500,
                 'ucend':limit.isoformat()}
-        q = bot.get(qdic)['query']['usercontribs']
+        q = bot.get(qdic)['query']['usercontribs'] #Get the contributions for the user
         for i in q:
             if i['revid'] not in self._contribs:
                 self._contribs.append(i['revid'])
