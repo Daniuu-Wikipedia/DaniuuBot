@@ -59,7 +59,7 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|special:diff/\d{1,9})', check=False):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff/\d{1,9})', check=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
@@ -293,7 +293,7 @@ class Request:
             return int(inp.split('&')[0].lower().replace('diff=', '').strip())
         #Make sure that we don't accidently query the &next revision (requires additional query)
         k = inp.lower()
-        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', '/', ':', '{', '|'):
+        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', '/', ':', '{', '|', 'speciaal'):
             k = k.replace(i, '') #Remove all these shitty stuff
         return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
     
@@ -359,7 +359,7 @@ class UserRequest(Request):
         return u.strip().replace(']', '')
     
     def check_done(self, bot):
-        limit = dt.datetime.now().replace(microsecond=0) - dt.timedelta(200) #Only check past 48 hours
+        limit = dt.datetime.now().replace(microsecond=0) - dt.timedelta(2) #Only check past 48 hours
         qdic = {'ucuser':self.target,
                 'action':'query',
                 'list':'usercontribs',
