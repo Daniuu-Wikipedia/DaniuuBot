@@ -221,16 +221,6 @@ class Page:
                             self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 1)]
                         else:
                             self.requests.update({MultiRequest(l):(start, i + 1)})
-                    l = [] #Initialize empty list
-                    '''for k in z:
-                        if isinstance(k, UserRequest):
-                            l.append(k) #Just append the request
-                        else:
-                            if any((l.isdigit() for l in k)):
-                                print(k)
-                                l.append(Request(k))'''
-                            #l += [Request(i) for i in z if any((j.isdigit() for j in i))]
-                    #l = tuple((Request(i) for i in z if any((j.isdigit() for j in i)))) #Generate a tuple with the requests (code is present for historical reasons)
                     l = z.copy()
                     start = i + 1
                     manually_flagged = False
