@@ -8,6 +8,9 @@ This script provides some handy administrative tools, that could be used at the 
 This bot uses designated OAuth keys (which are for obvious reasons stored in another file).
 This script is designed to run under the account 'DaniuuBot'.
 Some functions were specifically modified for this little tool.
+
+THIS IS A TESTFILE THAT RUNS EXPERIMENTAL FEATURES ON TESTWIKI! 
+THE SCRIPT IS NOT SUITED FOR OPERATIONAL USE!
 """
 
 import requests
