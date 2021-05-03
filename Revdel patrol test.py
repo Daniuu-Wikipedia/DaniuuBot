@@ -170,11 +170,10 @@ class Page:
         for i in raw: #Go through all returned matches
             if isinstance(i, (tuple, list)):
                 for j in i: #check all separate elements of the tuple or list that was found
-                    if j.strip(): #Check that j is not empty
-                        z.append(j.strip())
-            else: #We found a string or so, can just be added if not empty
-                if i:
-                    z.append(j)
+                    if j.strip() and any((k.isdigit() for k in j)): #Check that j is not empty
+                        z.append(Request(j.strip()))
+            elif i and any((j.isdigit() for j in i)):
+                z.append(Request(j))
         if check is True:
             z += self.check_user_request(line)
         return z #Returns the list with non-empty matches of the regex
@@ -188,7 +187,7 @@ class Page:
             if isinstance(i, tuple):
                 for j in i:
                     if len(j) > 15: #Check whether Special:... is in the text (if not, it's fake news)
-                        out.append(UserRequest(j))
+                        out.append(UserRequest(j.split('/')[1].strip()))
         return out
     
     def separate(self, pend='Nieuwe verzoeken', hstart='Afgehandelde verzoeken'):
@@ -212,7 +211,6 @@ class Page:
         if not self._queue:
             #This means that the split was not yet done
             self.separate()
-        #manually_flagged = False #this is a parameter that should check whether a given reqeust has been flagged manually
         try:
             for i, j in enumerate(self._queue[1:]):
                 #Skip the first one, this only contains a header for this section
@@ -222,14 +220,18 @@ class Page:
                         if manually_flagged is True: #the request has been flagged in a manual manner
                             self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 1)]
                         else:
-                            self.requests.update({tuple(l):(start, i + 1)})
+                            self.requests.update({MultiRequest(l):(start, i + 1)})
                     l = [] #Initialize empty list
-                    for k in z:
+                    '''for k in z:
                         if isinstance(k, UserRequest):
                             l.append(k) #Just append the request
                         else:
-                            l += [Request(i) for i in z if any((j.isdigit() for j in i))]
+                            if any((l.isdigit() for l in k)):
+                                print(k)
+                                l.append(Request(k))'''
+                            #l += [Request(i) for i in z if any((j.isdigit() for j in i))]
                     #l = tuple((Request(i) for i in z if any((j.isdigit() for j in i)))) #Generate a tuple with the requests (code is present for historical reasons)
+                    l = z.copy()
                     start = i + 1
                     manually_flagged = False
                 elif any(((('{{' + k + '}}') in j) for k in Page.donetemp)):
@@ -239,9 +241,9 @@ class Page:
             if manually_flagged is True:
                 self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 2)]
             else:
-                self.requests.update({tuple(l):(start, i + 2)})
+                self.requests.update({MultiRequest(l):(start, i + 2)})
         except UnboundLocalError:
-            return None #Do nothing (this is due to the fact that the )
+            return None #Do nothing (this is due to the fact that there are no requests or so)
         return self.requests
     
     def check_queue_done(self):
@@ -250,8 +252,7 @@ class Page:
             self.filter_queue()
         for i in self.requests:
             if not isinstance(i, str): #Ignore strings, these are only added for administrative purposes
-                for j in i:
-                    j.check_done(self.bot)
+                i.check_done(self.bot)
     
     def check_requests(self):
         'This function will check whether all requests are done, and can move the request to the next part'
@@ -263,8 +264,8 @@ class Page:
         #Now, process the requestst that can be flagged automatically
         for i in self.requests:
             if not isinstance(i, str): #These ones should be ignored (we can do the deletion first)
-                if all((bool(j) for j in i)): #checks whether all requests have been handled
-                    sto.append(self.requests[i] + (i[0].check_person(self.bot),)) #Add the desired indices to the list that will be processed later
+                if i: #checks whether all requests have been handled
+                    sto.append(self.requests[i] + (i.check_person(self.bot),)) #Add the desired indices to the list that will be processed later
         
         #Begin processing the requests that are done or flagged
         sto.sort() #Do in place sorting to make things easier
@@ -450,9 +451,12 @@ class UserRequest(Request):
     def __init__(self, user):
         super().__init__(user, (str,))
         self._contribs, self._user = [], 'een moderator'
+    
+    def __str__(self):
+        return str(self.target)
         
     def process(self, u):
-        return ''.join(u.split('/')[1:])
+        return u.strip().replace(']', '')
     
     def check_done(self, bot):
         limit = dt.datetime.now().replace(microsecond=0) - dt.timedelta(200) #Only check past 48 hours
@@ -476,6 +480,61 @@ class UserRequest(Request):
     def check_person(self, bot=None):
         return self._user #Just return None, as this function doesn't really do something
         
-            
+class MultiRequest:
+    "This class can be used to check for a series of requests that would otherwise be filed in parallel."
+    def __init__(self, req):
+        assert all((isinstance(i, Request) for i in req)), 'Please only provide requests!'
+        self.targets = [] #Use a tuple here
+        self.users = []
+        self.done = False #This indicates whether the request was done
+        self._titles, self._user = {}, None
+        for i in req:
+            if isinstance(i, UserRequest):
+                self.users.append(i)
+            else:
+                self.targets.append(i)
+    
+    def __str__(self):
+        return str(self.targets + self.users)
+    
+    def __repr__(self):
+        return str(self)
+    
+    def __bool__(self):
+        return self.done
+    
+    def __hash__(self):
+        "This function will provide a nice hash"
+        return tuple(self.users + self.targets).__hash__()
+        
+    def check_done(self, bot):
+        "This function will check whether the request has been processed"
+        targets, users = False, False
+        if self.done is False and self.targets:
+            dic = {'action':'query',
+                   'prop':'revisions',
+                   'revids':'|'.join((str(i) for i in self.targets)),
+                   'rvprop':'content|timestamp|ids'}
+            revs = bot.get(dic)['query']['pages']
+            targets = all(('texthidden' in revs[i]['revisions'][0] for i in revs))
+            self._titles = {i['revisions'][0]['revid']:i['pageid'] for i in revs.values()}
+        if self.users: #Check the edits per user
+            users = all((i.check_done(bot) for i in self.users))
+        self.done = (targets or (not self.targets)) and (users or (not self.users))
+        return bool(self)
+    
+    def check_person(self, bot):
+        'This function will check who did the request'
+        if not self._titles:
+            self.check_done(bot)
+        if self.targets: #We have revisions that got selected
+            self._user = self.targets[0].check_person(bot) #Just take the first one here
+        else:
+            self._user = self.users[0].check_person(bot)
+        
+    def done_string(self):
+        "This function will generate a string that can be used to indicate that the request has been done"
+        return f"De versie(s) is/zijn verborgen door {self._user if self._user is not None else 'een moderator'}"
+    
 t = Page('Verzoekpagina')
-t()
+t(True)
