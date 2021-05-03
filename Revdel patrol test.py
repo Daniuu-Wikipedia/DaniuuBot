@@ -163,18 +163,20 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|special:diff/\d{1,9})', check=False):
+def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff/\d{1,9})', check=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
+        print(raw)
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
         for i in raw: #Go through all returned matches
             if isinstance(i, (tuple, list)):
                 for j in i: #check all separate elements of the tuple or list that was found
-                    if j.strip() and any((k.isdigit() for k in j)): #Check that j is not empty
-                        z.append(Request(j.strip()))
-            elif i and any((j.isdigit() for j in i)):
-                z.append(Request(j))
+                    if j.strip(): #Check that j is not empty
+                        z.append(j.strip())
+            elif i: #We found a string or so, can just be added if not empty
+                z.append(j)
         if check is True:
+            z = [Request(i) for i in z if i and any((j.isdigit() for j in i))]
             z += self.check_user_request(line)
         return z #Returns the list with non-empty matches of the regex
     
@@ -221,9 +223,7 @@ class Page:
                             self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 1)]
                         else:
                             self.requests.update({MultiRequest(l):(start, i + 1)})
-                    l = z.copy()
-                    start = i + 1
-                    manually_flagged = False
+                    l, start, manually_flagged = z.copy(), i + 1, False
                 elif any(((('{{' + k + '}}') in j) for k in Page.donetemp)):
                     manually_flagged = True #Indicate that this request has been flagged manually
             
@@ -244,7 +244,7 @@ class Page:
             if not isinstance(i, str): #Ignore strings, these are only added for administrative purposes
                 i.check_done(self.bot)
     
-    def check_requests(self):
+     def check_requests(self):
         'This function will check whether all requests are done, and can move the request to the next part'
         self.check_queue_done()
         sto = []# A list to store the indices that can be processed
@@ -267,7 +267,7 @@ class Page:
                     prefix = '*'*(pre.count('*') + 1)
                 else:
                     prefix = ':'
-                self._done.append(prefix + '{{done}} - ' + f'Gevraagde versie(s) zijn verborgen door {u}. Dank voor de melding. ~~~~')
+                self._done.append(prefix + '{{done}} - ' + f'{u} Dank voor de melding. ~~~~')
         for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
             del self._queue[i:j]
         return len(sto) #Return the number of processed requests
@@ -521,6 +521,7 @@ class MultiRequest:
             self._user = self.targets[0].check_person(bot) #Just take the first one here
         else:
             self._user = self.users[0].check_person(bot)
+        return self.done_string()
         
     def done_string(self):
         "This function will generate a string that can be used to indicate that the request has been done"
