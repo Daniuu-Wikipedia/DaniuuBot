@@ -271,6 +271,12 @@ class Request:
     def __repr__(self): #Not really what it should be
         return str(self.target)
     
+    def __eq__(self, other):
+        return self.target == other.target
+    
+    def __hash__(self):
+        return self.target.__hash__()
+    
     def process(self, inp):
         "This function will process the input fed to the constructor"
         if 'diff=' in inp and 'diff=prev' not in inp and 'diff=next' not in inp: #Beware for a very special case
@@ -372,7 +378,7 @@ class MultiRequest:
         self.users = []
         self.done = False #This indicates whether the request was done
         self._titles, self._user = {}, None
-        for i in req:
+        for i in set(req):
             if isinstance(i, UserRequest):
                 self.users.append(i)
             else:
@@ -386,7 +392,7 @@ class MultiRequest:
     
     def __bool__(self):
         return self.done
-    
+        
     def __hash__(self):
         "This function will provide a nice hash"
         return tuple(self.users + self.targets).__hash__()
