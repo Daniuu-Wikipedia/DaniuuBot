@@ -163,10 +163,9 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff/\d{1,9})', check=False):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff/\d{1,9})', check=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
-        print(raw)
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
         for i in raw: #Go through all returned matches
             if isinstance(i, (tuple, list)):
@@ -244,7 +243,7 @@ def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?ol
             if not isinstance(i, str): #Ignore strings, these are only added for administrative purposes
                 i.check_done(self.bot)
     
-     def check_requests(self):
+    def check_requests(self):
         'This function will check whether all requests are done, and can move the request to the next part'
         self.check_queue_done()
         sto = []# A list to store the indices that can be processed
@@ -377,6 +376,12 @@ class Request:
     def __repr__(self): #Not really what it should be
         return str(self.target)
     
+    def __eq__(self, other):
+        return self.target == other.target
+    
+    def __hash__(self):
+        return self.target.__hash__()
+    
     def process(self, inp):
         "This function will process the input fed to the constructor"
         if 'diff=' in inp and 'diff=prev' not in inp and 'diff=next' not in inp: #Beware for a very special case
@@ -478,7 +483,7 @@ class MultiRequest:
         self.users = []
         self.done = False #This indicates whether the request was done
         self._titles, self._user = {}, None
-        for i in req:
+        for i in set(req):
             if isinstance(i, UserRequest):
                 self.users.append(i)
             else:
