@@ -59,7 +59,7 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff/\d{1,9})', check=False):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,})', check=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
@@ -216,7 +216,7 @@ class Page:
                 
     def update(self, logonly=False):
         "This function will update the content of the page"
-        y = self.check_removal() #How many requests are deleted
+        y = 0#self.check_removal() #How many requests are deleted
         z = self.check_requests()
         t = ('\n'.join(self._preamble),
              '\n'.join(self._queue),
@@ -283,6 +283,8 @@ class Request:
             return int(inp.split('&')[0].lower().replace('diff=', '').strip())
         #Make sure that we don't accidently query the &next revision (requires additional query)
         k = inp.lower()
+        if k.count('/') > 1: #Correct for a very specific case
+            k = k.split('/')[-1].strip()
         for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', '/', ':', '{', '|'):
             k = k.replace(i, '') #Remove all these shitty stuff
         return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
