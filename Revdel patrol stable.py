@@ -59,7 +59,7 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,})', check=False):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,})', check=False, proc=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
@@ -70,8 +70,9 @@ class Page:
                         z.append(j.strip())
             elif i: #We found a string or so, can just be added if not empty
                 z.append(j)
-        if check is True:
+        if proc is True:
             z = [Request(i) for i in z if i and any((j.isdigit() for j in i))]
+        if check is True:
             z += self.check_user_request(line)
         return z #Returns the list with non-empty matches of the regex
     
@@ -111,7 +112,7 @@ class Page:
         try:
             for i, j in enumerate(self._queue[1:]):
                 #Skip the first one, this only contains a header for this section
-                z = self.check_request_on_line(j, check=True) #Will also include IP's from now (check=True) keyword
+                z = self.check_request_on_line(j, check=True, proc=True) #Will also include IP's from now (check=True) keyword
                 if z:
                     if i >= 1:
                         if manually_flagged is True: #the request has been flagged in a manual manner
@@ -216,7 +217,7 @@ class Page:
                 
     def update(self, logonly=False):
         "This function will update the content of the page"
-        y = 0#self.check_removal() #How many requests are deleted
+        y = self.check_removal() #How many requests are deleted
         z = self.check_requests()
         t = ('\n'.join(self._preamble),
              '\n'.join(self._queue),
