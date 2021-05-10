@@ -181,6 +181,8 @@ class Page:
             deltime = d + dt.timedelta(days=drm, hours=6) #Only remove the requests from 6 am onwards
             if deltime < now:
                 l.append(indices)
+                return True
+            return False
             
         if not self._done:
             self.separate()
@@ -199,7 +201,9 @@ class Page:
                             temp = self.check_request_on_line(j.lower(), pat)
                             if temp:
                                 matches = temp
-                    process((start, i), matches) #rely on the closure to process the request
+                    temp = process((start, i), matches) #rely on the closure to process the request
+                    if temp is False:
+                        break
                     start = i #Set for the processing of the next request
                     mark = False #Reset this
 
