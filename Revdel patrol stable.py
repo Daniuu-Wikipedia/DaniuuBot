@@ -250,6 +250,8 @@ class Page:
                     print('An edit conflict occured during the processing. I will wait for ten seconds')
                     print('Redoing the things.')
                     return self() #Rerun the script, we found a nice little new request
+        else:
+            print('Script is called in log-only, no changes will be made.')
         print(f'Removed {y}, processed {z}') #Just some code for maintenance purposes
                 
 class Request:
