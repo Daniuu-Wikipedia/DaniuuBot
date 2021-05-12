@@ -59,7 +59,7 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,})', check=False, proc=False):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})', check=False, proc=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
@@ -178,7 +178,7 @@ class Page:
             d = dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
             
             #check whether we can get rid of this request
-            deltime = d + dt.timedelta(days=drm, hours=6) #Only remove the requests from 6 am onwards
+            deltime = d + dt.timedelta(days=drm, hours=2) #Only remove the requests from 6 am onwards
             if deltime < now:
                 l.append(indices)
                 return True
@@ -190,7 +190,7 @@ class Page:
         l, start, now, mark = [], 1, dt.datetime.now(), False  #Check what time it is (mark is used to verify that we found a nice match)
         pat = r'(\d{1,2} ' + f'({"|".join(Page.nldate.keys())}) ' + r'\d{4})'
         for i, j in enumerate(self._done):
-            if i > 1: #Ignore the first line (and second line, to make things easier)
+            if i >= 1: #Ignore the first line (and second line, to make things easier)
                 if self.check_request_on_line(j, check=True):
                     #We ended searching our current request, add it to the list if it can be deleted
                     if mark is False:
