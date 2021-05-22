@@ -437,7 +437,8 @@ class MultiRequest:
         
     def done_string(self):
         "This function will generate a string that can be used to indicate that the request has been done"
-        return f"De versie(s) is/zijn verborgen door {self._user if self._user is not None else 'een moderator'}."
+        martin = self._user if self._user is not None else 'een moderator'
+        return "De versie(s) is/zijn verborgen door %s"%martin
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
 t() #Script in log-only 
