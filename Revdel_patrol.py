@@ -8,114 +8,10 @@ This script provides some handy administrative tools, that could be used at the 
 This bot uses designated OAuth keys (which are for obvious reasons stored in another file).
 This script is designed to run under the account 'DaniuuBot'.
 Some functions were specifically modified for this little tool.
-
-THIS IS A TESTFILE THAT RUNS EXPERIMENTAL FEATURES ON TESTWIKI! 
-THE SCRIPT IS NOT SUITED FOR OPERATIONAL USE!
 """
-
-import requests
-import time
+from Core import NlBot
 import re #Regex
 import datetime as dt #Import support for dates and times
-from requests_oauthlib import OAuth1
-
-class Bot:
-    'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
-    max_edit = 5 #The maximum number of edits that a single bot can do per minute
-    
-    def __init__(self, api, m=None):
-        'Constructs a bot, designed to interact with one Wikipedia'
-        self.api = api
-        self.ti = [] #A list to store the time stamps of the edits in
-        self._token = None #This is a token that is handy
-        self._auth = None #The OAuth ID (this is the token that will allow the auth - store this for every bot)
-        self._max = Bot.max_edit if m is None else m #this value is set, and can be changed if a bot bit would be granted
-        self._tt = None
-    
-    def __str__(self):
-        return self.api.copy()
-    
-    def __call__(self):
-        return self.update() #Make an alias
-    
-    def verify_OAuth(self, file="Test_Bot.txt"):
-        'This function will verify whether the OAuth-auth has been configured. If not, it will do the configuration.'
-        if self._auth is None:
-            with open(file, 'r') as secret:
-                self._auth = OAuth1(*[i.strip() for i in secret][1::2]) #This is the reason why those keys should never be published
-    
-    def verify_token(self):
-        if self._token is None:
-            self.get_token()
-        elif float(time.time()) - self._token[1] > 8:
-            self.get_token() #Tokens expire after approximately 8 seconds, so generate a new one
-        return self._token[0]
-    
-    def get(self, payload):
-        "This function will provide functionality that does all the get requests"
-        self.verify_OAuth()
-        payload['format'] = 'json' #Set the output format to json
-        return requests.get(self.api, params=payload, auth=self._auth).json()
-    
-    def get_token(self, t='csrf', n=0, store=True):
-        'This function will get a token'
-        assert isinstance(t, str), 'Please provide a string as a token!'
-        pay = {'action':'query',
-               'meta':'tokens',
-               'type':t}
-        z = self.get(pay), float(time.time())
-        try:
-            if store is True:
-                self._token = z[0]['query']['tokens'][f'{t}token'], z[1]
-                return self._token[0]
-            else:
-                return self._token[0] #Just return the token
-        except KeyError:
-            assert n <= 1, 'Cannot generate the requested token'
-            return self.get_token(t, n + 1)
-    
-    def post(self, params):
-        assert 'action' in params, 'Please provide an action'
-        t = float(time.time())
-        self.ti = [i for i in self.ti if i >= t - 60] #Clean this mess
-        if len(self.ti) >= Bot.max_edit: #Check this again, after doing the cleaning
-            print('Going to sleep for a while')
-            time.sleep(20) #Fuck, we need to stop
-            return self.post(params) #run the function again - but: with a delay of some 60 seconds
-        if 'token' not in params: #Place this generation of the key here, to avoid having to request too many tokens
-            params['token'] = self.verify_token() #Generate a new token
-        params['format'] = 'json'
-        params['maxlag'] = 5 #Using the standard that's implemented in PyWikiBot
-        self.ti.append(float(time.time()))
-        k = requests.post(self.api, data=params, auth=self._auth).json()
-        if 'error' in k:
-            print('An error occured somewhere') #We found an error
-            if 'code' in k['error'] and 'maxlag' in k['error']['code']:
-                print('Maxlag occured, please try to file the request at a later point in space and time.')
-        return k
-        
-class WikidataBot(Bot):
-    def __init__(self):
-        super().__init__('https://www.wikidata.org/w/api.php')
-
-class CommonsBot(Bot):
-    def __init__(self):
-        super().__init__('https://commons.wikimedia.org/w/api.php')
-
-class MetaBot(Bot):
-    def __init__(self):
-        super().__init__('https://meta.wikimedia.org/w/api.php')
-
-class NlBot(Bot):
-    def __init__(self):
-        super().__init__('https://nl.wikipedia.org/w/api.php')
-        
-class TestBot(Bot):
-    def __init__(self):
-        super().__init__('https://test.wikipedia.org/w/api.php')
-    
-    def verify_OAuth(self):
-        super().verify_OAuth('Test_Bot.txt')
 
 class Page:
     "This is a class that allows the processing of a given request page"
@@ -139,7 +35,7 @@ class Page:
         self._content = []
         self._preamble, self._queue, self._done = [], [], [] #three lists for three parts of the request page
         self.requests = {} #This is a list of requests that are in the queue
-        self.bot = TestBot() #Initialize a bot to do operations on Testwiki
+        self.bot = NlBot() #Initialize a bot to do operations on Testwiki
         self.id = None
     
     def __str__(self):
@@ -163,7 +59,7 @@ class Page:
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff/\d{1,9})', check=False):
+    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})', check=False, proc=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
@@ -174,8 +70,9 @@ class Page:
                         z.append(j.strip())
             elif i: #We found a string or so, can just be added if not empty
                 z.append(j)
-        if check is True:
+        if proc is True:
             z = [Request(i) for i in z if i and any((j.isdigit() for j in i))]
+        if check is True:
             z += self.check_user_request(line)
         return z #Returns the list with non-empty matches of the regex
     
@@ -215,7 +112,7 @@ class Page:
         try:
             for i, j in enumerate(self._queue[1:]):
                 #Skip the first one, this only contains a header for this section
-                z = self.check_request_on_line(j, check=True) #Will also include IP's from now (check=True) keyword
+                z = self.check_request_on_line(j, check=True, proc=True) #Will also include IP's from now (check=True) keyword
                 if z:
                     if i >= 1:
                         if manually_flagged is True: #the request has been flagged in a manual manner
@@ -266,7 +163,7 @@ class Page:
                     prefix = '*'*(pre.count('*') + 1)
                 else:
                     prefix = ':'
-                self._done.append(prefix + '{{done}} - ' + f'{u} Dank voor de melding. ~~~~')
+                self._done.append(prefix + '{{done}} - ' + '%s Dank voor de melding. ~~~~'%u)
         for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
             del self._queue[i:j]
         return len(sto) #Return the number of processed requests
@@ -283,15 +180,19 @@ class Page:
             #check whether we can get rid of this request
             deltime = d + dt.timedelta(days=drm, hours=6) #Only remove the requests from 6 am onwards
             if deltime < now:
-                l.append(indices)
+                if indices[0] < indices[1]:
+                    l.append(indices)
+                return True
+            return False
             
         if not self._done:
             self.separate()
         #Filter the requests (see also above)
         l, start, now, mark = [], 1, dt.datetime.now(), False  #Check what time it is (mark is used to verify that we found a nice match)
-        pat = r'(\d{1,2} ' + f'({"|".join(Page.nldate.keys())}) ' + r'\d{4})'
+        s = "|".join(Page.nldate.keys()) #I cannot use f'-strings for Toolforge
+        pat = r'(\d{1,2} ('  + s + r') \d{4})'
         for i, j in enumerate(self._done):
-            if i > 1: #Ignore the first line (and second line, to make things easier)
+            if i >= 1: #Ignore the first line (and second line, to make things easier)
                 if self.check_request_on_line(j, check=True):
                     #We ended searching our current request, add it to the list if it can be deleted
                     if mark is False:
@@ -302,7 +203,9 @@ class Page:
                             temp = self.check_request_on_line(j.lower(), pat)
                             if temp:
                                 matches = temp
-                    process((start, i), matches) #rely on the closure to process the request
+                    temp = process((start, i), matches) #rely on the closure to process the request
+                    if temp is False:
+                        break
                     start = i #Set for the processing of the next request
                     mark = False #Reset this
 
@@ -320,7 +223,7 @@ class Page:
                 
     def update(self, logonly=False):
         "This function will update the content of the page"
-        y = 0 #self.check_removal() #How many requests are deleted
+        y = self.check_removal() #How many requests are deleted
         z = self.check_requests()
         t = ('\n'.join(self._preamble),
              '\n'.join(self._queue),
@@ -333,7 +236,7 @@ class Page:
             return None #No need to go through the remainder of the function
         
         #Prepare the edit summary
-        summary = (f'{z} verzoeken gemarkeerd als afgehandeld' if z else '') + (' & '*(bool(y*z))) + (f'{y} verzoeken weggebezemd' if y else '')
+        summary = ('%d verzoeken gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoeken weggebezemd'%y if y else '')
         edit_dic = {'action':'edit',
                     'pageid':self.id,
                     'text':new,
@@ -347,10 +250,11 @@ class Page:
             if 'error' in result: #An error occured
                 if result['error']['code'] == 'editconflict':
                     print('An edit conflict occured during the processing. I will wait for ten seconds')
-                    time.sleep(10)
                     print('Redoing the things.')
                     return self() #Rerun the script, we found a nice little new request
-        print(f'Removed {y}, processed {z}') #Just some code for maintenance purposes
+        else:
+            print('Script is called in log-only, no changes will be made.')
+        print('Removed %d, processed %d'%(y, z)) #Just some code for maintenance purposes
                 
 class Request:
     "This object class will implement the main functionalities for a certain request"
@@ -388,6 +292,8 @@ class Request:
             return int(inp.split('&')[0].lower().replace('diff=', '').strip())
         #Make sure that we don't accidently query the &next revision (requires additional query)
         k = inp.lower()
+        if k.count('/') > 1: #Correct for a very specific case
+            k = k.split('/')[-1].strip()
         for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', '/', ':', '{', '|'):
             k = k.replace(i, '') #Remove all these shitty stuff
         return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
@@ -424,7 +330,8 @@ class Request:
     
     def done_string(self):
         "This function will generate a string that can be used to indicate that the request has been done"
-        return f"De versie(s) is/zijn verborgen door {self._user if self._user is not None else 'een moderator'}"
+        martin = self._user if self._user is not None else 'een moderator'
+        return "De versie(s) is/zijn verborgen door %s"%martin
     
     def get_next_revision(self, prev):
         d1 = {'action':'query',
@@ -497,7 +404,7 @@ class MultiRequest:
     
     def __bool__(self):
         return self.done
-    
+        
     def __hash__(self):
         "This function will provide a nice hash"
         return tuple(self.users + self.targets).__hash__()
@@ -530,7 +437,7 @@ class MultiRequest:
         
     def done_string(self):
         "This function will generate a string that can be used to indicate that the request has been done"
-        return f"De versie(s) is/zijn verborgen door {self._user if self._user is not None else 'een moderator'}"
-    
-t = Page('Verzoekpagina')
-t(True)
+        return f"De versie(s) is/zijn verborgen door {self._user if self._user is not None else 'een moderator'}."
+
+t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
+t() #Script in log-only 
