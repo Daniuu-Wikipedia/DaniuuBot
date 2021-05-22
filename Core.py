@@ -55,7 +55,7 @@ class Bot:
         z = self.get(pay), float(time.time())
         try:
             if store is True:
-                self._token = z[0]['query']['tokens'][f'{t}token'], z[1]
+                self._token = z[0]['query']['tokens']['%stoken'%t], z[1]
                 return self._token[0]
             else:
                 return self._token[0] #Just return the token
