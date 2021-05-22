@@ -351,7 +351,7 @@ class Request:
 
 class UserRequest(Request):
     def __init__(self, user):
-        Request.__init__(user, (str,))
+        Request.__init__(self, user, (str,))
         self._contribs, self._user = [], 'een moderator'
     
     def __str__(self):

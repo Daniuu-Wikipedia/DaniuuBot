@@ -85,24 +85,24 @@ class Bot:
         
 class WikidataBot(Bot):
     def __init__(self):
-        Bot.__init__('https://www.wikidata.org/w/api.php')
+        Bot.__init__(self, 'https://www.wikidata.org/w/api.php')
 
 class CommonsBot(Bot):
     def __init__(self):
-        Bot.__init__('https://commons.wikimedia.org/w/api.php')
+        Bot.__init__(self, 'https://commons.wikimedia.org/w/api.php')
 
 class MetaBot(Bot):
     def __init__(self):
-        Bot.__init__('https://meta.wikimedia.org/w/api.php')
+        Bot.__init__(self, 'https://meta.wikimedia.org/w/api.php')
 
 class NlBot(Bot):
     def __init__(self):
-        Bot.__init__('https://nl.wikipedia.org/w/api.php')
+        Bot.__init__(self, 'https://nl.wikipedia.org/w/api.php')
         
 class BetaBot(Bot):
     'This is a bot that will allow for editing from the BetaWiki of the Dutch Wikipedia'
     def __init__(self):
-        Bot.__init__("https://nl.wikipedia.beta.wmflabs.org/api.php")
+        Bot.__init__(self, "https://nl.wikipedia.beta.wmflabs.org/api.php")
         
     def verify_OAuth(self):
         Bot.verify_OAuth('Beta.txt')
