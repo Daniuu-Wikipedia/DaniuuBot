@@ -163,7 +163,7 @@ class Page:
                     prefix = '*'*(pre.count('*') + 1)
                 else:
                     prefix = ':'
-                self._done.append(prefix + '{{done}} - ' + f'{u} Dank voor de melding. ~~~~')
+                self._done.append(prefix + '{{done}} - ' + '%s Dank voor de melding. ~~~~'%u)
         for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
             del self._queue[i:j]
         return len(sto) #Return the number of processed requests
@@ -189,7 +189,8 @@ class Page:
             self.separate()
         #Filter the requests (see also above)
         l, start, now, mark = [], 1, dt.datetime.now(), False  #Check what time it is (mark is used to verify that we found a nice match)
-        pat = r'(\d{1,2} ' + f'({"|".join(Page.nldate.keys())}) ' + r'\d{4})'
+        s = "|".join(Page.nldate.keys()) #I cannot use f'-strings for Toolforge
+        pat = r'(\d{1,2} ('  + s + r') \d{4})'
         for i, j in enumerate(self._done):
             if i >= 1: #Ignore the first line (and second line, to make things easier)
                 if self.check_request_on_line(j, check=True):
@@ -235,7 +236,7 @@ class Page:
             return None #No need to go through the remainder of the function
         
         #Prepare the edit summary
-        summary = (f'{z} verzoeken gemarkeerd als afgehandeld' if z else '') + (' & '*(bool(y*z))) + (f'{y} verzoeken weggebezemd' if y else '')
+        summary = ('%d verzoeken gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoeken weggebezemd'%y if y else '')
         edit_dic = {'action':'edit',
                     'pageid':self.id,
                     'text':new,
@@ -253,7 +254,7 @@ class Page:
                     return self() #Rerun the script, we found a nice little new request
         else:
             print('Script is called in log-only, no changes will be made.')
-        print(f'Removed {y}, processed {z}') #Just some code for maintenance purposes
+        print('Removed %d, processed %d'%(y, z)) #Just some code for maintenance purposes
                 
 class Request:
     "This object class will implement the main functionalities for a certain request"
