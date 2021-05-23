@@ -85,7 +85,7 @@ class Bot:
         
 class WikidataBot(Bot):
     def __init__(self):
-        Bot.__init__(self, 'https://www.wikidata.org/w/api.php')
+        super().__init__('https://www.wikidata.org/w/api.php')
 
 class CommonsBot(Bot):
     def __init__(self):
@@ -97,7 +97,7 @@ class MetaBot(Bot):
 
 class NlBot(Bot):
     def __init__(self):
-        Bot.__init__(self, 'https://nl.wikipedia.org/w/api.php')
+        super().__init__('https://nl.wikipedia.org/w/api.php')
         
 class BetaBot(Bot):
     'This is a bot that will allow for editing from the BetaWiki of the Dutch Wikipedia'
