@@ -441,4 +441,4 @@ class MultiRequest:
         return "De versie(s) is/zijn verborgen door %s."%martin
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
-t() #Script in log-only - use this for testing
+t() #Script in log-only - use this for testing in IDE
