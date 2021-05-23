@@ -52,9 +52,7 @@ class Page:
              'rvprop':'content|ids|timestamp',
              'rvlimit':1,
              'rvdir':'older'}
-        jos = self.bot.get(d)
-        print(jos)
-        jos = jos['query']['pages']
+        jos = self.bot.get(d)['query']['pages']
         self.id = int(next(iter(jos.keys())))
         self._timestamp = jos[str(self.id)]['revisions'][0]['timestamp'] #To check for an eventual edit conflict
         temp = next(iter(jos.values()))['revisions'][0]['*'].split('\n')
