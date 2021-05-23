@@ -223,6 +223,7 @@ class Page:
                 
     def update(self, logonly=False):
         "This function will update the content of the page"
+        print('Bot was called at ' + str(dt.datetime.now()))
         y = self.check_removal() #How many requests are deleted
         z = self.check_requests()
         t = ('\n'.join(self._preamble),
