@@ -89,11 +89,11 @@ class WikidataBot(Bot):
 
 class CommonsBot(Bot):
     def __init__(self):
-        Bot.__init__(self, 'https://commons.wikimedia.org/w/api.php')
+        super().__init__('https://commons.wikimedia.org/w/api.php')
 
 class MetaBot(Bot):
     def __init__(self):
-        Bot.__init__(self, 'https://meta.wikimedia.org/w/api.php')
+        super().__init__('https://meta.wikimedia.org/w/api.php')
 
 class NlBot(Bot):
     def __init__(self):
@@ -102,7 +102,7 @@ class NlBot(Bot):
 class BetaBot(Bot):
     'This is a bot that will allow for editing from the BetaWiki of the Dutch Wikipedia'
     def __init__(self):
-        Bot.__init__(self, "https://nl.wikipedia.beta.wmflabs.org/api.php")
+        super().__init__("https://nl.wikipedia.beta.wmflabs.org/api.php")
         
     def verify_OAuth(self):
-        Bot.verify_OAuth('Beta.txt')
+        super().verify_OAuth('Beta.txt')
