@@ -234,6 +234,7 @@ class Page:
         if y == 0 and z == 0:
             print('Nothing to be done!')
             print(self.requests)
+            print('Bot terminated successfully at ' + str(dt.datetime.now()))
             return None #No need to go through the remainder of the function
         
         #Prepare the edit summary
@@ -256,6 +257,7 @@ class Page:
         else:
             print('Script is called in log-only, no changes will be made.')
         print('Removed %d, processed %d'%(y, z)) #Just some code for maintenance purposes
+        print('Bot terminated successfully at ' + str(dt.datetime.now()))
                 
 class Request:
     "This object class will implement the main functionalities for a certain request"
