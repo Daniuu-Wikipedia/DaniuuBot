@@ -178,7 +178,7 @@ class Page:
             d = dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
             
             #check whether we can get rid of this request
-            deltime = d + dt.timedelta(days=drm, hours=6) #Only remove the requests from 6 am onwards
+            deltime = d + dt.timedelta(days=drm, hours=4) #Only remove the requests from 6 am onwards
             if deltime < now:
                 if indices[0] < indices[1]:
                     l.append(indices)
