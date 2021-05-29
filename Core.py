@@ -106,3 +106,7 @@ class BetaBot(Bot):
         
     def verify_OAuth(self):
         super().verify_OAuth('Beta.txt')
+        
+class TestBot(Bot):
+    def __init__(self):
+        super().__init__('https://test.wikipedia.org/w/api.php')
