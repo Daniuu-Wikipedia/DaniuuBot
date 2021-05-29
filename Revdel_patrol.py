@@ -109,27 +109,24 @@ class Page:
         if not self._queue:
             #This means that the split was not yet done
             self.separate()
-        try:
-            for i, j in enumerate(self._queue[1:]):
-                #Skip the first one, this only contains a header for this section
-                z = self.check_request_on_line(j, check=True, proc=True) #Will also include IP's from now (check=True) keyword
-                if z:
-                    if i >= 1:
-                        if manually_flagged is True: #the request has been flagged in a manual manner
-                            self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 1)]
-                        else:
-                            self.requests.update({MultiRequest(l):(start, i + 1)})
-                    l, start, manually_flagged = z.copy(), i + 1, False
-                elif any(((('{{' + k + '}}') in j) for k in Page.donetemp)):
-                    manually_flagged = True #Indicate that this request has been flagged manually
-            
-            #Process the request at the end of the queue
-            if manually_flagged is True:
-                self.requests['flagged'] = self.requests.get('flagged', []) + [(start, i + 2)]
+        #First, check what lines contain requests
+        reqs, flagged, jos = [], [], [None for _ in self._queue] #Make a list with the lines containing requests, and where something got flagged
+        for i, j in enumerate(self._queue[1:]):
+            z = self.check_request_on_line(j, check=True, proc=True) #Will also include IP's from now (check=True) keyword
+            if z:
+                reqs.append(i + 1) #Just add i + 1 to the list of requests that were found
+                jos[i + 1] = z #Store it...
+            elif any(('{{' + k + '}}' in j for k in Page.donetemp)): #check whether anything got marked
+                flagged.append(i + 1)
+        
+        #Now, do the processing of the lines
+        reqs.append(len(self._queue)) #Add this one, will make life easier in the remainder of the code
+        for i, j in zip(reqs[:-1], reqs[1:]):
+            #First, check whether the request has already been flagged
+            if any((k in flagged for k in range(i, j))):
+                self.requests['flagged'] = self.requests.get('flagged', []) + [(i, j)]
             else:
-                self.requests.update({MultiRequest(l):(start, i + 2)})
-        except UnboundLocalError:
-            return None #Do nothing (this is due to the fact that there are no requests or so)
+                self.requests.update({MultiRequest(jos[i]):(i, j)})
         return self.requests
     
     def check_queue_done(self):
@@ -444,4 +441,4 @@ class MultiRequest:
         return "De versie(s) is/zijn verborgen door %s."%martin
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
-t() #Script in log-only - use this for testing in IDE
+t(True) #Script in log-only - use this for testing in IDE
