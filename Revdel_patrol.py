@@ -120,13 +120,14 @@ class Page:
                 flagged.append(i + 1)
         
         #Now, do the processing of the lines
-        reqs.append(len(self._queue)) #Add this one, will make life easier in the remainder of the code
-        for i, j in zip(reqs[:-1], reqs[1:]):
-            #First, check whether the request has already been flagged
-            if any((k in flagged for k in range(i, j))):
-                self.requests['flagged'] = self.requests.get('flagged', []) + [(i, j)]
-            else:
-                self.requests.update({MultiRequest(jos[i]):(i, j)})
+        if reqs:
+            reqs.append(len(self._queue)) #Add this one, will make life easier in the remainder of the code
+            for i, j in zip(reqs[:-1], reqs[1:]):
+                #First, check whether the request has already been flagged
+                if any((k in flagged for k in range(i, j))):
+                    self.requests['flagged'] = self.requests.get('flagged', []) + [(i, j)]
+                else:
+                    self.requests.update({MultiRequest(jos[i]):(i, j)})
         return self.requests
     
     def check_queue_done(self):
@@ -441,4 +442,4 @@ class MultiRequest:
         return "De versie(s) is/zijn verborgen door %s."%martin
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
-t(True) #Script in log-only - use this for testing in IDE
+t() #Script in log-only - use this for testing in IDE
