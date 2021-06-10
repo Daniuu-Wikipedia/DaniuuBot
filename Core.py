@@ -262,7 +262,7 @@ class Page:
         self.print_termination()
         
     def print_termination(self):
-        print('Bot terminated successfully at ' + str(dt.datetime.now()))
+        print('Bot terminated successfully at ' + str(dt.datetime.now()) + '\n')
 
 class GenReq:
     def __init__(self, target, types=(int,)):
