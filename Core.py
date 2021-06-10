@@ -263,3 +263,57 @@ class Page:
         
     def print_termination(self):
         print('Bot terminated successfully at ' + str(dt.datetime.now()))
+
+class GenReq:
+    def __init__(self, target, types=(int,)):
+        self.target = self.process(target) #This object stores the main target (this could be an oldid)
+        self.done, self.trash = False, False #this indicates whether 
+        self._user = None #Fill in the user who processed the request
+        self._page = None #Store the name of the page
+        if not isinstance(self.target, types):
+            raise TypeError('The target should be of the specified type!')
+
+    def __bool__(self):
+        return self.done #This function will return whether the request was done or not
+        
+    def __str__(self):
+        return str(self.target)
+    
+    def __repr__(self): #Not really what it should be
+        return str(self.target)
+    
+    def __eq__(self, other):
+        return self.target == other.target
+    
+    def __hash__(self):
+        return self.target.__hash__()
+
+    def done_string(self):
+        "This function will generate a string that can be used to indicate that the request has been done"
+        martin = self._user if self._user is not None else 'een moderator'
+        return "De versie(s) is/zijn verborgen door %s."%martin
+
+class GenMulti:
+    def __init__(self, req):
+        assert all((isinstance(i, GenReq) for i in req)), 'Please only provide requests!'
+        self.targets = list(req) #Use a tuple here
+        self.done = False #This indicates whether the request was done
+        self._titles, self._user = {}, None
+    
+    def __str__(self):
+        return str(self.targets + self.users)
+    
+    def __repr__(self):
+        return str(self)
+    
+    def __bool__(self):
+        return self.done
+
+    def __hash__(self):
+        "This function will provide a nice hash"
+        return tuple(self.targets).__hash__()
+
+    def done_string(self):
+        "This function will generate a string that can be used to indicate that the request has been done"
+        martin = self._user if self._user is not None else 'een moderator'
+        return "De versie(s) is/zijn verborgen door %s."%martin

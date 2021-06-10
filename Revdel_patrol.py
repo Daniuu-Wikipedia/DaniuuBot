@@ -133,36 +133,13 @@ class Revdel(c.Page):
 
 
                 
-class Request:
+class Request(c.GenReq):
     "This object class will implement the main functionalities for a certain request"
     rbot = c.NlBot()
-    def __init__(self, target, types=(int,)):
-        self.target = self.process(target) #This object stores the main target (this could be an oldid)
-        self.done, self.trash = False, False #this indicates whether 
-        self._user = None #Fill in the user who processed the request
-        self._page = None #Store the name of the page
-        if not isinstance(self.target, types):
-            raise TypeError('The target should be of the specified type!')
-        
-    def __bool__(self):
-        return self.done #This function will return whether the request was done or not
     
-    def clean(self):
-        "This function checks whether the reequest can be deleted"
-        return self.trash
-    
-    def __str__(self):
-        return str(self.target)
-    
-    def __repr__(self): #Not really what it should be
-        return str(self.target)
-    
-    def __eq__(self, other):
-        return self.target == other.target
-    
-    def __hash__(self):
-        return self.target.__hash__()
-    
+    def __init__(self, target):
+        super().__init__(target, (int,))
+            
     def process(self, inp):
         "This function will process the input fed to the constructor"
         if 'diff=' in inp and 'diff=prev' not in inp and 'diff=next' not in inp: #Beware for a very special case
@@ -204,12 +181,7 @@ class Request:
                 if 'content' in k['new']: #Will check whether the content of the revision was removed
                     self._user = i['user']
                     return i['user']
-    
-    def done_string(self):
-        "This function will generate a string that can be used to indicate that the request has been done"
-        martin = self._user if self._user is not None else 'een moderator'
-        return "De versie(s) is/zijn verborgen door %s."%martin
-    
+        
     def get_next_revision(self, prev):
         d1 = {'action':'query',
               'prop':'revisions',
@@ -230,10 +202,7 @@ class UserRequest(Request):
     def __init__(self, user):
         super().__init__(user, (str,))
         self._contribs, self._user = [], 'een moderator'
-    
-    def __str__(self):
-        return str(self.target)
-        
+            
     def process(self, u):
         return u.strip().replace(']', '')
     
@@ -259,7 +228,7 @@ class UserRequest(Request):
     def check_person(self, bot=None):
         return self._user #Just return None, as this function doesn't really do something
         
-class MultiRequest:
+class MultiRequest(c.GenMulti):
     "This class can be used to check for a series of requests that would otherwise be filed in parallel."
     def __init__(self, req):
         assert all((isinstance(i, Request) for i in req)), 'Please only provide requests!'
@@ -272,20 +241,7 @@ class MultiRequest:
                 self.users.append(i)
             else:
                 self.targets.append(i)
-    
-    def __str__(self):
-        return str(self.targets + self.users)
-    
-    def __repr__(self):
-        return str(self)
-    
-    def __bool__(self):
-        return self.done
-        
-    def __hash__(self):
-        "This function will provide a nice hash"
-        return tuple(self.users + self.targets).__hash__()
-        
+
     def check_done(self, bot):
         "This function will check whether the request has been processed"
         targets, users = False, False
@@ -312,11 +268,6 @@ class MultiRequest:
             self._user = self.users[0].check_person(bot)
         return self.done_string()
         
-    def done_string(self):
-        "This function will generate a string that can be used to indicate that the request has been done"
-        martin = self._user if self._user is not None else 'een moderator'
-        return "De versie(s) is/zijn verborgen door %s."%martin
-
 #t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
 #t(True) #Script in log-only - use this for testing in IDE
 
