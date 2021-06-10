@@ -268,8 +268,5 @@ class MultiRequest(c.GenMulti):
             self._user = self.users[0].check_person(bot)
         return self.done_string()
         
-#t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
-#t(True) #Script in log-only - use this for testing in IDE
-
 t = Revdel()
-t(True)
+t(True) #Indien hier True wordt doorgegeven, draait het script in log-only mode, en worden geen veranderingen aangebracht
