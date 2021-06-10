@@ -9,69 +9,16 @@ This bot uses designated OAuth keys (which are for obvious reasons stored in ano
 This script is designed to run under the account 'DaniuuBot'.
 Some functions were specifically modified for this little tool.
 """
-from Core import NlBot
+from Core import NlBot, Page
 import re #Regex
 import datetime as dt #Import support for dates and times
 
-class Page:
-    "This is a class that allows the processing of a given request page"
-    nldate = {'jan':'01',
-            'feb':'02',
-            'mrt':'03',
-            'apr':'04',
-            'mei':'05',
-            'jun':'06',
-            'jul':'07',
-            'aug':'08',
-            'sep':'09',
-            'okt':'10',
-            'nov':'11',
-            "dec":'12'}
+                
+class Revdel(Page):
+    def __init__(self):
+        "Intializes the revdel bot."
+        super().__init__('Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen')
     
-    testdate = {'January':'01',
-                'February':'02',
-                'March':'03',
-                'April':'04',
-                'May':'05',
-                'June':'06',
-                'July':'07',
-                'August':'08',
-                'September':'09',
-                'October':'10',
-                'November':'11',
-                'December':'12'}
-    
-    donetemp = ('done', 'd', 'nd', 'Not done') #Last ones are typical for nlwiki
-    
-    def __init__(self, name):
-        self.name = name
-        self._content = []
-        self._preamble, self._queue, self._done = [], [], [] #three lists for three parts of the request page
-        self.requests = {} #This is a list of requests that are in the queue
-        self.bot = NlBot() #Initialize a bot to do operations on Testwiki
-        self.id = None
-    
-    def __str__(self):
-        return self.name
-    
-    def __call__(self, logonly=False):
-        return self.update(logonly)
-    
-    def get_page_content(self):
-        "This function will get the last revision of the request page"
-        d = {'action':'query',
-             'prop':'revisions',
-             'titles':self.name,
-             'rvprop':'content|ids|timestamp',
-             'rvlimit':1,
-             'rvdir':'older'}
-        jos = self.bot.get(d)['query']['pages']
-        self.id = int(next(iter(jos.keys())))
-        self._timestamp = jos[str(self.id)]['revisions'][0]['timestamp'] #To check for an eventual edit conflict
-        temp = next(iter(jos.values()))['revisions'][0]['*'].split('\n')
-        self._content = [i.strip() for i in temp if i.strip()]
-        return self._content
-
     def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})', check=False, proc=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
@@ -101,21 +48,8 @@ class Page:
                         out.append(UserRequest(j.split('/')[1].strip()))
         return out
     
-    def separate(self, pend='Nieuwe verzoeken', hstart='Afgehandelde verzoeken'):
-        "This function will separate the contents of the page into preamble, actual requests and handled ones"
-        if not self._content: #The list is still empty
-            self.get_page_content()
-        t = [i.replace('=', '').strip() for i in self._content] #Generate a list with all the levels neutralized
-        try:
-            pe, hs = t.index(pend), t.index(hstart)
-        except ValueError:
-            #This indicates that something wrong was added
-            print('Watch out! The required headers were not found in the list')
-            return None
-        self._preamble = self._content[:pe]
-        self._queue = self._content[pe:hs]
-        self._done = self._content[hs:]
-        return self._queue
+    def separate(self):
+        return super().separate('Nieuwe verzoeken', 'Afgehandelde verzoeken')
     
     def filter_queue(self):
         "This function will convert the strings in the queue to a requests that can be handled"
@@ -142,42 +76,6 @@ class Page:
                 else:
                     self.requests.update({MultiRequest(jos[i]):(i, j)})
         return self.requests
-    
-    def check_queue_done(self):
-        "Check which requests in the queue are done (and flags them accordingly)"
-        if not self.requests:
-            self.filter_queue()
-        for i in self.requests:
-            if not isinstance(i, str): #Ignore strings, these are only added for administrative purposes
-                i.check_done(self.bot)
-    
-    def check_requests(self):
-        'This function will check whether all requests are done, and can move the request to the next part'
-        self.check_queue_done()
-        sto = []# A list to store the indices that can be processed
-        #First, process the requests that were marked manually
-        sto += [(i, j, None) for i, j in self.requests.get('flagged', ())] #Generate a list of tuples with 'None' as third element
-        
-        #Now, process the requestst that can be flagged automatically
-        for i in self.requests:
-            if not isinstance(i, str): #These ones should be ignored (we can do the deletion first)
-                if i: #checks whether all requests have been handled
-                    sto.append(self.requests[i] + (i.check_person(self.bot),)) #Add the desired indices to the list that will be processed later
-        
-        #Begin processing the requests that are done or flagged
-        sto.sort() #Do in place sorting to make things easier
-        for i, j, u in sto: #Query the indices and add the request to the 'done' section
-            self._done += self._queue[i:j]
-            if u is not None: #u is None indicates that the request was manually flagged
-                pre = self._queue[j - 1].split()[0]
-                if "*" in pre:
-                    prefix = '*'*(pre.count('*') + 1)
-                else:
-                    prefix = ':'
-                self._done.append(prefix + '{{d}} - ' + '%s Dank voor de melding. ~~~~'%u)
-        for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
-            del self._queue[i:j]
-        return len(sto) #Return the number of processed requests
     
     def check_removal(self, tz=('utc', 'cet', 'cest'), drm=1):
         'This function will check which lines could be removed (after drm days).'
@@ -231,8 +129,9 @@ class Page:
             for i, j in l[::-1]:
                 del self._done[i:j]
         return len(l) #Return the amount of requests that were deleted
-                
- 
+
+
+
                 
 class Request:
     "This object class will implement the main functionalities for a certain request"
@@ -418,5 +317,8 @@ class MultiRequest:
         martin = self._user if self._user is not None else 'een moderator'
         return "De versie(s) is/zijn verborgen door %s."%martin
 
-t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
-t(True) #Script in log-only - use this for testing in IDE
+#t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
+#t(True) #Script in log-only - use this for testing in IDE
+
+t = Revdel()
+t(True)
