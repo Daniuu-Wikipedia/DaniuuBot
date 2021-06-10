@@ -28,7 +28,20 @@ class Page:
             'nov':'11',
             "dec":'12'}
     
-    donetemp = {'done', 'd', 'nd'}
+    testdate = {'January':'01',
+                'February':'02',
+                'March':'03',
+                'April':'04',
+                'May':'05',
+                'June':'06',
+                'July':'07',
+                'August':'08',
+                'September':'09',
+                'October':'10',
+                'November':'11',
+                'December':'12'}
+    
+    donetemp = ('done', 'd', 'nd', 'Not done') #Last ones are typical for nlwiki
     
     def __init__(self, name):
         self.name = name
@@ -442,4 +455,4 @@ class MultiRequest:
         return "De versie(s) is/zijn verborgen door %s."%martin
 
 t = Page("Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen")
-t() #Script in log-only - use this for testing in IDE
+t(True) #Script in log-only - use this for testing in IDE

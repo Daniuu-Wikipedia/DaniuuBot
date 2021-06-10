@@ -110,3 +110,48 @@ class BetaBot(Bot):
 class TestBot(Bot):
     def __init__(self):
         super().__init__('https://test.wikipedia.org/w/api.php')
+        
+#Below: classes that implement general page patrollers and requests
+class Page:
+    "This is a class that allows the processing of a given request page"
+    nldate = {'jan':'01',
+            'feb':'02',
+            'mrt':'03',
+            'apr':'04',
+            'mei':'05',
+            'jun':'06',
+            'jul':'07',
+            'aug':'08',
+            'sep':'09',
+            'okt':'10',
+            'nov':'11',
+            "dec":'12'}
+    
+    testdate = {'January':'01',
+                'February':'02',
+                'March':'03',
+                'April':'04',
+                'May':'05',
+                'June':'06',
+                'July':'07',
+                'August':'08',
+                'September':'09',
+                'October':'10',
+                'November':'11',
+                'December':'12'}
+    
+    donetemp = ('done', 'd', 'nd', 'Not done') #Last ones are typical for nlwiki
+    
+    def __init__(self, name):
+        self.name = name
+        self._content = []
+        self._preamble, self._queue, self._done = [], [], [] #three lists for three parts of the request page
+        self.requests = {} #This is a list of requests that are in the queue
+        self.bot = NlBot() #Initialize a bot to do operations on Testwiki
+        self.id = None
+    
+    def __str__(self):
+        return self.name
+    
+    def __call__(self, logonly=False):
+        return self.update(logonly)
