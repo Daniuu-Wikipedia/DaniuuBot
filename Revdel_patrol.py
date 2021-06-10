@@ -9,12 +9,12 @@ This bot uses designated OAuth keys (which are for obvious reasons stored in ano
 This script is designed to run under the account 'DaniuuBot'.
 Some functions were specifically modified for this little tool.
 """
-from Core import NlBot, Page
+
 import re #Regex
 import datetime as dt #Import support for dates and times
-
+import Core as c
                 
-class Revdel(Page):
+class Revdel(c.Page):
     def __init__(self):
         "Intializes the revdel bot."
         super().__init__('Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen')
@@ -63,7 +63,7 @@ class Revdel(Page):
             if z:
                 reqs.append(i + 1) #Just add i + 1 to the list of requests that were found
                 jos[i + 1] = z #Store it...
-            elif any(('{{' + k + '}}' in j for k in Page.donetemp)): #check whether anything got marked
+            elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)): #check whether anything got marked
                 flagged.append(i + 1)
         
         #Now, do the processing of the lines
@@ -82,8 +82,8 @@ class Revdel(Page):
         def process(indices, matches): #Use a closure
             #The date was found, now convert it to a format that Python acutally understands
             date = matches[0]
-            for k in Page.nldate:
-                date = date.replace(k, Page.nldate[k])
+            for k in c.Page.nldate:
+                date = date.replace(k, c.Page.nldate[k])
             d = dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
             
             #check whether we can get rid of this request
@@ -98,7 +98,7 @@ class Revdel(Page):
             self.separate()
         #Filter the requests (see also above)
         l, start, now, mark = [], 1, dt.datetime.now(), False  #Check what time it is (mark is used to verify that we found a nice match)
-        s = "|".join(Page.nldate.keys()) #I cannot use f'-strings for Toolforge
+        s = "|".join(c.Page.nldate.keys()) #I cannot use f'-strings for Toolforge
         pat = r'(\d{1,2} ('  + s + r') \d{4})'
         for i, j in enumerate(self._done):
             if i >= 1: #Ignore the first line (and second line, to make things easier)
@@ -135,7 +135,7 @@ class Revdel(Page):
                 
 class Request:
     "This object class will implement the main functionalities for a certain request"
-    rbot = NlBot()
+    rbot = c.NlBot()
     def __init__(self, target, types=(int,)):
         self.target = self.process(target) #This object stores the main target (this could be an oldid)
         self.done, self.trash = False, False #this indicates whether 
