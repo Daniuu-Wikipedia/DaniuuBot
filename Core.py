@@ -155,3 +155,110 @@ class Page:
     
     def __call__(self, logonly=False):
         return self.update(logonly)
+    
+    def get_page_content(self):
+        "This function will get the last revision of the request page"
+        d = {'action':'query',
+             'prop':'revisions',
+             'titles':self.name,
+             'rvprop':'content|ids|timestamp',
+             'rvlimit':1,
+             'rvdir':'older'}
+        jos = self.bot.get(d)['query']['pages']
+        self.id = int(next(iter(jos.keys())))
+        self._timestamp = jos[str(self.id)]['revisions'][0]['timestamp'] #To check for an eventual edit conflict
+        temp = next(iter(jos.values()))['revisions'][0]['*'].split('\n')
+        self._content = [i.strip() for i in temp if i.strip()]
+        return self._content
+    
+    def separate(self, pend, hstart):
+        "This function will separate the contents of the page into preamble, actual requests and handled ones"
+        if not self._content: #The list is still empty
+            self.get_page_content()
+        t = [i.replace('=', '').strip() for i in self._content] #Generate a list with all the levels neutralized
+        try:
+            pe, hs = t.index(pend), t.index(hstart)
+        except ValueError:
+            #This indicates that something wrong was added
+            print('Watch out! The required headers were not found in the list')
+            return None
+        self._preamble = self._content[:pe]
+        self._queue = self._content[pe:hs]
+        self._done = self._content[hs:]
+        return self._queue
+
+    def check_queue_done(self):
+        "Check which requests in the queue are done (and flags them accordingly)"
+        if not self.requests:
+            self.filter_queue()
+        for i in self.requests:
+            if not isinstance(i, str): #Ignore strings, these are only added for administrative purposes
+                i.check_done(self.bot)
+    
+    def check_requests(self):
+        'This function will check whether all requests are done, and can move the request to the next part'
+        self.check_queue_done()
+        sto = []# A list to store the indices that can be processed
+        #First, process the requests that were marked manually
+        sto += [(i, j, None) for i, j in self.requests.get('flagged', ())] #Generate a list of tuples with 'None' as third element
+        
+        #Now, process the requestst that can be flagged automatically
+        for i in self.requests:
+            if not isinstance(i, str): #These ones should be ignored (we can do the deletion first)
+                if i: #checks whether all requests have been handled
+                    sto.append(self.requests[i] + (i.check_person(self.bot),)) #Add the desired indices to the list that will be processed later
+        
+        #Begin processing the requests that are done or flagged
+        sto.sort() #Do in place sorting to make things easier
+        for i, j, u in sto: #Query the indices and add the request to the 'done' section
+            self._done += self._queue[i:j]
+            if u is not None: #u is None indicates that the request was manually flagged
+                pre = self._queue[j - 1].split()[0]
+                if "*" in pre:
+                    prefix = '*'*(pre.count('*') + 1)
+                else:
+                    prefix = ':'
+                self._done.append(prefix + '{{d}} - ' + '%s Dank voor de melding. ~~~~'%u)
+        for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
+            del self._queue[i:j]
+        return len(sto) #Return the number of processed requests
+
+    def update(self, logonly=False):
+        "This function will update the content of the page"
+        print('Bot was called at ' + str(dt.datetime.now()))
+        y = self.check_removal() #How many requests are deleted
+        z = self.check_requests()
+        t = ('\n'.join(self._preamble),
+             '\n'.join(self._queue),
+             '\n'.join(self._done))
+        new = '\n'.join(t)
+        
+        if y == 0 and z == 0:
+            print('Nothing to be done!')
+            print(self.requests)
+            return self.print_termination() #No need to go through the remainder of the function
+        
+        #Prepare the edit summary
+        summary = ('%d verzoeken gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoeken weggebezemd'%y if y else '')
+        edit_dic = {'action':'edit',
+                    'pageid':self.id,
+                    'text':new,
+                    'summary':summary,
+                    'bot':True,
+                    'minor':True,
+                    'nocreate':True,
+                    'basetimestamp':self._timestamp}
+        if logonly is False:
+            result = self.bot.post(edit_dic) #Make the post request and store the output to check for eventual edit conflicts
+            if 'error' in result: #An error occured
+                if result['error']['code'] == 'editconflict':
+                    print('An edit conflict occured during the processing. I will wait for ten seconds')
+                    print('Redoing the things.')
+                    return self() #Rerun the script, we found a nice little new request
+        else:
+            print('Script is called in log-only, no changes will be made.')
+        print('Removed %d, processed %d'%(y, z)) #Just some code for maintenance purposes
+        self.print_termination()
+        
+    def print_termination(self):
+        print('Bot terminated successfully at ' + str(dt.datetime.now()))

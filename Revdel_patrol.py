@@ -232,43 +232,7 @@ class Page:
                 del self._done[i:j]
         return len(l) #Return the amount of requests that were deleted
                 
-    def update(self, logonly=False):
-        "This function will update the content of the page"
-        print('Bot was called at ' + str(dt.datetime.now()))
-        y = self.check_removal() #How many requests are deleted
-        z = self.check_requests()
-        t = ('\n'.join(self._preamble),
-             '\n'.join(self._queue),
-             '\n'.join(self._done))
-        new = '\n'.join(t)
-        
-        if y == 0 and z == 0:
-            print('Nothing to be done!')
-            print(self.requests)
-            print('Bot terminated successfully at ' + str(dt.datetime.now()))
-            return None #No need to go through the remainder of the function
-        
-        #Prepare the edit summary
-        summary = ('%d verzoeken gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoeken weggebezemd'%y if y else '')
-        edit_dic = {'action':'edit',
-                    'pageid':self.id,
-                    'text':new,
-                    'summary':summary,
-                    'bot':True,
-                    'minor':True,
-                    'nocreate':True,
-                    'basetimestamp':self._timestamp}
-        if logonly is False:
-            result = self.bot.post(edit_dic) #Make the post request and store the output to check for eventual edit conflicts
-            if 'error' in result: #An error occured
-                if result['error']['code'] == 'editconflict':
-                    print('An edit conflict occured during the processing. I will wait for ten seconds')
-                    print('Redoing the things.')
-                    return self() #Rerun the script, we found a nice little new request
-        else:
-            print('Script is called in log-only, no changes will be made.')
-        print('Removed %d, processed %d'%(y, z)) #Just some code for maintenance purposes
-        print('Bot terminated successfully at ' + str(dt.datetime.now()))
+ 
                 
 class Request:
     "This object class will implement the main functionalities for a certain request"
