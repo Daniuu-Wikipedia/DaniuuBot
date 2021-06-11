@@ -269,4 +269,4 @@ class MultiRequest(c.GenMulti):
         return self.done_string()
         
 t = Revdel()
-t(True) #Indien hier True wordt doorgegeven, draait het script in log-only mode, en worden geen veranderingen aangebracht
+t() #Indien hier True wordt doorgegeven, draait het script in log-only mode, en worden geen veranderingen aangebracht
