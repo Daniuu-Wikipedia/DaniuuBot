@@ -118,7 +118,7 @@ class Revdel(c.Page):
                     start = i #Set for the processing of the next request
                     mark = False #Reset this
 
-                if any(('{{%s}}'%k in j for k in Page.donetemp)):
+                if any(('{{%s}}'%k in j for k in c.Page.donetemp)):
                     #Process the request
                     mark = True
                     matches = self.check_request_on_line(j.lower(), pat)
@@ -269,4 +269,4 @@ class MultiRequest(c.GenMulti):
         return self.done_string()
         
 t = Revdel()
-t() #Indien hier True wordt doorgegeven, draait het script in log-only mode, en worden geen veranderingen aangebracht
+t(True) #Indien hier True wordt doorgegeven, draait het script in log-only mode, en worden geen veranderingen aangebracht
