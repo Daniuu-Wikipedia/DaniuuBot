@@ -130,15 +130,13 @@ class Revdel(c.Page):
                 del self._done[i:j]
         return len(l) #Return the amount of requests that were deleted
 
-
-
                 
 class Request(c.GenReq):
     "This object class will implement the main functionalities for a certain request"
     rbot = c.NlBot()
     
-    def __init__(self, target):
-        super().__init__(target, (int,))
+    def __init__(self, target, types=(int,)):
+        super().__init__(target, types)
             
     def process(self, inp):
         "This function will process the input fed to the constructor"
