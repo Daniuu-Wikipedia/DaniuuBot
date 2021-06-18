@@ -133,7 +133,7 @@ class Revdel(c.Page):
                 
 class Request(c.GenReq):
     "This object class will implement the main functionalities for a certain request"
-    rbot = c.NlBot()
+    bot = c.NlBot()
     
     def __init__(self, target, types=(int,)):
         super().__init__(target, types)
@@ -150,21 +150,21 @@ class Request(c.GenReq):
             k = k.replace(i, '') #Remove all these shitty stuff
         return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
     
-    def check_done(self, bot):
+    def check_done(self):
         if self.done is False:
             "This function will check whether the request has been processed"
             dic = {'action':'query',
                    'prop':'revisions',
                    'revids':self.target,
                    'rvprop':'content|timestamp|ids'}
-            out = bot.get(dic)
+            out = Request.bot.get(dic)
             t = next(iter(next(iter(out.get('query').values())).values()))
             self._page = t['title']
             p = t['revisions'][0]
             if 'texthidden' in p:
                 self.done = True
            
-    def check_person(self, bot):
+    def check_person(self):
         'This function will check who did the request'
         dic = {'action':'query',
                'list':'logevents',
@@ -172,7 +172,7 @@ class Request(c.GenReq):
                'letype':'delete',
                'leaction':'delete/revision',
                'letitle':self._page}
-        out = bot.get(dic)['query']['logevents']
+        out = Request.bot.get(dic)['query']['logevents']
         for i in out:
             k = i['params']
             if self.target in k['ids']: #the revision involved was queried here
@@ -185,13 +185,13 @@ class Request(c.GenReq):
               'prop':'revisions',
               'revids':prev,
               'rvprop':'ids'}
-        jos = next(iter(Request.rbot.get(d1)['query']['pages'].keys()))
+        jos = next(iter(Request.bot.get(d1)['query']['pages'].keys()))
         d2 = {'action':'query',
               'prop':'revisions',
               'rvlimit':500,
               'rvprop':'ids',
               'pageids':jos}
-        jef = next(iter(Request.rbot.get(d2)['query']['pages'].values()))['revisions']
+        jef = next(iter(Request.bot.get(d2)['query']['pages'].values()))['revisions']
         for i in jef:
             if i['parentid'] == prev:
                 return i['revid'] #Revision found, should be enough
@@ -204,7 +204,7 @@ class UserRequest(Request):
     def process(self, u):
         return u.strip().replace(']', '')
     
-    def check_done(self, bot):
+    def check_done(self):
         limit = dt.datetime.now().replace(microsecond=0) - dt.timedelta(200) #Only check past 48 hours
         qdic = {'ucuser':self.target,
                 'action':'query',
@@ -212,7 +212,7 @@ class UserRequest(Request):
                 'ucprop':'ids',
                 'uclimit':500,
                 'ucend':limit.isoformat()}
-        q = bot.get(qdic)['query']['usercontribs']
+        q = Request.bot.get(qdic)['query']['usercontribs']
         for i in q:
             if i['revid'] not in self._contribs:
                 self._contribs.append(i['revid'])
@@ -223,7 +223,7 @@ class UserRequest(Request):
         "This function won't explicitly check who hid the revisions"
         return "De bijdragen van deze gebruiker zijn verborgen. Met dank voor de melding."
     
-    def check_person(self, bot=None):
+    def check_person(self):
         return self._user #Just return None, as this function doesn't really do something
         
 class MultiRequest(c.GenMulti):
@@ -240,7 +240,7 @@ class MultiRequest(c.GenMulti):
             else:
                 self.targets.append(i)
 
-    def check_done(self, bot):
+    def check_done(self):
         "This function will check whether the request has been processed"
         targets, users = False, False
         if self.done is False and self.targets:
@@ -248,22 +248,22 @@ class MultiRequest(c.GenMulti):
                    'prop':'revisions',
                    'revids':'|'.join((str(i) for i in self.targets)),
                    'rvprop':'content|timestamp|ids'}
-            revs = bot.get(dic)['query']['pages']
+            revs = Request.bot.get(dic)['query']['pages']
             targets = all(('texthidden' in revs[i]['revisions'][0] for i in revs))
             self._titles = {i['revisions'][0]['revid']:i['pageid'] for i in revs.values()}
         if self.users: #Check the edits per user
-            users = all((i.check_done(bot) for i in self.users))
+            users = all((i.check_done() for i in self.users))
         self.done = (targets or (not self.targets)) and (users or (not self.users))
         return bool(self)
     
-    def check_person(self, bot):
+    def check_person(self):
         'This function will check who did the request'
         if not self._titles:
-            self.check_done(bot)
+            self.check_done()
         if self.targets: #We have revisions that got selected
-            self._user = self.targets[0].check_person(bot) #Just take the first one here
+            self._user = self.targets[0].check_person() #Just take the first one here
         else:
-            self._user = self.users[0].check_person(bot)
+            self._user = self.users[0].check_person()
         return self.done_string()
         
 t = Revdel()

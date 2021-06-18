@@ -194,7 +194,7 @@ class Page:
             self.filter_queue()
         for i in self.requests:
             if not isinstance(i, str): #Ignore strings, these are only added for administrative purposes
-                i.check_done(self.bot)
+                i.check_done()
     
     def check_requests(self):
         'This function will check whether all requests are done, and can move the request to the next part'
@@ -207,7 +207,7 @@ class Page:
         for i in self.requests:
             if not isinstance(i, str): #These ones should be ignored (we can do the deletion first)
                 if i: #checks whether all requests have been handled
-                    sto.append(self.requests[i] + (i.check_person(self.bot),)) #Add the desired indices to the list that will be processed later
+                    sto.append(self.requests[i] + (i.check_person(),)) #Add the desired indices to the list that will be processed later
         
         #Begin processing the requests that are done or flagged
         sto.sort() #Do in place sorting to make things easier
