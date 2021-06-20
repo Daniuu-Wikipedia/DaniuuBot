@@ -81,13 +81,10 @@ class Revdel(c.Page):
         'This function will check which lines could be removed (after drm days).'
         def process(indices, matches): #Use a closure
             #The date was found, now convert it to a format that Python acutally understands
-            date = matches[0]
-            for k in c.Page.nldate:
-                date = date.replace(k, c.Page.nldate[k])
-            d = dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
+            d = self.format_date(matches[0])
             
             #check whether we can get rid of this request
-            deltime = d + dt.timedelta(days=drm, hours=4) #Only remove the requests from 6 am onwards
+            deltime = d + dt.timedelta(days=drm, hours=4) #Only remove the requests from 4 am UTC onwards
             if deltime < now:
                 if indices[0] < indices[1]:
                     l.append(indices)

@@ -263,6 +263,13 @@ class Page:
         
     def print_termination(self):
         print('Bot terminated successfully at ' + str(dt.datetime.now()) + '\n')
+        
+    def format_date(self, date):
+        "This function formats a date in the nlwiki format"
+        assert isinstance(date, str), "Please pass a string as the argument of format_nldate!"
+        for k in Page.nldate:
+                date = date.replace(k, Page.nldate[k])
+        return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
 
 class GenReq:
     def __init__(self, target, types=(int,)):
