@@ -274,7 +274,7 @@ class Page:
 class GenReq:
     def __init__(self, target, types=(int,)):
         self.target = self.process(target) #This object stores the main target (this could be an oldid)
-        self.done, self.trash = False, False #this indicates whether 
+        self.done = False #this indicates whether the request was already handled or not
         self._user = None #Fill in the user who processed the request
         self._page = None #Store the name of the page
         if not isinstance(self.target, types):
@@ -299,13 +299,20 @@ class GenReq:
         "This function will generate a string that can be used to indicate that the request has been done"
         martin = self._user if self._user is not None else 'een moderator'
         return "De versie(s) is/zijn verborgen door %s."%martin
+    
+    def convert_api_date(self, stamp):
+        "Function converts a date that is sent through the API"
+        try:
+            return dt.datetime.strptime(stamp, '%Y-%m-%dT%H:%M:%SZ')
+        except ValueError:
+            return dt.datetime(9999, 12, 31)
 
 class GenMulti:
     def __init__(self, req):
         assert all((isinstance(i, GenReq) for i in req)), 'Please only provide requests!'
         self.targets = list(req) #Use a tuple here
         self.done = False #This indicates whether the request was done
-        self._titles, self._user = {}, None
+        self._user = None
     
     def __str__(self):
         return str(self.targets + self.users)
@@ -324,3 +331,4 @@ class GenMulti:
         "This function will generate a string that can be used to indicate that the request has been done"
         martin = self._user if self._user is not None else 'een moderator'
         return "De versie(s) is/zijn verborgen door %s."%martin
+
