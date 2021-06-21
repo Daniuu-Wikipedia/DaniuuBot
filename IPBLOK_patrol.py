@@ -44,9 +44,35 @@ class IPBLOK(c.Page):
             k = list(k[0]) #Overwrite this with a proper list of matches
         return [Request(i) for i in k if ('{{' in i and '|' in i and (i.count('.') == 3 or i.count(':') >= 4))] #Only return the matches that are real calls to the template
     
-    def check_all(self):
-        for i in self._queue[1:]:
-            print(self.check_line(i))
+    def filter_queue(self):
+        "This function will filter the required requests out of the queue."
+        if not self._queue:#This means that the split was not yet done
+            self.separate() #If the split was not yet done, then do the split, is it so difficult?
+        
+        #check what lines are containing requests (and are flagged)
+        reqs, flagged = [], [] #List with line numbers where requests were found and where indication of flagged templates were found
+        for i, j in enumerate(self._queue[1:]):
+            z = self.check_line(j) #Check whether any requests are on this line
+            if z: #We found requests on the line - this should be stored
+                reqs.append(i + 1, z) #+1 cause we left out the first element of the queue - make the MultiRequest later
+            elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)): #check whether anything got marked
+                flagged.append(i + 1) #Add this line to the list of lines where a template with a nice little flag is present
+            
+        #Cancel the loop, continue with putting the requests in a well structured format
+        if not reqs:
+            return self.requests #No additional requests found, return this dictionary
+        reqs.append((len(self._queue, None))) #Add a placeholder that makes life easier
+        for i, j in zip(reqs[:-1], reqs[1:]):
+            #i is the line where a request is present, j where the next request starts (or where the queue ends)
+            if any((k in flagged for k in range(i[0], j[0]))):
+                self.requests['flagged'] = self.requests.get('flagged', []) + [(i[0], j[0])] #Largely the same af for the revdel patrol
+            else:
+                self.requests[MultiRequest(i[1])] = (i[0], j[0])
+        return self.requests #Return the updated dictionary
+    
+    def check_requests(self):
+        "This function will mark the done requests as done (and is called by the update method)"
+        pass #Placeholder while function is not fully written
         
 class Request(c.GenReq):
     bot = c.TestBot() #We are now testing
