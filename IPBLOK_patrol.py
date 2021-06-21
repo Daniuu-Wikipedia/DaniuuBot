@@ -140,6 +140,10 @@ class Request(c.GenReq):
         "Get which IP's are blocked."
         if self:
             return self.main['user'] #Kijk na welke gebruiker er is geblokkeerd
+    def short_string(self):
+        "Will return a short string, explaining whether a block was administered"
+        if self:
+            return '%s is voor %s geblokkeerd door %s'%(self.blocked(), self.duration(), self.get_name())
     
     def duration(self):
         "Get how long the IP has been blocked"
@@ -161,13 +165,13 @@ class Request(c.GenReq):
             return '%d dag(en)'%days
         return '%d uur'%hours        
     
-    def __call__(self, process=True):
+    def __call__(self):
         "This function is used by MultiRequest, and handles the entire request at once"
-        if process is True:
+        if not self: #The request has not yet been completed
             self.check_blocked()
-        if self:
-            return self.blocked(), self.get_name(), self.duration()
-    
+        return self.short_string() #Especially handy when this has to be combined with MultiRequest
+        
+  
 class MultiRequest(c.GenMulti):
     def check_done(self):
         "Checks whether all requests were already handled or not."
@@ -178,18 +182,11 @@ class MultiRequest(c.GenMulti):
         "This will generate a string that indicates whether all listed IP's are blocked"
         if not self:
             return None #Just stop this shit
-        data = [i(False) for i in self.targets]
-        ips, admins, times = [i[0] for i in data], [i[1] for i in data], [i[2] for i in data]
-        if len(set(times)) > 1:
-            times = 'bepaalde tijd'
-        elif len(set(times)) == 1:
-            times = next(iter(times))
-        
-        #Prepare the different parts that should come with a request
-        ipstring = ', '.join(ips[:-1]) + ' & '*(len(ips) > 1) + ips[-1]
-        admins = ', '.join(admins[:-1]) + ' & '*(len(admins) > 1) + admins[-1]
-        return '{{done}} - %s is/zijn voor %s geblokkeerd door %s. Dank voor de melding.'%(ipstring, times, admins)
-        
+        subs = [i.short_string() for i in self.targets]
+        return '{{done}} - %s %s %s. Dank voor de melding'%(', '.join(subs[:-1]),
+                                                            ' & '*(len(subs) > 1),
+                                                            subs[-1]) #Generate the string that indicates that all blocks were administered
+    
 
 class Test(IPBLOK):
     "The function that should be put to testwiki"
