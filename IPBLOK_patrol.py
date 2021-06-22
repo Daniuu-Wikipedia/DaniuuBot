@@ -95,20 +95,40 @@ class IPBLOK(c.Page):
                         else:
                             prefix = ':'
                         self._done.append(prefix + i.done_string())
-        for i, j in todel[::-1]:
-            del self._queue[i:j] #Remove these elements, may they rest in pieces
-        return len(todel) #Return the amount of indices that is destroyed
+        return self.clear_lines(self._queue, todel)
     
-    def check_removal(self):
+    def check_removal(self, days=1, hours=4):
+        "Function determines which requests can be deleted."
         #Browse all lines of the 'done queue'
         if not self._done:
             self.separate() #First generate the queue, much better
-        reqlines = [i for i, j in enumerate(self._done) if self.check_line(j, False)]
-        return 0
-        
-      
+        reqlines = [i for i, j in enumerate(self._done) if self.check_line(j, False)] + [len(self._done)] #Manually add the length
+        to_del = [] #List of tuples with requests that should be removed from Done
+        for i, j in zip(reqlines[:-1], reqlines[1:]):
+            request_date = self.get_date_for_lines(self._done[i:j])
+            if isinstance(request_date, dt.datetime):
+                #A valid date has been found, check whether we can now delete
+                if request_date + dt.timedelta(days=days, hours=hours) <= dt.datetime.utcnow():
+                    to_del.append((i, j))
+        return self.clear_lines(self._done, to_del)
+    
+    def get_date_for_lines(self, lines):
+        "This function will return the oldest date that corresponds with a given request."
+        for k in lines[::-1]: #Run the inverse
+            date_temp = self.filter_date(k)[0][0]
+            if isinstance(date_temp, str):
+                for d, v in c.Page.nldate.items():
+                    date_temp = date_temp.replace(d, v)
+                return self.format_date(date_temp)
+    
+    def clear_lines(self, parent, lines):
+        "This function deletes the given lines from the parent list"
+        for i, j in sorted(lines, reverse=True):
+            del parent[i:j]
+        return len(lines)
+
 class Request(c.GenReq):
-    bot = c.TestBot() #We are now testing
+    bot = c.NlBot() #We are now testing
     now = dt.datetime.utcnow() #Store the current time to check whether 
     
     def __init__(self, ip):
@@ -230,8 +250,7 @@ class Request(c.GenReq):
         "This function is used by MultiRequest, and handles the entire request at once"
         if not self: #The request has not yet been completed
             self.check_blocked()
-        return self.short_string() #Especially handy when this has to be combined with MultiRequest
-        
+        return self.short_string() #Especially handy when this has to be combined with MultiRequest       
   
 class MultiRequest(c.GenMulti):
     def check_done(self):
@@ -257,7 +276,6 @@ class MultiRequest(c.GenMulti):
                                                             ' & '*(len(subs) > 1),
                                                             subs[-1]) #Generate the string that indicates that all blocks were administered
     
-
 class Test(IPBLOK):
     "The function that should be put to testwiki"
     def __init__(self):
@@ -272,5 +290,5 @@ class Test(IPBLOK):
                 date = date.replace(k, l)
         return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
 
-k = Test()
-k.update()
+s = IPBLOK()
+s()

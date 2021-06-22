@@ -11,6 +11,7 @@ import requests
 from requests_oauthlib import OAuth1
 import time
 import datetime as dt #Import support for dates and times
+import re
 
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
@@ -236,12 +237,14 @@ class Page:
         
     def print_termination(self):
         print('Bot terminated successfully at ' + str(dt.datetime.now()) + '\n')
+    
+    def filter_date(self, line):
+        pattern = r'(\d{1,2} (%s) \d{4})'%('|'.join(Page.nldate))
+        return re.findall(pattern, line)
         
     def format_date(self, date):
         "This function formats a date in the nlwiki format"
         assert isinstance(date, str), "Please pass a string as the argument of format_nldate!"
-        for k in Page.nldate:
-                date = date.replace(k, Page.nldate[k])
         return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
 
 class GenReq:
