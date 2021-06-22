@@ -196,32 +196,6 @@ class Page:
             if not isinstance(i, str): #Ignore strings, these are only added for administrative purposes
                 i.check_done()
     
-    def check_requests(self):
-        'This function will check whether all requests are done, and can move the request to the next part'
-        self.check_queue_done()
-        #First, process the requests that were marked manually
-        sto = [(i, j, None) for i, j in self.requests.get('flagged', ())] #Generate a list of tuples with 'None' as third element
-        
-        #Now, process the requestst that can be flagged automatically
-        for i in self.requests:
-            if not isinstance(i, str): #These ones should be ignored (we can do the deletion first)
-                if i: #checks whether all requests have been handled
-                    sto.append(self.requests[i] + (i.check_person(),)) #Add the desired indices to the list that will be processed later
-        
-        #Begin processing the requests that are done or flagged
-        sto.sort() #Do in place sorting to make things easier
-        for i, j, u in sto: #Query the indices and add the request to the 'done' section
-            self._done += self._queue[i:j]
-            if u is not None: #u is None indicates that the request was manually flagged
-                pre = self._queue[j - 1].split()[0]
-                if "*" in pre:
-                    prefix = '*'*(pre.count('*') + 1)
-                else:
-                    prefix = ':'
-                self._done.append(prefix + '{{d}} - ' + '%s Dank voor de melding. ~~~~'%u)
-        for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
-            del self._queue[i:j]
-        return len(sto) #Return the number of processed requests
 
     def update(self, logonly=False):
         "This function will update the content of the page"
