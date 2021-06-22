@@ -33,8 +33,8 @@ class IPBLOK(c.Page):
         self.regex = '(%s(%s|%s))'%(regex_template, ip4, ip6)
         return self.regex
     
-    def check_line(self, line):
-        "This function checks whether an IP is on the line, and returns those"
+    def check_line(self, line, forreq=True):
+        "This function checks whether an IP is on the line, and returns those. If forreq is False, the requests are not generated explicitly"
         if self.regex is None:
             self.prepare_regex() #The regex has not yet been initialized properly
         k = re.findall(self.regex, line)
@@ -42,7 +42,9 @@ class IPBLOK(c.Page):
             return None #Returns None, indicating that the list of matches is empty
         if isinstance(k[0], tuple):
             k = list(k[0]) #Overwrite this with a proper list of matches
-        return [Request(i) for i in k if ('{{' in i and '|' in i and (i.count('.') == 3 or i.count(':') >= 4))] #Only return the matches that are real calls to the template
+        if forreq is True:
+            return [Request(i) for i in k if ('{{' in i and '|' in i and (i.count('.') == 3 or i.count(':') >= 4))] #Only return the matches that are real calls to the template
+        return bool(k)
     
     def filter_queue(self):
         "This function will filter the required requests out of the queue."
@@ -66,7 +68,11 @@ class IPBLOK(c.Page):
             #i is the line where a request is present, j where the next request starts (or where the queue ends)
             if any((k in flagged for k in range(i[0], j[0]))):
                 self.requests['flagged'] = self.requests.get('flagged', []) + [(i[0], j[0])] #Largely the same af for the revdel patrol
-            self.requests[MultiRequest(i[1])] = (i[0], j[0]) #Store this as a request in all cases
+            on_line = MultiRequest(i[1]) #The requests that can be found on this line
+            if on_line in self.requests:
+                self.requests[on_line] = (self.requests[on_line][0], j[0])
+            else:
+                self.requests[on_line] = (i[0], j[0]) #Store this as a request in all cases
         return self.requests #Return the updated dictionary
     
     def check_requests(self):
@@ -92,9 +98,13 @@ class IPBLOK(c.Page):
         return len(todel) #Return the amount of indices that is destroyed
     
     def check_removal(self):
-        return 0 #Just return 0 for now
+        #Browse all lines of the 'done queue'
+        if not self._done:
+            self.separate() #First generate the queue, much better
+        reqlines = [i for i, j in enumerate(self._done) if self.check_line(j, False)]
+        print(reqlines)
         
-        
+      
 class Request(c.GenReq):
     bot = c.TestBot() #We are now testing
     now = dt.datetime.utcnow() #Store the current time to check whether 
@@ -258,4 +268,4 @@ class Test(IPBLOK):
         return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
 
 k = Test()
-k()
+k.check_removal()
