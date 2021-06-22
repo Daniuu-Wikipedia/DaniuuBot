@@ -54,25 +54,46 @@ class IPBLOK(c.Page):
         for i, j in enumerate(self._queue[1:]):
             z = self.check_line(j) #Check whether any requests are on this line
             if z: #We found requests on the line - this should be stored
-                reqs.append(i + 1, z) #+1 cause we left out the first element of the queue - make the MultiRequest later
+                reqs.append((i + 1, z)) #+1 cause we left out the first element of the queue - make the MultiRequest later
             elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)): #check whether anything got marked
                 flagged.append(i + 1) #Add this line to the list of lines where a template with a nice little flag is present
             
         #Cancel the loop, continue with putting the requests in a well structured format
         if not reqs:
             return self.requests #No additional requests found, return this dictionary
-        reqs.append((len(self._queue, None))) #Add a placeholder that makes life easier
+        reqs.append((len(self._queue), None)) #Add a placeholder that makes life easier
         for i, j in zip(reqs[:-1], reqs[1:]):
             #i is the line where a request is present, j where the next request starts (or where the queue ends)
             if any((k in flagged for k in range(i[0], j[0]))):
                 self.requests['flagged'] = self.requests.get('flagged', []) + [(i[0], j[0])] #Largely the same af for the revdel patrol
-            else:
-                self.requests[MultiRequest(i[1])] = (i[0], j[0])
+            self.requests[MultiRequest(i[1])] = (i[0], j[0]) #Store this as a request in all cases
         return self.requests #Return the updated dictionary
     
     def check_requests(self):
         "This function will mark the done requests as done (and is called by the update method)"
-        pass #Placeholder while function is not fully written
+        self.check_queue_done() #First run this one to check whether the requests in the queue are done or not
+        #Go through all the requests (and check whether they were already manually flagged or not)
+        flagged = self.requests.get('flagged', []) #Get list of flagged requests, and return an empty list if there are None
+        todel = [] #A list of indices that should be removed from the queue
+        for i, j in self.requests.items():
+            if not isinstance(i, str): #Skip strings, they are just some weird construction to make things easier or so
+                if i or j in flagged: #Obviously, only do this once the request is completed or manually flagged
+                    self._done += self._queue[j[0]:j[1]] #Transfer the requests to the list of done ones
+                    todel.append(j) #Add to the list of indices that should be deleted later on
+                    if j not in flagged: #The request has not yet been flagged manually, fix this
+                        pre = self._queue[j[1] - 1].split()[0]
+                        if "*" in pre:
+                            prefix = '*'*(pre.count('*') + 1)
+                        else:
+                            prefix = ':'
+                        self._done.append(prefix + i.done_string())
+        for i, j in todel[::-1]:
+            del self._queue[i:j] #Remove these elements, may they rest in pieces
+        return len(todel) #Return the amount of indices that is destroyed
+    
+    def check_removal(self):
+        return 0 #Just return 0 for now
+        
         
 class Request(c.GenReq):
     bot = c.TestBot() #We are now testing
@@ -145,6 +166,8 @@ class Request(c.GenReq):
     
     def __bool__(self):
         "This function will convert the entire function into a boolean"
+        if self.main is None:
+            self.check_blocked()
         return self.main is not None
     
     def get_and_check_block(self):
@@ -204,12 +227,18 @@ class MultiRequest(c.GenMulti):
         self.done = all((bool(i) for i in self.targets))
         return self.done
     
+    def __str__(self):
+        return str(self.targets)
+    
+    def __hash__(self):
+        return tuple(self.targets).__hash__()
+    
     def done_string(self):
         "This will generate a string that indicates whether all listed IP's are blocked"
         if not self:
             return None #Just stop this shit
         subs = [i.short_string() for i in self.targets]
-        return '{{done}} - %s %s %s. Dank voor de melding'%(', '.join(subs[:-1]),
+        return '{{done}} - %s %s %s. Dank voor de melding. ~~~~'%(', '.join(subs[:-1]),
                                                             ' & '*(len(subs) > 1),
                                                             subs[-1]) #Generate the string that indicates that all blocks were administered
     
@@ -227,3 +256,6 @@ class Test(IPBLOK):
         for k, l in c.Page.testdate.items():
                 date = date.replace(k, l)
         return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
+
+k = Test()
+k()
