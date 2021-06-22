@@ -199,9 +199,8 @@ class Page:
     def check_requests(self):
         'This function will check whether all requests are done, and can move the request to the next part'
         self.check_queue_done()
-        sto = []# A list to store the indices that can be processed
         #First, process the requests that were marked manually
-        sto += [(i, j, None) for i, j in self.requests.get('flagged', ())] #Generate a list of tuples with 'None' as third element
+        sto = [(i, j, None) for i, j in self.requests.get('flagged', ())] #Generate a list of tuples with 'None' as third element
         
         #Now, process the requestst that can be flagged automatically
         for i in self.requests:
