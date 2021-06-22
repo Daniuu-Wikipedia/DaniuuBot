@@ -77,6 +77,8 @@ class IPBLOK(c.Page):
     
     def check_requests(self):
         "This function will mark the done requests as done (and is called by the update method)"
+        if not self._queue:
+            self.separate()
         self.check_queue_done() #First run this one to check whether the requests in the queue are done or not
         #Go through all the requests (and check whether they were already manually flagged or not)
         flagged = self.requests.get('flagged', []) #Get list of flagged requests, and return an empty list if there are None
@@ -102,7 +104,7 @@ class IPBLOK(c.Page):
         if not self._done:
             self.separate() #First generate the queue, much better
         reqlines = [i for i, j in enumerate(self._done) if self.check_line(j, False)]
-        print(reqlines)
+        return 0
         
       
 class Request(c.GenReq):
@@ -240,6 +242,9 @@ class MultiRequest(c.GenMulti):
     def __str__(self):
         return str(self.targets)
     
+    def __eq__(self, other):
+        return sorted(set(self.targets)) == sorted(set(other.targets))
+    
     def __hash__(self):
         return tuple(self.targets).__hash__()
     
@@ -268,4 +273,4 @@ class Test(IPBLOK):
         return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
 
 k = Test()
-k.check_removal()
+k.update()
