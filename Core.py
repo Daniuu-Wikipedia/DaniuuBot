@@ -305,7 +305,7 @@ class GenReq:
 class GenMulti:
     def __init__(self, req):
         assert all((isinstance(i, GenReq) for i in req)), 'Please only provide requests!'
-        self.targets = list(req) #Use a tuple here
+        self.targets = list(set(req)) #Use a tuple here
         self.done = False #This indicates whether the request was done
         self._user = None
     
