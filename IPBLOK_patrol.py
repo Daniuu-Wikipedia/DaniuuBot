@@ -30,14 +30,14 @@ class IPBLOK(c.Page):
         ip6 = r'([\dABCDEF]{1,4}:){4,7}([\dABCDEF:]{1,4})+?' #Regex pattern used to detect ip4-adresses (and ranges)
         templates = ('lg', 'lgipcw', 'lgcw', 'linkgebruiker', 'Link IP-gebruiker cross-wiki', 'lgx')
         regex_template = r'\{\{(%s)\|'%('|'.join(templates)) #A pattern that makes handling the templates easier
-        self.regex = '(%s(%s|%s))'%(regex_template, ip4, ip6)
-        return self.regex
+        self.regex = ('(%s(%s|%s))'%(regex_template, ip4, ip6)).upper().replace(r'\D', '\d')
+        return self.regex #Convert everything to capitals for consistency
     
     def check_line(self, line, forreq=True):
         "This function checks whether an IP is on the line, and returns those. If forreq is False, the requests are not generated explicitly"
         if self.regex is None:
             self.prepare_regex() #The regex has not yet been initialized properly
-        k = re.findall(self.regex, line)
+        k = re.findall(self.regex, line.upper()) #Make it upper, so the regex can do it's job as it should do
         if not k:
             return None #Returns None, indicating that the list of matches is empty
         if isinstance(k[0], tuple):
@@ -111,9 +111,6 @@ class IPBLOK(c.Page):
                 if request_date + dt.timedelta(days=days, hours=hours) <= dt.datetime.utcnow():
                     to_del.append((i, j))
         return self.clear_lines(self._done, to_del)
-    
-
-    
 
 class Request(c.GenReq):
     bot = c.NlBot() #We are now testing
