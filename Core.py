@@ -245,7 +245,13 @@ class Page:
     def format_date(self, date):
         "This function formats a date in the nlwiki format"
         assert isinstance(date, str), "Please pass a string as the argument of format_nldate!"
-        return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
+        return dt.datetime.strptime(self.replace_months(date), '%d %m %Y') #this is the object that can actually do the job for us
+    
+    def replace_months(self, date):
+        "This function replaces the names of months in the strings"
+        for i, j in Page.nldate.items():
+            date = date.replace(i, j)
+        return date
 
 class GenReq:
     def __init__(self, target, types=(int,)):
