@@ -258,6 +258,13 @@ class Page:
         for i, j in sorted(lines, reverse=True):
             del parent[i:j]
         return len(lines)
+    
+    def get_date_for_lines(self, lines):
+        "This function will return the oldest date that corresponds with a given request."
+        for k in lines[::-1]: #Run the inverse
+            date_temp = self.filter_date(k)[0][0]
+            if isinstance(date_temp, str):
+                return self.format_date(date_temp)
 
 class GenReq:
     def __init__(self, target, types=(int,)):

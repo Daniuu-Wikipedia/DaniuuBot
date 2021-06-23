@@ -112,12 +112,7 @@ class IPBLOK(c.Page):
                     to_del.append((i, j))
         return self.clear_lines(self._done, to_del)
     
-    def get_date_for_lines(self, lines):
-        "This function will return the oldest date that corresponds with a given request."
-        for k in lines[::-1]: #Run the inverse
-            date_temp = self.filter_date(k)[0][0]
-            if isinstance(date_temp, str):
-                return self.format_date(date_temp)
+
     
 
 class Request(c.GenReq):
