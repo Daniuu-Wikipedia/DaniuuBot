@@ -103,58 +103,21 @@ class Revdel(c.Page):
         for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
             del self._queue[i:j]
         return len(sto) #Return the number of processed requests
-
     
-    def check_removal(self, tz=('utc', 'cet', 'cest'), drm=1):
-        'This function will check which lines could be removed (after drm days).'
-        def process(indices, matches): #Use a closure
-            #The date was found, now convert it to a format that Python acutally understands
-            d = self.format_date(matches[0])
-            
-            #check whether we can get rid of this request
-            deltime = d + dt.timedelta(days=drm, hours=4) #Only remove the requests from 4 am UTC onwards
-            if deltime < now:
-                if indices[0] < indices[1]:
-                    l.append(indices)
-                return True
-            return False
-            
+    def check_removal(self, days=1, hours=4):
+        "Function determines which requests can be deleted."
+        #Browse all lines of the 'done queue'
         if not self._done:
-            self.separate()
-        #Filter the requests (see also above)
-        l, start, now, mark = [], 1, dt.datetime.now(), False  #Check what time it is (mark is used to verify that we found a nice match)
-        s = "|".join(c.Page.nldate.keys()) #I cannot use f'-strings for Toolforge
-        pat = r'(\d{1,2} ('  + s + r') \d{4})'
-        for i, j in enumerate(self._done):
-            if i >= 1: #Ignore the first line (and second line, to make things easier)
-                if self.check_request_on_line(j, check=True):
-                    #We ended searching our current request, add it to the list if it can be deleted
-                    if mark is False:
-                        temp = self.check_request_on_line(self._done[i - 1].lower(), pat)
-                        if temp:
-                            matches = temp
-                        else:
-                            temp = self.check_request_on_line(j.lower(), pat)
-                            if temp:
-                                matches = temp
-                    temp = process((start, i), matches) #rely on the closure to process the request
-                    if temp is False:
-                        break
-                    start = i #Set for the processing of the next request
-                    mark = False #Reset this
-
-                if any(('{{%s}}'%k in j for k in c.Page.donetemp)):
-                    #Process the request
-                    mark = True
-                    matches = self.check_request_on_line(j.lower(), pat)
-        
-        if i > 0:
-            #Process the final request
-            process((start, i + 1), matches)
-            for i, j in l[::-1]:
-                del self._done[i:j]
-        return len(l) #Return the amount of requests that were deleted
-
+            self.separate() #First generate the queue, much better
+        reqlines = [i for i, j in enumerate(self._done) if self.check_request_on_line(j, check=True)] + [len(self._done)] #Manually add the length
+        to_del = [] #List of tuples with requests that should be removed from Done
+        for i, j in zip(reqlines[:-1], reqlines[1:]):
+            request_date = self.get_date_for_lines(self._done[i:j])
+            if isinstance(request_date, dt.datetime):
+                #A valid date has been found, check whether we can now delete
+                if request_date + dt.timedelta(days=days, hours=hours) <= dt.datetime.utcnow():
+                    to_del.append((i, j))
+        return self.clear_lines(self._done, to_del)
                 
 class Request(c.GenReq):
     "This object class will implement the main functionalities for a certain request"
