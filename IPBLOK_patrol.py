@@ -272,7 +272,7 @@ class MultiRequest(c.GenMulti):
         if not self:
             return None #Just stop this shit
         subs = [i.short_string() for i in self.targets]
-        return '{{done}} - %s %s %s. Dank voor de melding. ~~~~'%(', '.join(subs[:-1]),
+        return '{{d}} - %s %s %s. Dank voor de melding. ~~~~'%(', '.join(subs[:-1]),
                                                             ' & '*(len(subs) > 1),
                                                             subs[-1]) #Generate the string that indicates that all blocks were administered
     
