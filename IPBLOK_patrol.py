@@ -117,8 +117,6 @@ class IPBLOK(c.Page):
         for k in lines[::-1]: #Run the inverse
             date_temp = self.filter_date(k)[0][0]
             if isinstance(date_temp, str):
-                for d, v in c.Page.nldate.items():
-                    date_temp = date_temp.replace(d, v)
                 return self.format_date(date_temp)
     
     def clear_lines(self, parent, lines):
