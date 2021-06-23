@@ -12,7 +12,6 @@ import Core as c
 import datetime as dt
 import re
 
-
 class IPBLOK(c.Page):
     "This class contains the main content for the page related operations"
     def __init__(self):
@@ -251,7 +250,8 @@ class MultiRequest(c.GenMulti):
         return str(self.targets)
     
     def __eq__(self, other):
-        return sorted(set(self.targets)) == sorted(set(other.targets))
+        "This function is required to test equality"
+        return sorted(self.targets) == sorted(other.targets)
     
     def __hash__(self):
         return tuple(self.targets).__hash__()
@@ -279,5 +279,6 @@ class Test(IPBLOK):
                 date = date.replace(k, l)
         return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
 
+#Execution code
 s = IPBLOK()
-s()
+s() #Pass True to place this bot into log-only
