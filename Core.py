@@ -252,6 +252,12 @@ class Page:
         for i, j in Page.nldate.items():
             date = date.replace(i, j)
         return date
+    
+    def clear_lines(self, parent, lines):
+        "This function deletes the given lines from the parent list"
+        for i, j in sorted(lines, reverse=True):
+            del parent[i:j]
+        return len(lines)
 
 class GenReq:
     def __init__(self, target, types=(int,)):

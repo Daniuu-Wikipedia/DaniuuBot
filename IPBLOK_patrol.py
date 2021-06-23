@@ -119,11 +119,6 @@ class IPBLOK(c.Page):
             if isinstance(date_temp, str):
                 return self.format_date(date_temp)
     
-    def clear_lines(self, parent, lines):
-        "This function deletes the given lines from the parent list"
-        for i, j in sorted(lines, reverse=True):
-            del parent[i:j]
-        return len(lines)
 
 class Request(c.GenReq):
     bot = c.NlBot() #We are now testing
