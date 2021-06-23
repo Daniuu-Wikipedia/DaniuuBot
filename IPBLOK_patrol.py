@@ -65,12 +65,16 @@ class IPBLOK(c.Page):
             return self.requests #No additional requests found, return this dictionary
         reqs.append((len(self._queue), None)) #Add a placeholder that makes life easier
         for i, j in zip(reqs[:-1], reqs[1:]):
+            req_flagged = False #Reset this to False when starting a new iteration, will be used to detect a flagged request
             #i is the line where a request is present, j where the next request starts (or where the queue ends)
             if any((k in flagged for k in range(i[0], j[0]))):
                 self.requests['flagged'] = self.requests.get('flagged', []) + [(i[0], j[0])] #Largely the same af for the revdel patrol
+                req_flagged = True #Just adding this variable for further reference
             on_line = MultiRequest(i[1]) #The requests that can be found on this line
-            if on_line in self.requests:
+            if on_line in self.requests: #This one was found before
                 self.requests[on_line] = (self.requests[on_line][0], j[0])
+                if req_flagged is True:
+                    self.requests['flagged'] = self.requests.get('flagged', []) + [(self.requests[on_line][0], j[0])]
             else:
                 self.requests[on_line] = (i[0], j[0]) #Store this as a request in all cases
         return self.requests #Return the updated dictionary
