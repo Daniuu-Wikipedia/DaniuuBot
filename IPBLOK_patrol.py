@@ -128,7 +128,7 @@ class Request(c.GenReq):
     def process(self, origin):
         if '|' not in origin:
             return origin.strip().upper().strip()
-        return origin.split('|')[1].strip()
+        return origin.split('|')[1].strip().upper() #Always convert to capitals
     
     def get_blocks(self):
         "This function will check whether the user was blocked or not"
