@@ -28,8 +28,8 @@ class IPBLOK(c.Page):
         ip4 = r'(\d{1,3}\.){3}\d{1,3}' #Regex pattern used to detect ip4-adresses (and ranges)
         ip6 = r'([\dABCDEF]{1,4}:){4,7}([\dABCDEF:]{1,4})+?' #Regex pattern used to detect ip4-adresses (and ranges)
         templates = ('lg', 'lgipcw', 'lgcw', 'linkgebruiker', 'Link IP-gebruiker cross-wiki', 'lgx')
-        regex_template = r'\{\{(%s)\|'%('|'.join(templates)) #A pattern that makes handling the templates easier
-        self.regex = ('(%s(%s|%s))'%(regex_template, ip4, ip6)).upper().replace(r'\D', '\d')
+        regex_template = r'\{\{(%s)\|'%('|'.join(templates)).upper() #A pattern that makes handling the templates easier
+        self.regex = ('(%s(%s|%s))'%(regex_template, ip4, ip6))
         return self.regex #Convert everything to capitals for consistency
     
     def check_line(self, line, forreq=True):
@@ -276,9 +276,12 @@ class Test(IPBLOK):
         "Overrides this with the conventions for testwiki"
         assert isinstance(date, str), "Please pass a string as the argument of format_nldate!"
         for k, l in c.Page.testdate.items():
-                date = date.replace(k, l)
+            date = date.replace(k, l)
+        for k, l in c.Page.nldate.items():
+            date = date.replace(k, l)
         return dt.datetime.strptime(date, '%d %m %Y') #this is the object that can actually do the job for us
 
 #Execution code
 s = IPBLOK()
-s() #Pass True to place this bot into log-only
+s(True) #Pass True to place this bot into log-only
+print(s.regex)
