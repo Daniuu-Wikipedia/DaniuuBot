@@ -283,5 +283,4 @@ class Test(IPBLOK):
 
 #Execution code
 s = IPBLOK()
-s(True) #Pass True to place this bot into log-only
-print(s.regex)
+s() #Pass True to place this bot into log-only
