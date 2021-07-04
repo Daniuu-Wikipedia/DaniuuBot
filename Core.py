@@ -214,7 +214,7 @@ class Page:
             return self.print_termination() #No need to go through the remainder of the function
         
         #Prepare the edit summary
-        summary = ('%d verzoeken gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoeken weggebezemd'%y if y else '')
+        summary = ('%d verzoek(en) gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoek(en) weggebezemd'%y if y else '')
         edit_dic = {'action':'edit',
                     'pageid':self.id,
                     'text':new,
