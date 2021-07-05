@@ -40,7 +40,7 @@ class IPBLOK(c.Page):
         if not k:
             return None #Returns None, indicating that the list of matches is empty
         if isinstance(k[0], tuple):
-            k = list(k[0]) #Overwrite this with a proper list of matches
+            k = [i[0] for i in k] #Get the longest matching sequence
         if forreq is True:
             return [Request(i) for i in k if ('{{' in i and '|' in i and (i.count('.') == 3 or i.count(':') >= 4))] #Only return the matches that are real calls to the template
         return bool(k)
@@ -165,7 +165,7 @@ class Request(c.GenReq):
                 i['expiry'] = self.convert_api_date(end)
                 end = i['expiry']
     
-    def check_blocked(self, delay=10): #For the test phase
+    def check_blocked(self, delay=0): #For the test phase
         "This function will check whether a given IP is blocked. A 10 minute delay prior to flagging is used"
         self.get_blocks() #First, get the blocks from the API
         self.blocks.sort(key=lambda i:i['timestamp'], reverse=True) #Sort, most recent blocks first
