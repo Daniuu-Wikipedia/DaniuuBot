@@ -112,6 +112,10 @@ class BetaBot(Bot):
 class TestBot(Bot):
     def __init__(self):
         super().__init__('https://test.wikipedia.org/w/api.php')
+
+class VlsBot(Bot):
+    def __init__(self):
+        super().__init__('https://vls.wikipedia.org/w/api.php')
         
 #Below: classes that implement general page patrollers and requests
 class Page:
