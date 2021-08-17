@@ -108,11 +108,14 @@ class IPBLOK(c.Page):
         reqlines = [i for i, j in enumerate(self._done) if self.check_line(j, False)] + [len(self._done)] #Manually add the length
         to_del = [] #List of tuples with requests that should be removed from Done
         for i, j in zip(reqlines[:-1], reqlines[1:]):
-            request_date = self.get_date_for_lines(self._done[i:j])
-            if isinstance(request_date, dt.datetime):
-                #A valid date has been found, check whether we can now delete
-                if request_date + dt.timedelta(days=days, hours=hours) <= dt.datetime.utcnow():
-                    to_del.append((i, j))
+            try:
+                request_date = self.get_date_for_lines(self._done[i:j])
+                if isinstance(request_date, dt.datetime):
+                    #A valid date has been found, check whether we can now delete
+                    if request_date + dt.timedelta(days=days, hours=hours) <= dt.datetime.utcnow():
+                        to_del.append((i, j))
+            except IndexError: #This popped up once because somebody did not take the time to sign off the request
+                self._done.insert(j, '**{{opm}}: Dit verzoek bevat mogelijks geen correcte datumstempel. Als deze melding klopt, kan u de datum toevoegen via {{tl|afzx}} en melding terug verwijderen. ~~~~')
         return self.clear_lines(self._done, to_del)
 
 class Request(c.GenReq):
