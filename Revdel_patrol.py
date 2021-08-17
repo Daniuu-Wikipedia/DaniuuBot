@@ -170,23 +170,32 @@ class Request(c.GenReq):
                     self._user = i['user']
                     return i['user']
         
-    def get_next_revision(self, prev):
-        d1 = {'action':'query',
-              'prop':'revisions',
-              'revids':prev,
-              'rvprop':'ids'}
-        bas = Request.bot.get(d1) #This will have to be stored, otherwise queries cannot be continued
-        jos = next(iter(bas['query']['pages'].keys()))
+    def get_next_revision(self, prev, conti=None, jos=None):
+        "This function gets the revision following a given revision. This function also supports continuation"
+        if jos is None: #Only run this if not passed
+            d1 = {'action':'query',
+                  'prop':'revisions',
+                  'revids':prev,
+                  'rvprop':'ids'}
+            jos = next(iter(Request.bot.get(d1)['query']['pages'].keys()))
         d2 = {'action':'query',
               'prop':'revisions',
               'rvlimit':500,
               'rvprop':'ids',
               'pageids':jos}
-        jef = next(iter(Request.bot.get(d2)['query']['pages'].values()))['revisions']
+        if conti is not None:
+            print('Repeating the query to find an old version of page %s.'%jos) #For the log file
+            d2['rvcontinue'] = conti
+        bas = Request.bot.get(d2) #This code should be stored, otherwise we cannot use the continuation function
+        jef = next(iter(bas['query']['pages'].values()))['revisions']
         for i in jef:
             #print(i, 'Jef', prev)
             if i['parentid'] == prev:
                 return i['revid'] #Revision found, should be enough
+        #No valid revision was found, continue searching in the next revisions
+        c = bas.get('continue')
+        if c is not None:
+            return self.get_next_revision(prev, c['rvcontinue'], jos)
 
 class UserRequest(Request):
     def __init__(self, user):
@@ -259,4 +268,4 @@ class MultiRequest(c.GenMulti):
         return self.done_string()
         
 t = Revdel()
-t() #Indien hier True wordt doorgegeven, draait het script in log-only mode, en worden geen veranderingen aangebracht
+t(True) #Indien hier True wordt doorgegeven, draait het script in log-only mode, en worden geen veranderingen aangebracht
