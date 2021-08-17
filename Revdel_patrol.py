@@ -134,8 +134,10 @@ class Request(c.GenReq):
         k = inp.lower()
         if k.count('/') > 1: #Correct for a very specific case
             k = k.split('/')[-1].strip()
-        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', 'speciaal', '/', ':', '{', '|'):
-            k = k.replace(i, '') #Remove all these shitty stuff
+        #for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', 'speciaal', '/', ':', '{', '|'):
+        #    k = k.replace(i, '') #Remove all these shitty stuff - old code
+        #Testing :) 
+        k = re.findall(r'\d{8,}', inp.lower())[0]
         return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
     
     def check_done(self):
