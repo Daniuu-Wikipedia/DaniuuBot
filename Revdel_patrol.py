@@ -134,7 +134,7 @@ class Request(c.GenReq):
         k = inp.lower()
         if k.count('/') > 1: #Correct for a very specific case
             k = k.split('/')[-1].strip()
-        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', '/', ':', '{', '|'):
+        for i in ('oldid', 'permalink', 'diff', '=', '&', 'next', 'prev', 'special', 'speciaal', '/', ':', '{', '|'):
             k = k.replace(i, '') #Remove all these shitty stuff
         return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
     
@@ -173,7 +173,8 @@ class Request(c.GenReq):
               'prop':'revisions',
               'revids':prev,
               'rvprop':'ids'}
-        jos = next(iter(Request.bot.get(d1)['query']['pages'].keys()))
+        bas = Request.bot.get(d1) #This will have to be stored, otherwise queries cannot be continued
+        jos = next(iter(bas['query']['pages'].keys()))
         d2 = {'action':'query',
               'prop':'revisions',
               'rvlimit':500,
@@ -181,6 +182,7 @@ class Request(c.GenReq):
               'pageids':jos}
         jef = next(iter(Request.bot.get(d2)['query']['pages'].values()))['revisions']
         for i in jef:
+            #print(i, 'Jef', prev)
             if i['parentid'] == prev:
                 return i['revid'] #Revision found, should be enough
 
