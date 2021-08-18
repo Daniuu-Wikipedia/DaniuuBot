@@ -266,10 +266,13 @@ class Page:
     def get_date_for_lines(self, lines):
         "This function will return the oldest date that corresponds with a given request."
         for k in lines[::-1]: #Run the inverse
-            date_temp = self.filter_date(k)[0][0]
-            if isinstance(date_temp, str):
-                return self.format_date(date_temp)
-
+            try:
+                date_temp = self.filter_date(k)[0][0]
+                if isinstance(date_temp, str):
+                    return self.format_date(date_temp)
+            except IndexError: #It's easier to ask for forgiveness, as this sin can be forgiven easily.
+                date_temp = None
+                
 class GenReq:
     def __init__(self, target, types=(int,)):
         self.target = self.process(target) #This object stores the main target (this could be an oldid)
