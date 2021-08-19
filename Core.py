@@ -272,6 +272,11 @@ class Page:
                     return self.format_date(date_temp)
             except IndexError: #It's easier to ask for forgiveness, as this sin can be forgiven easily.
                 date_temp = None
+        #No date was found, use an emergency procedure
+        now = dt.utcnow() #Get current UTC time
+        if 4 <= now.hours <= 6:
+            return dt.datetime.today() - dt.timedelta(days=1)
+        return dt.datetime.today()
                 
 class GenReq:
     def __init__(self, target, types=(int,)):
