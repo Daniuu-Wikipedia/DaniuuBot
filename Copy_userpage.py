@@ -26,7 +26,7 @@ def remove_templates(text):
 
 def remove_divisions(text):
     "This method removes a second bunch of unwanted content"
-    t1 = [i for i in text if '<div' not in i and '</div>' not in i and 'Wikipedia:' not in i] #Remove all divisions
+    t1 = [i for i in text if '<div' not in i and '</div>' not in i and 'Wikipedia:' not in i and r'miniatuur|links|Cliché' not in i] #Remove all divisions
     return t1
 
 def post_new_text(new):
