@@ -273,8 +273,8 @@ class Page:
             except IndexError: #It's easier to ask for forgiveness, as this sin can be forgiven easily.
                 date_temp = None
         #No date was found, use an emergency procedure
-        now = dt.utcnow() #Get current UTC time
-        if 4 <= now.hours <= 6:
+        now = dt.datetime.utcnow() #Get current UTC time
+        if 4 <= now.hour <= 6:
             return dt.datetime.today() - dt.timedelta(days=1)
         return dt.datetime.today()
                 
