@@ -224,7 +224,7 @@ class Page:
                     'text':new,
                     'summary':summary,
                     'bot':True,
-                    'minor':True,
+                    #'minor':True,
                     'nocreate':True,
                     'basetimestamp':self._timestamp}
         if logonly is False:
