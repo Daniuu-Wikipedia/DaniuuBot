@@ -45,7 +45,10 @@ class Revdel(c.Page):
             if isinstance(i, tuple):
                 for j in i:
                     if len(j) > 15: #Check whether Special:... is in the text (if not, it's fake news)
-                        out.append(UserRequest(j.split('/')[1].strip()))
+                        temp_ip = j.split('/')[1].strip()
+                        if '|' in temp_ip:
+                            temp_ip = temp_ip.split('|')[0].strip()
+                        out.append(UserRequest(temp_ip))
         return out
     
     def separate(self):
