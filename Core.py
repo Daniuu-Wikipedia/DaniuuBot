@@ -217,8 +217,15 @@ class Page:
             print(self.requests)
             return self.print_termination() #No need to go through the remainder of the function
         
+        #Determine whether or not there are still requests open.
+        remain = len(self.requests) - z
+       
         #Prepare the edit summary
-        summary = ('%d verzoek(en) gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoek(en) weggebezemd'%y if y else '')
+        #summary = ('%d verzoek(en) gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoek(en) weggebezemd'%y if y else '')
+        tup = (('%d verzoek(en) gemarkeerd als afgehandeld'%z) if z else '',
+                ('%d verzoek(en) weggebezemd'%y) if y else '',
+                ('%d verzoek(en) nog af te handelen'%remain))
+        summary = ' & '.join((i for i in tup if i))
         edit_dic = {'action':'edit',
                     'pageid':self.id,
                     'text':new,
@@ -236,7 +243,7 @@ class Page:
                     return self() #Rerun the script, we found a nice little new request
         else:
             print('Script is called in log-only, no changes will be made.')
-        print('Removed %d, processed %d'%(y, z)) #Just some code for maintenance purposes
+        print('Removed %d, processed %d, %d remaining'%(y, z, remain)) #Just some code for maintenance purposes
         self.print_termination()
         
     def print_termination(self):
