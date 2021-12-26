@@ -22,6 +22,8 @@ class Revdel(c.Page):
     def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})', check=False, proc=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
+        if not raw: #No pattern was found before
+            raw = re.findall(r'\d{8,}', line.lower()) #Additional check to mark as a request 
         z = [] #create a list to store all separate matches (and where we can leave out the empty matches if any)
         for i in raw: #Go through all returned matches
             if isinstance(i, (tuple, list)):
@@ -29,7 +31,7 @@ class Revdel(c.Page):
                     if j.strip(): #Check that j is not empty
                         z.append(j.strip())
             elif i: #We found a string or so, can just be added if not empty
-                z.append(j)
+                z.append(i)
         if proc is True:
             z = [Request(i) for i in z if i and any((j.isdigit() for j in i))]
         if check is True:
