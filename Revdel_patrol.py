@@ -19,7 +19,7 @@ class Revdel(c.Page):
         "Intializes the revdel bot."
         super().__init__('Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen')
     
-    def check_request_on_line(self, line, pattern=r'((diff=(\d{1,9}|next|prev)\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})', check=False, proc=False):
+    def check_request_on_line(self, line, pattern=r'(((direction=next|diff=(\d{1,9}|next|prev))\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})', check=False, proc=False):
         "Checks whether the line passed as an argument contains any kind of requests"
         raw = re.findall(pattern, line.lower()) #this will unleash the regex on the poor little line
         if not raw: #No pattern was found before
@@ -143,7 +143,9 @@ class Request(c.GenReq):
         #    k = k.replace(i, '') #Remove all these shitty stuff - old code
         #Testing :) 
         k = re.findall(r'\d{7,}', inp.lower())[0]
-        return int(k) if 'diff=next' not in inp.lower() else self.get_next_revision(int(k))
+        look_next = all((i not in inp.lower() for i in ['diff=next',
+                                                        'direction=next'])) #Make an additional variable to check whether we should look at the next revision
+        return int(k) if look_next else self.get_next_revision(int(k))
     
     def check_done(self):
         if self.done is False:
