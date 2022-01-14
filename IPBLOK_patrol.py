@@ -28,7 +28,7 @@ class IPBLOK(c.Page):
         ip4 = r'(\d{1,3}\.){3}\d{1,3}' #Regex pattern used to detect ip4-adresses (and ranges)
         ip6 = r'([\dABCDEF]{1,4}:){4,7}([\dABCDEF:]{1,4})+?' #Regex pattern used to detect ip4-adresses (and ranges)
         templates = ('lg', 'lgipcw', 'lgcw', 'linkgebruiker', 'Link IP-gebruiker cross-wiki', 'lgx')
-        regex_template = r'\{\{(%s)\|'%('|'.join(templates)).upper() #A pattern that makes handling the templates easier
+        regex_template = r'\{\{(%s)\s*\|\s*'%('|'.join(templates)).upper() #A pattern that makes handling the templates easier
         self.regex = ('(%s(%s|%s))'%(regex_template, ip4, ip6))
         return self.regex #Convert everything to capitals for consistency
     
