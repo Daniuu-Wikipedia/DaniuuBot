@@ -40,7 +40,7 @@ class Revdel(c.Page):
     
     def check_user_request(self, line):
         "This function will check whether a request is made to hide all edits from a given user"
-        s = line.lower() #Prepare the pattern and remove all capitals
+        #s = line.lower() #Prepare the pattern and remove all capitals
         out, pattern = [], r'((s|S)peci(a){1,2}l:((b|B)ijdragen|(c|C)ontributions)\/\S+)' #Empty list for the output, pattern for the detection
         match = re.findall(pattern, line)
         for i in match:
