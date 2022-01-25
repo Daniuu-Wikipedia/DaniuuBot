@@ -219,6 +219,7 @@ class Page:
         
         #Determine whether or not there are still requests open.
         remain = len(self.requests) - z
+        remain *= remain >= 0
        
         #Prepare the edit summary
         #summary = ('%d verzoek(en) gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoek(en) weggebezemd'%y if y else '')
