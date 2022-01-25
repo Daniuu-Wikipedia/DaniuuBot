@@ -104,7 +104,12 @@ class Revdel(c.Page):
                     prefix = '*'*(pre.count('*') + 1)
                 else:
                     prefix = ':'
-                self._done.append(prefix + '{{d}} - ' + '%s Dank voor de melding. ~~~~'%u)
+                    
+                #Check the request itself and append the string to mark the request as done
+                if u == 'DELETED':
+                    self._done.append(prefix + '{{opm}} - De pagina in kwestie werd reeds verwijderd. Dank voor de melding. ~~~~')
+                else:
+                    self._done.append(prefix + '{{d}} - ' + '%s Dank voor de melding. ~~~~'%u)
         for i, j, _ in sto[::-1]: #Scan in reverse order - this will make the deletion sequence more logical
             del self._queue[i:j]
         return len(sto) #Return the number of processed requests
@@ -242,6 +247,7 @@ class MultiRequest(c.GenMulti):
         self.users = []
         self.done = False #This indicates whether the request was done
         self._titles, self._user = {}, None
+        self.deleted = False
         for i in set(req):
             if isinstance(i, UserRequest):
                 self.users.append(i)
@@ -256,7 +262,11 @@ class MultiRequest(c.GenMulti):
                    'prop':'revisions',
                    'revids':'|'.join((str(i) for i in self.targets)),
                    'rvprop':'content|timestamp|ids'}
-            revs = Request.bot.get(dic)['query']['pages']
+            try:
+                revs = Request.bot.get(dic)['query']['pages']
+            except KeyError:
+                self.deleted = True
+                return bool(self)
             targets = all(('texthidden' in revs[i]['revisions'][0] for i in revs))
             self._titles = {i['revisions'][0]['revid']:i['pageid'] for i in revs.values()}
         if self.users: #Check the edits per user
@@ -266,6 +276,8 @@ class MultiRequest(c.GenMulti):
     
     def check_person(self):
         'This function will check who did the request'
+        if self.is_deleted():
+            return "DELETED"
         if not self._titles:
             self.check_done()
         if self.targets: #We have revisions that got selected

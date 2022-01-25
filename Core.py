@@ -291,11 +291,12 @@ class GenReq:
         self.done = False #this indicates whether the request was already handled or not
         self._user = None #Fill in the user who processed the request
         self._page = None #Store the name of the page
+        self.deleted = False
         if not isinstance(self.target, types):
             raise TypeError('The target should be of the specified type!')
 
     def __bool__(self):
-        return self.done #This function will return whether the request was done or not
+        return self.done or self.deleted #This function will return whether the request was done or not
         
     def __str__(self):
         return str(self.target)
@@ -320,6 +321,10 @@ class GenReq:
             return dt.datetime.strptime(stamp, '%Y-%m-%dT%H:%M:%SZ')
         except ValueError:
             return dt.datetime(9999, 12, 31)
+    def is_deleted(self):
+        "Checks whether the target got deleted before"
+        return self.deleted is True
+
 
 class GenMulti:
     def __init__(self, req):
@@ -327,6 +332,7 @@ class GenMulti:
         self.targets = list(set(req)) #Use a tuple here
         self.done = False #This indicates whether the request was done
         self._user = None
+        self.deleted = False #A parameter tracking whether the target page got deleted
     
     def __str__(self):
         return str(self.targets + self.users)
@@ -335,7 +341,7 @@ class GenMulti:
         return str(self)
     
     def __bool__(self):
-        return self.done
+        return self.done or self.deleted
 
     def __hash__(self):
         "This function will provide a nice hash"
@@ -345,4 +351,8 @@ class GenMulti:
         "This function will generate a string that can be used to indicate that the request has been done"
         martin = self._user if self._user is not None else 'een moderator'
         return "De versie(s) is/zijn verborgen door %s."%martin
+    
+    def is_deleted(self):
+        "Checks whether the target got deleted before"
+        return self.deleted is True
 
