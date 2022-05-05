@@ -11,6 +11,9 @@ Please note: this script is still in an experimental phase,
 import Core as c
 import datetime as dt
 import re
+import sys
+
+print(sys.verion) #Get some information, to check on what grid our job is executed - migration of Toolforge
 
 class IPBLOK(c.Page):
     "This class contains the main content for the page related operations"
