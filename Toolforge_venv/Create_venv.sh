@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#Launch from the main directory
+cd ~
+
 # use bash strict mode
 set -euo pipefail
 
