@@ -6,8 +6,8 @@ git pull git@github.com:Daniuu-Wikipedia/DaniuuBot.git
 
 cd ~/DaniuuBot/Maintenance
 
-cp *.sh ~
+cp *.sh ~/Handy_scripts
 
 #Safety measure: make sure that all .txt-files are properly chmodded (and invisble to other users)
-cd ~
+cd ~/Handy_scripts
 bash Perm.sh
