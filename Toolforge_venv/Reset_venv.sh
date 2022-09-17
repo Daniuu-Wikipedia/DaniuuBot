@@ -4,4 +4,4 @@
 bash ~/DaniuuBot/Toolforge_venv/Delete_venv.sh
 
 #Recreate the venv
-toolforge-jobs run venv-create --command "cd $PWD && ./Create_venv.sh" --image tf-python39 --wait
+toolforge-jobs run venv-create --command "cd $PWD && ./DaniuuBot/Toolforge_venv/Create_venv.sh" --image tf-bullseye-std --wait
