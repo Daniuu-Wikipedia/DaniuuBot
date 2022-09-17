@@ -36,7 +36,9 @@ class Bot:
                 with open(file, 'r') as secret:
                     self._auth = OAuth1(*[i.strip() for i in secret][1::2]) #This is the reason why those keys should never be published
             except FileNotFoundError: #A workaround for the shell file @toolforge
-                file = '/DaniuuBot/Operational.txt' #An attempt to fix a particular bug
+                file = f'/DaniuuBot/{file}' #An attempt to fix a particular bug
+                with open(file, 'r') as secret:
+                    self._auth = OAuth1(*[i.strip() for i in secret][1::2])
     
     def verify_token(self):
         if self._token is None:
