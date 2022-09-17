@@ -32,8 +32,11 @@ class Bot:
     def verify_OAuth(self, file="Operational.txt"):
         'This function will verify whether the OAuth-auth has been configured. If not, it will do the configuration.'
         if self._auth is None:
-            with open(file, 'r') as secret:
-                self._auth = OAuth1(*[i.strip() for i in secret][1::2]) #This is the reason why those keys should never be published
+            try:
+                with open(file, 'r') as secret:
+                    self._auth = OAuth1(*[i.strip() for i in secret][1::2]) #This is the reason why those keys should never be published
+            except FileNotFoundError: #A workaround for the shell file @toolforge
+                file = '/DaniuuBot/Operational.txt' #An attempt to fix a particular bug
     
     def verify_token(self):
         if self._token is None:
