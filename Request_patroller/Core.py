@@ -84,6 +84,7 @@ class Bot:
         k = requests.post(self.api, data=params, auth=self._auth).json()
         if 'error' in k:
             print('An error occured somewhere') #We found an error
+            print(k)
             if 'code' in k['error'] and 'maxlag' in k['error']['code']:
                 print('Maxlag occured, please try to file the request at a later point in space and time.')
         return k
