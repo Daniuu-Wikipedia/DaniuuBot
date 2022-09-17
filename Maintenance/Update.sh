@@ -2,6 +2,9 @@
 
 cd ~/DaniuuBot
 
+#Remove all the Python cache (directories __pycache__ and .pyc-files)
+rm */*/*.pyc
+
 git pull git@github.com:Daniuu-Wikipedia/DaniuuBot.git
 
 cd ~/DaniuuBot/Maintenance
