@@ -38,9 +38,18 @@ def post_new_text(new):
                'bot':True}
     return bot.post(payload)
 
+def get_old_text():
+    bot = VlsBot()
+    payload = {'action':'parse',
+               'page':'Gebruker:Daniuu',
+               'prop':'wikitext'}
+    return bot.get(payload)['parse']['wikitext']['*']
 text = get_original_text()
 s1 = remove_templates(text)
 s2 = remove_divisions(s1)
 new = '\n'.join(s2)
 
-print(post_new_text(new))
+old_text = get_old_text()
+
+if old_text != new:
+    print(post_new_text(new))
