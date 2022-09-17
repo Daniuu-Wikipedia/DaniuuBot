@@ -29,3 +29,6 @@ echo -e "Job to patrol WP:IPBLOK ${GREEN}successfully${NOCOLOR} submitted to the
 
 #Job to synchonize my nlwiki and vlswiki user pages
 toolforge-jobs run up-sync --command "./botenv/bin/python ./DaniuuBot/Userpage_synchroniser/Copy_userpage.py" --image tf-python39 --schedule "20 4 * * *"
+
+echo -e "Job to sync your vlswiki and nlwiki user pages ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
+
