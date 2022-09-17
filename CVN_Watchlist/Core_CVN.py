@@ -14,6 +14,7 @@ from requests_oauthlib import OAuth1
 import time
 import datetime as dt #Import support for dates and times
 import re
+from os import getcwd
 
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
@@ -34,8 +35,12 @@ class Bot:
     def verify_OAuth(self, file="Tester_patrol.txt"):
         'This function will verify whether the OAuth-auth has been configured. If not, it will do the configuration.'
         if self._auth is None:
-            with open(file, 'r') as secret:
-                self._auth = OAuth1(*[i.strip() for i in secret][1::2]) #This is the reason why those keys should never be published
+            try:
+                with open(file, 'r') as secret:
+                    self._auth = OAuth1(*[i.strip() for i in secret][1::2]) #This is the reason why those keys should never be published
+            except FileNotFoundError: #Workaround for a bugfix @Toolforge
+                with open(f'{getcwd()}/DaniuuBot/CVN_Watchlist/{file}'):
+                    self._auth = OAuth1(*[i.strip() for i in secret][1::2])
     
     def verify_token(self):
         if self._token is None:
