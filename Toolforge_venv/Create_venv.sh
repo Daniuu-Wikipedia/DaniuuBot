@@ -16,8 +16,6 @@ source botenv/bin/activate
 pip install -U pip wheel
 
 # install some concrete packages
-pip install sys
-pip install os
 pip install requests
 pip install pyyaml
 pip install datetime
