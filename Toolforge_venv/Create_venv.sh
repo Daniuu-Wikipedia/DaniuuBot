@@ -18,8 +18,5 @@ pip install -U pip wheel
 # install some concrete packages
 pip install requests
 pip install pyyaml
-pip install datetime
-pip install re
 pip install requests_oauthlib
-pip install time
-pip install math
+
