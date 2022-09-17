@@ -13,7 +13,7 @@ def format_date(date):
     "Converts a datetime.datetime instance into an ISO-8601 format (supported by the Wikimedia API)"
     if not isinstance(date, dt.datetime):
         raise TypeError('Please pass a valid datetime.datetime object')
-    return f'+{date.isoformat()}L' #L = we are using local time of the wiki
+    return date.isoformat() #L = we are using local time of the wiki
 
 #Process one single day
 class Day:
@@ -57,10 +57,10 @@ if __name__ == '__main__':
     pay = {'action':'query',
            'list':'recentchanges',
            'rcdir':'newer',
-           'rcstart':format_date(dt.datetime(2022, 9, 6, 0, 0)),
-           'rcend':format_date(dt.datetime(2022, 9, 6, 6, 0, 0)),
+           'rcstart':format_date(dt.datetime(2022, 9, 6, 0, 0, 0)),
+           'rcend':format_date(dt.datetime(2022, 9, 6, 6, 0, 0, 0)),
            'rcprop':'title|user|timestamp',
            'rclimit':50,
-           'rctype':'anon|unpatrolled'}
-    print(bot.get(pay))
+           'rcshow':'anon|unpatrolled'}
+    print((bot.get(pay)))
     
