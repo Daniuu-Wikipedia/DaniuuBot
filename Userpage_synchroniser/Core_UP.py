@@ -10,8 +10,6 @@ It just contains a general instance of a Bot, and some handy subclasses that are
 import requests
 from requests_oauthlib import OAuth1
 import time
-import datetime as dt #Import support for dates and times
-import re
 from os import getcwd
 
 class Bot:

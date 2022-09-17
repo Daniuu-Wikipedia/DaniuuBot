@@ -12,8 +12,6 @@ Note: this file is intentionally kept separate from the core file that is used t
 import requests
 from requests_oauthlib import OAuth1
 import time
-import datetime as dt #Import support for dates and times
-import re
 from os import getcwd
 
 class Bot:
