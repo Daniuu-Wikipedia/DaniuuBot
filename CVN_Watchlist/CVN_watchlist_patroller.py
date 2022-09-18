@@ -3,6 +3,11 @@
 Created on Sat Sep 17 11:54:30 2022
 
 @author: Daniuu
+
+A dedicated bot designed to patrol https://nl.wikipedia.org/wiki/Wikipedia:Controlelijst_vandalismebestrijding
+
+This file contains the code that is used to patrol the page.
+The functionality for the time zones is listed in two other files.
 """
 
 import Core_CVN as core
@@ -14,6 +19,28 @@ def format_date(date):
     if not isinstance(date, dt.datetime):
         raise TypeError('Please pass a valid datetime.datetime object')
     return date.isoformat() #L = we are using local time of the wiki
+
+class Part:
+    """
+    The class processes one _day part_
+    Arguments: start- and end-time. A dedicated script will be developed to handle time zone changes.
+    Times should be passed as datetime.datetime in utc.
+    """
+    def __init__(self, start, end):
+        assert start <= end, "The order of the arguments of a datepart got inverted!"
+        self.start, self.end = start, end
+        self.nredits = -1 #Not checked at this point
+        self.get_unpatrolled_edits()
+    
+    def get_unpatrolled_edits(self):
+        pay = {'action':'query',
+               'list':'recentchanges',
+               'rcdir':'newer',
+               'rcstart':format_date(self.start),
+               'rcend':format_date(self.end),
+               'rcprop':'title',
+               'rclimit':3, #At this point, we only want to know whether or not there are unpatrolled edits.
+               'rcshow':'anon|unpatrolled'}
 
 #Process one single day
 class Day:
@@ -58,9 +85,11 @@ if __name__ == '__main__':
            'list':'recentchanges',
            'rcdir':'newer',
            'rcstart':format_date(dt.datetime(2022, 9, 6, 0, 0, 0)),
-           'rcend':format_date(dt.datetime(2022, 9, 6, 6, 0, 0, 0)),
+           'rcend':format_date(dt.datetime(2022, 9, 6, 6, 0, 0, 0)), #Staat in lokale tijd for some reason
            'rcprop':'title|user|timestamp',
            'rclimit':50,
            'rcshow':'anon|unpatrolled'}
-    print((bot.get(pay)))
+    repl = (bot.get(pay))
+    print(repl)
+    print(len(repl['query']['recentchanges']))
     
