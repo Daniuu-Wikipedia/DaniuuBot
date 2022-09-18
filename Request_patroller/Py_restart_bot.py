@@ -4,20 +4,14 @@ Created on Sun Sep 18 00:32:51 2022
 
 @author: Daniuu
 
-The script performs two actions
-    1) If the script is executed on Toolforge, it restarts the relevant jobs (using an external script)
-    2) The out of order messages are deleted from the relevant pages
+The script performs one main action
+    1) The out of order messages are deleted from the relevant pages
 """
 
 import datetime as dt
 from Core import NlBot
-from sys import platform
-from os import getcwd
 
-#Data for the first task
-bash_loc = f'{getcwd()}/DaniuuBot/Toolforge_jobs.sh'
-
-#Data for the second task
+#Data for the task
 out_of_order_message = '{{Gebruiker:Daniuu/Buiten dienst}}' #Place brackets here for the template
 
 pages = ('Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen',
@@ -25,17 +19,10 @@ pages = ('Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen',
 
 restart_summary = 'De bot is opnieuw opgestart'
 
-#Perform the first task
-if platform.startswith('linux'): #This task can only be performed on Linux-systems (like Toolforge)
-    from os import system
-    system(f'bash {bash_loc}')
-else:
-    raise ValueError('The jobs can only be restarted from Toolforge! Please run the script again there!')
-
-#Define an auxilliary variable for the second task
+#Define an auxilliary variable for the task
 bot = NlBot()
 
-#Perform the second task
+#Perform the task
 for i in pages:
     parse_date = dt.datetime.utcnow()
     payload = {'action':'parse',
