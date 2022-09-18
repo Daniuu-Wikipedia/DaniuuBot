@@ -12,8 +12,14 @@ BLUE='\033[34m'
 MAGENTA='\033[35m'
 
 #Submits the job to stop
-echo -e "${RED}Stopping${NOCOLOR} the bot. I will submit the stopping Python script."
+echo -e "${RED}Stopping${NOCOLOR} the bot. I will submit the stopping Python script to inform the wiki."
 
 toolforge-jobs run restart-bot --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Py_Start_maintenance.py" --image tf-python39 
 
-echo -e "Job ${GREEN}sumbitted."
+echo -e "Job ${GREEN}sumbitted${NOCOLOR}."
+
+echo -e "Now ${RED}stopping${NOCOLOR} the bots themselves."
+
+toolforge-jobs stop revdel
+toolforge-jobs stop ipblok
+

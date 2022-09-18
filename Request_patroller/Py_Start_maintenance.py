@@ -8,7 +8,6 @@ A file to automate the process that starts maintenance.
 
 The script performs two actions
     1) An 'out of order'-message is placed on dedicated pages of the Dutch Wikipedia
-    2) The associated patrolling jobs on Kubernetes are stopped (if the script is executed from Toolforge)
 """
 
 from Core import NlBot
@@ -57,11 +56,3 @@ for i in pages: #Browse through the relevant pages
                 pages.append(i) #Make the page re-join the queue
     else:
         print(f'Maintenance message was already on {i}')
-
-#Perform the second task
-if platform.startswith('linux'):
-    from os import system #We will have to make some calls to the system
-    for i in job_names:
-        system(f'toolforge-jobs delete {i}')
-else:
-    raise SystemError('Toolforge jobs can only be stopped from Toolforge. Please try again on Toolforge!')
