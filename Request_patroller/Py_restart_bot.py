@@ -39,7 +39,7 @@ for i in pages:
                     'bot':False, #To draw attention, this is not a routine edit
                     'nocreate':True,
                     'summary':restart_summary,
-                    'text':'\n'.join(content),
+                    'text':content,
                     'starttimestamp':parse_date.isoformat()}
         result = bot.post(edit_dic)
         if 'error' in result:
