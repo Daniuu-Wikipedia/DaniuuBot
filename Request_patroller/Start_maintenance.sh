@@ -20,6 +20,6 @@ echo -e "Job ${GREEN}sumbitted${NOCOLOR}."
 
 echo -e "Now ${RED}stopping${NOCOLOR} the bots themselves."
 
-toolforge-jobs stop revdel
-toolforge-jobs stop ipblok
+toolforge-jobs delete revdel
+toolforge-jobs delete ipblok
 
