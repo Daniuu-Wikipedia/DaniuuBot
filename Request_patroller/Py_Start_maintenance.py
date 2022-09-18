@@ -55,7 +55,8 @@ for i in pages: #Browse through the relevant pages
         if 'error' in result:
             if result['error']['code'] == 'editconflict':
                 pages.append(i) #Make the page re-join the queue
-    break
+    else:
+        print(f'Maintenance message was already on {i}')
 
 #Perform the second task
 if platform.startswith('linux'):
