@@ -46,5 +46,3 @@ now = dt.datetime.utcnow()
 #VARIABLES CALLED BY OTHER MODULES
 delta = switches[mini] if swmini <= now < swmaxi else switches[maxi]
 offset = lambda x: switches[mini] if swmini <= x < swmaxi else switches[maxi]
-
-print(delta)
