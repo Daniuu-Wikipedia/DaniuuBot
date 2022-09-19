@@ -41,6 +41,12 @@ class Part:
                'rcprop':'title',
                'rclimit':3, #At this point, we only want to know whether or not there are unpatrolled edits.
                'rcshow':'anon|unpatrolled'}
+    
+    def __eq__(self, other):
+        return self.start == other.start and self.end == other.end
+    
+    def __lt__(self, other):
+        return self.start < other.start
 
 #Process one single day
 class Day:
