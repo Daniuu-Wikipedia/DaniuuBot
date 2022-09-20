@@ -61,7 +61,9 @@ class Part:
         assert start <= end, "The order of the arguments of a datepart got inverted!"
         self.start, self.end = start, end
         self.nredits = -1 #Not checked at this point
-        if to_UTC(self.end) <= dt.datetime.utcnow(): #Don't mark a slot as completed when it is not yet completed.
+        if to_UTC(self.end) <= dt.datetime.utcnow() <= start + dt.timedelta(days=30): 
+            #Don't mark a slot as completed when it is not yet completed.
+            #Don't mark a slot when it expired
             #There is no use in making an API query for a slot that is not yet finished
             self.get_unpatrolled_edits() #Switch off to make tests faster
             #pass
@@ -177,7 +179,7 @@ class Day:
     
     @property 
     def expired(self):
-        return self.date + dt.timedelta(days=31) < self.datetime.utcnow()
+        return self.date + dt.timedelta(days=30) < self.datetime.utcnow()
     
     @staticmethod
     def new_day(date):
@@ -231,7 +233,7 @@ class Page:
     def __str__(self):
         date_processed = "\n".join((str(i) for i in self.dates))
         return f'{self._pre}{date_processed}{self._post}'
-        
+            
         
     
 #Some testcode
