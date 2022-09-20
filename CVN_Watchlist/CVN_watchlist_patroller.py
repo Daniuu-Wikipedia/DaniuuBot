@@ -61,7 +61,8 @@ class Part:
         assert start <= end, "The order of the arguments of a datepart got inverted!"
         self.start, self.end = start, end
         self.nredits = -1 #Not checked at this point
-        self.get_unpatrolled_edits()
+        if to_UTC(self.end) <= dt.datetime.utcnow(): #Don't mark a slot as completed when it is not yet completed.
+            self.get_unpatrolled_edits()
     
     def get_unpatrolled_edits(self):
         pay = {'action':'query',
@@ -89,7 +90,7 @@ class Part:
     def __str__(self):
         "This function converts a slot into a format that can be interpreted by humans"
         #General prefix (always mentioned: the times)
-        timestring = f'{wikidate(self.start, False)} - {wikidate(self.end, False)}:'
+        timestring = f'*{wikidate(self.start, False)} - {wikidate(self.end, False)}:'
         if self: #Self bool(self) is True, all edits were patrolled
             return "%s {{d|'''Gecontroleerd'''}} - ~~~~"%timestring
         #There are still edits that need patrolling
@@ -105,20 +106,43 @@ class Day:
     Arguments to be passed upon construction:
         * Text: the text that contains all of the parts of the day
     """
+    month_to_text = {1:'januari',
+                     2:'februari',
+                     3:'maart',
+                     4:'april',
+                     5:'mei',
+                     6:'juni',
+                     7:'juli',
+                     8:'augustus',
+                     9:'september',
+                     10:'oktober',
+                     11:'november',
+                     12:'december'} #To convert the months into a proper title
+    month_regex = f'({"|".join(month_to_text.values())})'
+        
     def __init__(self, text):
         #Parameters to set: date of the request + the list containing the requests
-        pass 
+        self.slots = [] #A blank list to store all the uncompleted slots in
+        for i in text.split('\n'):
+            if i.startswith('*'):
+                if Part.template in i:
+                    s, e = i[:-2].split('|')[1:] #Start and end dates of each timeslot
+                    sd = dt.datetime.strptime(s, r'%d-%m-%Y %H:%M')
+                    ed = dt.datetime.strptime(s, r'%d-%m-%Y %H:%M')
+                    self.slots.append(Part(sd, ed)) #Write the effective part
+                else:
+                    self.slots.append(i.strip())
     
     #Function needed to regenerate the page that contains all days
     def __str__(self):
         "Produces the date-section that is re-inserted into the page"
         if self: #All edits from this day were patrolled
             return '' #Blank this section
-        pass
+        #Write the full string for the section
     
     def __bool__(self):
         "Indicates whether all edits of this day were patrolled"
-        pass
+        return all(self.slots)
     
     #Functions to support sorting these objects
     def __lt__(self, other):
@@ -130,6 +154,60 @@ class Day:
     #Hash
     def __hash__(self):
         return self.date.isoformat().__hash__()
+    
+    @staticmethod
+    def new_day(date):
+        "This method generates a section for the next day"
+        if not isinstance(date, dt.datetime):
+            raise TypeError(f'Please pass a datetime to the new_day function, not a {type(date)}-object.')
+        date = date.replace(hour=0, minute=0, second=0, microsecond=0) #Reset   
+        #Generate the different timeslots
+        slots = [Part(date, date + dt.timedelta(hours=6)),
+                 Part(date + dt.timedelta(hours=6), date + dt.timedelta(hours=10.5))] #A list of dates
+        slots += [Part(date + dt.timedelta(hours=10.5 + i*1.5), date + dt.timedelta(hours=10.5 + (i + 1)*1.5)) for i in range(9)]
+        out = Day()
+        out.slots = slots #Use the backdoor to enter these
+        return out
+    
+    @staticmethod
+    def gen_tomorrow():
+        return Day.new_day(dt.datetime.utcnow() + dt.timedelta(days=1))
+        
+class Page:
+    "All function to manipulate the contents of the request page"
+    
+    api = core.NlBot()
+    preheader = 'Algemeen'
+    postheader = 'Artikelen of IP-adressen met meeste ongemarkeerde (ongecontroleerde?) anonieme edits (kan snel vervallen door controle)'
+    
+    def __init__(self, title="Wikipedia:Controlelijst vandalismebestrijding"):
+        self._title = title
+        
+        #Load page content & TOC (and load them into their respective variables)
+        pay = {'action':'parse',
+               'page':self._title,
+               'prop':'sections|wikitext'}
+        raw = Page.api.get(pay)['parse']
+        wikitext = raw['wikitext']['*'] #Full contents of the page
+        self.toc = raw['sections'] #Store the TOC
+        del raw #Remove memory-consuming auxiliary variable
+        self._splits = sorted(((i['byteoffset'], int(i['index'])) for i in self.toc if i['line'] in {Page.preheader,
+                                                                       Page.postheader}))
+        #All text before and after the section that is relevant for us
+        self._pre, self._post = f'{wikitext[:self._splits[0][0]]}== {Page.preheader} ==\n', wikitext[self._splits[1][0]:]
+        
+        #Find the sections that contain the different patrolling sections
+        rel_sec = self.toc[self._splits[0][1]:self._splits[1][1] + 1] #+1 in final to make slicing easier
+        self.dates = []
+        for i, j in zip(rel_sec[:-1], rel_sec[1:]):
+            if i['line'].startswith('Anoniemen'):
+                self.dates.append(Day(wikitext[i['byteoffset']:j['byteoffset']]))
+        del wikitext, rel_sec #Delete memory-consuming auxiliary variables
+    
+    def __str__(self):
+        return self._title
+        
+        
     
 #Some testcode
 if __name__ == '__main__':
@@ -147,7 +225,6 @@ if __name__ == '__main__':
 k = dt.datetime(2022, 11, 1, 9, 0)
 
 pt = Part(dt.datetime(2022, 9, 6, 0, 0, 0), dt.datetime(2022, 9, 6, 6, 0, 0))
-print(pt)
 
-real = r"00:00 - 06:00: {{Gebruiker:Krinkle/cvlijst2/rclink|06-09-2022 00:00|06-09-2022 06:00}}"
-print(str(pt) == real)
+#a = Page()
+
