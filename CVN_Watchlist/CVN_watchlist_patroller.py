@@ -142,7 +142,7 @@ class Day:
                         self.date = dt.datetime(sd.year, sd.month, sd.day,
                                                 0, 0, 0)
                 else:
-                    self.slots.append(i.strip())
+                    self.slots.append(i.strip())       
     
     #Function needed to regenerate the page that contains all days
     def __str__(self):
@@ -158,7 +158,7 @@ class Day:
     
     def __bool__(self):
         "Indicates whether all edits of this day were patrolled"
-        return all(self.slots)
+        return all(self.slots) or self.date is None #if the date is None, the slots should have been handled
     
     #Functions to support sorting these objects
     def __lt__(self, other):
@@ -171,6 +171,9 @@ class Day:
     def __hash__(self):
         return self.date.isoformat().__hash__()
     
+    def __repr__(self):
+        return f'{self.date.day}-{self.date.month}'
+    
     @property
     def tomorrow(self):
         if self.date is None:
@@ -179,7 +182,7 @@ class Day:
     
     @property 
     def expired(self):
-        return self.date + dt.timedelta(days=30) < self.datetime.utcnow()
+        return self.date + dt.timedelta(days=31) < dt.datetime.utcnow() #31 days to have 1 day as a buffer
     
     @staticmethod
     def new_day(date):
@@ -201,7 +204,6 @@ class Day:
         
 class Page:
     "All function to manipulate the contents of the request page"
-    
     api = core.NlBot()
     preheader = 'Algemeen'
     postheader = 'Artikelen of IP-adressen met meeste ongemarkeerde (ongecontroleerde?) anonieme edits (kan snel vervallen door controle)'
@@ -233,7 +235,30 @@ class Page:
     def __str__(self):
         date_processed = "\n".join((str(i) for i in self.dates))
         return f'{self._pre}{date_processed}{self._post}'
-            
+    
+    def update(self):
+        "Refreshes the page"
+        payload = {'action':'edit',
+                   'title':'Gebruiker:Daniuu/Kladblok',
+                   'text':str(self),
+                   'summary':'Testing a script',
+                   'notminor':True,
+                   'nocreate':True}
+        print(Page.api.post(payload))
+        
+    def clean_old(self):
+        "This method purges the old pages"
+        oldies = [i for i in self.dates if i.expired]
+        for i in oldies:
+            self.dates.remove(i)
+        print(self.dates)
+    
+    def make_new(self):
+        "Creates a new section for the upcoming day"
+        new = Day.gen_tomorrow()
+        if new not in self.dates:
+            self.dates.append(new)
+    
         
     
 #Some testcode
@@ -253,9 +278,6 @@ k = dt.datetime(2022, 11, 1, 9, 0)
 
 pt = Part(dt.datetime(2022, 9, 6, 0, 0, 0), dt.datetime(2022, 9, 6, 6, 0, 0))
 
-a = Page()
+a = Page('Gebruiker:Daniuu/Kladblok')
 
-output = str(a)
-
-with open('Output.txt', 'w') as outfile:
-    outfile.write(output)
+a.clean_old()
