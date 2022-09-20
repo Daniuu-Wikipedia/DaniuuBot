@@ -63,8 +63,8 @@ class Part:
         self.nredits = -1 #Not checked at this point
         if to_UTC(self.end) <= dt.datetime.utcnow(): #Don't mark a slot as completed when it is not yet completed.
             #There is no use in making an API query for a slot that is not yet finished
-            #self.get_unpatrolled_edits() #Switch off to make tests faster
-            pass
+            self.get_unpatrolled_edits() #Switch off to make tests faster
+            #pass
     
     def get_unpatrolled_edits(self):
         pay = {'action':'query',
@@ -73,7 +73,7 @@ class Part:
                'rcstart':format_date(self.start),
                'rcend':format_date(self.end),
                'rcprop':'title',
-               'rclimit':10, #At this point, we only want to know whether or not there are unpatrolled edits.
+               'rclimit':2, #At this point, we only want to know whether or not there are unpatrolled edits.
                'rcshow':'anon|unpatrolled'}
         self.nredits = len(Part.api.get(pay)['query']['recentchanges'])
     
@@ -253,4 +253,7 @@ pt = Part(dt.datetime(2022, 9, 6, 0, 0, 0), dt.datetime(2022, 9, 6, 6, 0, 0))
 
 a = Page()
 
-k = print((1, 2, 3).__hash__())
+output = str(a)
+
+with open('Output.txt', 'w') as outfile:
+    outfile.write(output)
