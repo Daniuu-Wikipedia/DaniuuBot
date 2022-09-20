@@ -62,7 +62,9 @@ class Part:
         self.start, self.end = start, end
         self.nredits = -1 #Not checked at this point
         if to_UTC(self.end) <= dt.datetime.utcnow(): #Don't mark a slot as completed when it is not yet completed.
-            self.get_unpatrolled_edits()
+            #There is no use in making an API query for a slot that is not yet finished
+            #self.get_unpatrolled_edits() #Switch off to make tests faster
+            pass
     
     def get_unpatrolled_edits(self):
         pay = {'action':'query',
@@ -122,23 +124,35 @@ class Day:
         
     def __init__(self, text):
         #Parameters to set: date of the request + the list containing the requests
-        self.slots = [] #A blank list to store all the uncompleted slots in
+        self.slots, self.date = [], None #A blank list to store all the uncompleted slots in
         for i in text.split('\n'):
             if i.startswith('*'):
                 if Part.template in i:
                     s, e = i[:-2].split('|')[1:] #Start and end dates of each timeslot
                     sd = dt.datetime.strptime(s, r'%d-%m-%Y %H:%M')
-                    ed = dt.datetime.strptime(s, r'%d-%m-%Y %H:%M')
+                    try:
+                        ed = dt.datetime.strptime(e, r'%d-%m-%Y %H:%M')
+                    except ValueError: #Weird convention (24:00) - workaround
+                        ed = dt.datetime.strptime(e.replace('24:00', '23:00'), r'%d-%m-%Y %H:%M')
+                        ed += dt.timedelta(hours=1) #Add one hour post-factum
                     self.slots.append(Part(sd, ed)) #Write the effective part
+                    if self.date is None:
+                        self.date = dt.datetime(sd.year, sd.month, sd.day,
+                                                0, 0, 0)
                 else:
                     self.slots.append(i.strip())
     
     #Function needed to regenerate the page that contains all days
     def __str__(self):
         "Produces the date-section that is re-inserted into the page"
-        if self: #All edits from this day were patrolled
-            return '' #Blank this section
+        #if self: #All edits from this day were patrolled
+        #    return '' #Blank this section
         #Write the full string for the section
+        title = f'=== Anoniemen {self.date.day} {Day.month_to_text[self.date.month]} ==='
+        sl = '\n'.join((str(i) for i in self.slots)) #Strings of the slots
+        fd = r'<small>{{%s|%s|%s|label=Controleer of alles van deze dag gedaan is}}</small>'%\
+            (Part.template, wikidate(self.date, True), wikidate(self.tomorrow, True))
+        return f'{title}\n{sl}\n\n{fd}\n'
     
     def __bool__(self):
         "Indicates whether all edits of this day were patrolled"
@@ -149,11 +163,21 @@ class Day:
         return self.date < other.date
     
     def __eq__(self, other):
-        return self.date == other.date
+        return (self.date.day, self.date.month, self.date.year) == (other.date.day, other.date.month, other.date.year)
     
     #Hash
     def __hash__(self):
         return self.date.isoformat().__hash__()
+    
+    @property
+    def tomorrow(self):
+        if self.date is None:
+            return self.date.utcnow() + dt.timedelta(days=1)
+        return self.date + dt.timedelta(days=1)
+    
+    @property 
+    def expired(self):
+        return self.date + dt.timedelta(days=31) < self.datetime.utcnow()
     
     @staticmethod
     def new_day(date):
@@ -205,7 +229,8 @@ class Page:
         del wikitext, rel_sec #Delete memory-consuming auxiliary variables
     
     def __str__(self):
-        return self._title
+        date_processed = "\n".join((str(i) for i in self.dates))
+        return f'{self._pre}{date_processed}{self._post}'
         
         
     
@@ -226,5 +251,6 @@ k = dt.datetime(2022, 11, 1, 9, 0)
 
 pt = Part(dt.datetime(2022, 9, 6, 0, 0, 0), dt.datetime(2022, 9, 6, 6, 0, 0))
 
-#a = Page()
+a = Page()
 
+k = print((1, 2, 3).__hash__())
