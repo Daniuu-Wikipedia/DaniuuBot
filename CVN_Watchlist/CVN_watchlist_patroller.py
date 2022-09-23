@@ -61,9 +61,9 @@ class Part:
         assert start <= end, "The order of the arguments of a datepart got inverted!"
         self.start, self.end = start, end
         self.nredits = -1 #Not checked at this point
-        if to_UTC(self.end) <= dt.datetime.utcnow() <= start + dt.timedelta(days=30): 
+        if to_UTC(self.end) <= dt.datetime.utcnow() <= start + dt.timedelta(days=30):
             #Don't mark a slot as completed when it is not yet completed.
-            #Don't mark a slot when it expired
+            #Don't mark a slot when it (partially) expired (+ 30 days)
             #There is no use in making an API query for a slot that is not yet finished
             self.get_unpatrolled_edits() #Switch off to make tests faster
             #pass
@@ -165,6 +165,8 @@ class Day:
         return self.date < other.date
     
     def __eq__(self, other):
+        if other is None:
+            print(self, other)
         return (self.date.day, self.date.month, self.date.year) == (other.date.day, other.date.month, other.date.year)
     
     #Hash
@@ -194,8 +196,9 @@ class Day:
         slots = [Part(date, date + dt.timedelta(hours=6)),
                  Part(date + dt.timedelta(hours=6), date + dt.timedelta(hours=10.5))] #A list of dates
         slots += [Part(date + dt.timedelta(hours=10.5 + i*1.5), date + dt.timedelta(hours=10.5 + (i + 1)*1.5)) for i in range(9)]
-        out = Day()
+        out = Day('')
         out.slots = slots #Use the backdoor to enter these
+        out.date = date #Manually adjusted
         return out
     
     @staticmethod
@@ -231,6 +234,11 @@ class Page:
             if i['line'].startswith('Anoniemen'):
                 self.dates.append(Day(wikitext[i['byteoffset']:j['byteoffset']]))
         del wikitext, rel_sec #Delete memory-consuming auxiliary variables
+        self._exp, self._new = 0, 0
+        
+        #Run update functions
+        self.clean_old()
+        self.make_new()
     
     def __str__(self):
         date_processed = "\n".join((str(i) for i in self.dates))
@@ -241,24 +249,41 @@ class Page:
         payload = {'action':'edit',
                    'title':'Gebruiker:Daniuu/Kladblok',
                    'text':str(self),
-                   'summary':'Testing a script',
+                   'summary':self.summary(),
                    'notminor':True,
                    'nocreate':True}
-        print(Page.api.post(payload))
+        if self.changes:
+            print(Page.api.post(payload))
+        else:
+            print('Nothing to change')
         
     def clean_old(self):
         "This method purges the old pages"
         oldies = [i for i in self.dates if i.expired]
         for i in oldies:
             self.dates.remove(i)
-        print(self.dates)
+            self._exp += 1
     
     def make_new(self):
         "Creates a new section for the upcoming day"
         new = Day.gen_tomorrow()
         if new not in self.dates:
             self.dates.append(new)
+            self._new += 1
     
+    def summary(self):
+        out = [(f'{self._exp} vervallen dagde(e)l(en) verwijderd' if self._exp else ''),
+               (f'{self._new} nieuwe dagde(e)l(en) toegevoegd' if self._new else ''),
+               (f'{self.marked} dagde(e)l(en) afgevinkt')]
+        return f'Ik heb {", ".join(out)}'
+    
+    @property 
+    def marked(self):
+        return sum((bool(i) for i in self.dates))
+    
+    @property
+    def changes(self):
+        return self.marked or self._exp or self._new
         
     
 #Some testcode
@@ -276,8 +301,14 @@ if __name__ == '__main__':
 #Other testcode
 k = dt.datetime(2022, 11, 1, 9, 0)
 
+import time 
+k = float(time.time())
+
 pt = Part(dt.datetime(2022, 9, 6, 0, 0, 0), dt.datetime(2022, 9, 6, 6, 0, 0))
 
 a = Page('Gebruiker:Daniuu/Kladblok')
 
-a.clean_old()
+a.update()
+
+print(a.marked)
+print(float(time.time()) - k)
