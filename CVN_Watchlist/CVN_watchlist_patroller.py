@@ -254,7 +254,7 @@ class Page:
     def update(self):
         "Refreshes the page"
         payload = {'action':'edit',
-                   'title':'Gebruiker:Daniuu/Kladblok',
+                   'title':self._title,
                    'text':str(self),
                    'summary':self.summary(),
                    'notminor':True,
@@ -270,7 +270,6 @@ class Page:
         for i in oldies:
             self.dates.remove(i)
             self._exp += 1
-            print(i, self._exp)
     
     def make_new(self):
         "Creates a new section for the upcoming day"
@@ -311,6 +310,9 @@ class Page:
         
     
 #Some testcode
+#BOT USES THE OPERATIONAL PAGE
+import sys
+sys.exit('Aborting')
 if __name__ == '__main__':
     bot = core.NlBot()
     pay = {'action':'query',
@@ -325,12 +327,8 @@ if __name__ == '__main__':
 #Other testcode
 k = dt.datetime(2022, 11, 1, 9, 0)
 
-import time 
-k = float(time.time())
-
 pt = Part(dt.datetime(2022, 9, 6, 0, 0, 0), dt.datetime(2022, 9, 6, 6, 0, 0))
 
 a = Page('Wikipedia:Controlelijst vandalismebestrijding')
 
 a.update()
-print(float(time.time()) - k)
