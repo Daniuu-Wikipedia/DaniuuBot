@@ -176,14 +176,20 @@ class Day:
     def __repr__(self):
         return f'{self.date.day}-{self.date.month}'
     
+    def __len__(self):
+        "Yields the number of parts of this day that were fully patrolled"
+        return sum((bool(i) for i in self.slots))
+    
     @property
     def tomorrow(self):
+        "Determines the date of the next day"
         if self.date is None:
             return self.date.utcnow() + dt.timedelta(days=1)
         return self.date + dt.timedelta(days=1)
     
     @property 
     def expired(self):
+        "Verifies whether all timeslots in the considered day have expired"
         return self.date + dt.timedelta(days=31) < dt.datetime.utcnow() #31 days to have 1 day as a buffer
     
     @staticmethod
@@ -203,6 +209,7 @@ class Day:
     
     @staticmethod
     def gen_tomorrow():
+        "Generates a new Date-object to represent the next day."
         return Day.new_day(dt.datetime.utcnow() + dt.timedelta(days=1))
         
 class Page:
@@ -263,6 +270,7 @@ class Page:
         for i in oldies:
             self.dates.remove(i)
             self._exp += 1
+            print(i, self._exp)
     
     def make_new(self):
         "Creates a new section for the upcoming day"
@@ -272,18 +280,34 @@ class Page:
             self._new += 1
     
     def summary(self):
-        out = [(f'{self._exp} vervallen dagde(e)l(en) verwijderd' if self._exp else ''),
-               (f'{self._new} nieuwe dagde(e)l(en) toegevoegd' if self._new else ''),
-               (f'{self.marked} dagde(e)l(en) afgevinkt')]
-        return f'Ik heb {", ".join(out)}'
+        "Generates a structured edit summary. The function is called directly by the update-method"
+        if self.changes:
+            out = 'Er is/zijn '
+            if self.marked:
+                out += '1 dagdeel afgevinkt, ' if self.marked == 1 else f'{self.marked} dagdelen afgevinkt, '
+            if self._exp:
+                out += '1 oude dag verwijderd, ' if self._exp == 1 else f'{self._exp} oude dagen verwijderd, '
+            if self._new:
+                out += '1 nieuwe dag toegevoegd, ' if self._new == 1 else f'{self._new} nieuwe dagen toegevoegd, '
+            if self.fully_handled:
+                out += '1 volledig afgehandelde dag verwijderd, ' if self.fully_handled == 1 else f'{self.fully_handled} afgehandelde dagen weg, '
+            return out[:-2]
+        return '' #Just return an empty string 
     
     @property 
     def marked(self):
+        "Shows how many day-parts were completed since the previous botrun"
+        return sum((len(i) for i in self.dates))
+    
+    @property 
+    def fully_handled(self):
+        "Yields the number of days that were fully handled since the last run."
         return sum((bool(i) for i in self.dates))
     
     @property
     def changes(self):
-        return self.marked or self._exp or self._new
+        "Indicates whether changes should be made to the page."
+        return self.marked or self._exp or self._new or self.fully_handled
         
     
 #Some testcode
@@ -306,9 +330,7 @@ k = float(time.time())
 
 pt = Part(dt.datetime(2022, 9, 6, 0, 0, 0), dt.datetime(2022, 9, 6, 6, 0, 0))
 
-a = Page('Gebruiker:Daniuu/Kladblok')
+a = Page('Wikipedia:Controlelijst vandalismebestrijding')
 
 a.update()
-
-print(a.marked)
 print(float(time.time()) - k)
