@@ -1,5 +1,6 @@
 #!/bin/bash
 
-cd ~/DaniuuBot
+#For immediate execution of the revdel script
 
-python3 Revdel_patrol.py
+toolforge-jobs run revdel2 --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Revdel_patrol.py" --image tf-python39 --wait
+
