@@ -94,7 +94,6 @@ class Vote:
         regex = r'#[^\}\/\|\]]+'
         raw = re.findall(regex, self.get_page_content())
         users = {i.split(':')[1].strip() for i in raw if ':' in i and 'Metaverse' not in i}
-        print(users)
         newl, invalid = [], []  # New voters + their contribution
         work = users - self._checked  # No need to re-check users who voted before
 
@@ -114,7 +113,7 @@ class Vote:
             template = ['== Stemming ==',
                         'Beste Daniuu,\n',
                         f'Zou je volgende stemmen op [[{self.page}]] kunnen nakijken?']
-            template += [f'* {i} heeft slechts {j} bijdragen in de onderzochte 12 maanden' for i, j in invalid]
+            template += [f'* {i} heeft slechts {j} bijdrage(n) in de onderzochte 12 maanden.' for i, j in invalid]
             template += {'Vriendelijke groet, ~~~~'}
             pay = {'action':'edit',
                    'title':'Overleg gebruiker:Daniuu',
