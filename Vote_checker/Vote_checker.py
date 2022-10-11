@@ -126,7 +126,7 @@ class Vote:
 # Code for the arbcom elections of March 2021
 start_vote = datetime.datetime(2022, 10, 11, 18)  # UTC TIME!!!
 #cand = datetime.datetime(2021, 3, 11, 12)
-#page = "Wikipedia:Afzetting moderatoren"
-page = 'Gebruiker:Drummingman/kladblok3'
+page = "Wikipedia:Afzetting moderatoren"
+#page = 'Gebruiker:Drummingman/kladblok3'
 z = Vote(start_vote, None, page)
 z()
