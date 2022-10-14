@@ -96,9 +96,13 @@ class Vote:
         users = {i.split(':')[1].strip() for i in raw if ':' in i and 'Metaverse' not in i}
         newl, invalid = [], []  # New voters + their contribution
         work = users - self._checked  # No need to re-check users who voted before
-
+        
+        print(datetime.datetime.utcnow(), len(users))
+        
         # Step 2: check whether the users are allowed to vote
         for i in work:
+            if not i or '"' in i:
+                continue
             check_result = self.check_user(i)
             newl.append('\t'.join((check_result[0], str(check_result[2]))))
             if check_result[1] is False:
