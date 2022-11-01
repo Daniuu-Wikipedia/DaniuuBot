@@ -66,7 +66,7 @@ class Vote:
         "Reads the list of names that were already checked"
         if not exists(self._log):  # The log was not yet created
             with open(self._log, 'w') as newfile:
-                newfile.write('Blokpop 69\n')
+                newfile.write('Blokpop\t69\n')
         with open(self._log, 'r') as datafile:
             for i in datafile:
                 self._checked.add(i.split('\t')[0])
@@ -98,6 +98,9 @@ class Vote:
         work = users - self._checked  # No need to re-check users who voted before
         
         print(datetime.datetime.utcnow(), len(users))
+        print('\n'.join(sorted(self._checked)))
+        
+        
         
         # Step 2: check whether the users are allowed to vote
         for i in work:
