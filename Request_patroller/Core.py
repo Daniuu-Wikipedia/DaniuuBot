@@ -196,7 +196,7 @@ class Page:
     def __call__(self, logonly=False):
         return self.update(logonly)
 
-    def get_page_content(self) -> list:
+    def get_page_content(self):
         "This function will get the last revision of the request page"
         if self._testing is False:
             # Bot is called in operational mode
@@ -333,7 +333,7 @@ class Page:
         pattern = r'(\d{1,2} (%s) \d{4})' % ('|'.join(Page.nldate))
         return re.findall(pattern, line)
 
-    def format_date(self, date) -> dt.datetime:
+    def format_date(self, date):
         """This function formats a date in the nlwiki format. The returned date only contains information on the day,
         month, and year the request was passed """
         assert isinstance(date, str), "Please pass a string as the argument of format_date!"
