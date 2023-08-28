@@ -167,7 +167,9 @@ class Page:
 
     donetemp = ('done', 'd', 'nd', 'Not done')  # Last ones are typical for nlwiki
 
-    def __init__(self, name: str):
+    def __init__(self,
+                 name: str,
+                 testing=False):
         self.name = name
         self._content = []
         self._preamble, self._queue, self._done = [], [], []  # three lists for three parts of the request page
@@ -175,24 +177,41 @@ class Page:
         self.bot = NlBot()  # Initialize a bot to do operations on Testwiki
         self.id = None
 
+        # Code implemented solely for testing purposes
+        # A boolean value will be used to check whether we are testing the bot or fully operational
+        # The boolean is called by the functions updating the final page
+        # Furthermore, the boolean is checked by the function that gets the page content
+        # If set to True, the Bot will operate in its testing mode!
+        self._testing: bool = testing
+        # If the bot is called in its testing mode, write this to the terminal
+        if self._testing is True:
+            print('CAUTION: BOT CALLED IN TESTING MODE')
+
     def __str__(self):
         return self.name
 
     def __call__(self, logonly=False):
         return self.update(logonly)
 
-    def get_page_content(self):
+    def get_page_content(self) -> list:
         "This function will get the last revision of the request page"
-        d = {'action': 'query',
-             'prop': 'revisions',
-             'titles': self.name,
-             'rvprop': 'content|ids|timestamp',
-             'rvlimit': 1,
-             'rvdir': 'older'}
-        jos = self.bot.get(d)['query']['pages']
-        self.id = int(next(iter(jos.keys())))
-        self._timestamp = jos[str(self.id)]['revisions'][0]['timestamp']  # To check for an eventual edit conflict
-        temp = next(iter(jos.values()))['revisions'][0]['*'].split('\n')
+        if self._testing is False:
+            # Bot is called in operational mode
+            d = {'action': 'query',
+                 'prop': 'revisions',
+                 'titles': self.name,
+                 'rvprop': 'content|ids|timestamp',
+                 'rvlimit': 1,
+                 'rvdir': 'older'}
+            jos = self.bot.get(d)['query']['pages']
+            self.id = int(next(iter(jos.keys())))
+            self._timestamp = jos[str(self.id)]['revisions'][0]['timestamp']  # To check for an eventual edit conflict
+            temp = next(iter(jos.values()))['revisions'][0]['*'].split('\n')
+        elif self._testing is True:
+            # This code is solely executed if the bot is called in its Test mode
+            with open(bs.test_input, 'r', encoding='utf8') as inputfile:
+                temp = inputfile.readlines()  # We don't need to query the database, just some text
+        # Final code (always executed)
         self._content = [i.strip() for i in temp if i.strip()]
         return self._content
 
@@ -245,7 +264,7 @@ class Page:
             print(self.requests)
             return self.print_termination()  # No need to go through the remainder of the function
 
-        # Determine whether or not there are still requests open.
+        # Determine whether there are still requests open.
         remain = len(self.requests) - z
         remain *= remain >= 0
 
@@ -255,25 +274,45 @@ class Page:
                ('%d verzoek(en) weggebezemd' % y) if y else '',
                ('%d verzoek(en) nog af te handelen' % remain))
         summary = ' & '.join((i for i in tup if i))
-        edit_dic = {'action': 'edit',
-                    'pageid': self.id,
-                    'text': new,
-                    'summary': summary,
-                    'bot': True,
-                    # 'minor':True,
-                    'nocreate': True,
-                    'basetimestamp': self._timestamp}
-        if logonly is False:
-            result = self.bot.post(
-                edit_dic)  # Make the post request and store the output to check for eventual edit conflicts
-            if 'error' in result:  # An error occured
-                if result['error']['code'] == 'editconflict':
-                    print('An edit conflict occured during the processing. I will wait for ten seconds')
-                    print('Redoing the things.')
-                    return self()  # Rerun the script, we found a nice little new request
-        else:
-            print('Script is called in log-only, no changes will be made.')
-        print('Removed %d, processed %d, %d remaining' % (y, z, remain))  # Just some code for maintenance purposes
+        # This code will update the page on the wiki
+        # The code can only be executed if the bot is called in "operational" mode
+        # The bot is operational if self._testing is set to False
+        if self._testing is False:
+            edit_dic = {'action': 'edit',
+                        'pageid': self.id,
+                        'text': new,
+                        'summary': summary,
+                        'bot': True,
+                        # 'minor':True,  # Not needed if all edits are marked as "small" - set on the wiki
+                        'nocreate': True,
+                        'basetimestamp': self._timestamp}
+            # This code is only executed when the bot is ran in operational mode
+            # If the bot is set to log-only, no changes will be pushed to the wiki
+            if logonly is False:
+                result = self.bot.post(
+                    edit_dic)  # Make the post request and store the output to check for eventual edit conflicts
+                if 'error' in result:  # An error occured
+                    if result['error']['code'] == 'editconflict':
+                        print('An edit conflict occured during the processing. I will wait for ten seconds')
+                        print('Redoing the things.')
+                        return self()  # Rerun the script, we found a nice little new request
+            else:
+                print('Script is called in log-only, no changes will be made.')
+            print('Removed %d, processed %d, %d remaining' % (y, z, remain))  # Just some code for maintenance purposes
+        # The bot can also be called in its test mode
+        # In test mode, no edits to the wiki should be made
+        # All changes are pushed to a dedicated output file, defined in the Bot's settings
+        elif self._testing is True:
+            with open(bs.test_output, 'w', encoding='utf8') as outputfile:
+                outputfile.write(new)
+            # Inform the operator that the bot wrote its output to a test location
+            print('Bot update function was called in test mode!')
+            # Inform user about the location of their output
+            # This function requires Python 3.6+
+            print(f'Bot output was written to {bs.test_output}.')
+        # End of the testing section
+        # The bot will now write a message to the terminal
+        # The message indicates that the update run was performed without errors
         self.print_termination()
 
     def print_termination(self):

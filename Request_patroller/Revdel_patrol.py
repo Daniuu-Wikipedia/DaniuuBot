@@ -17,9 +17,11 @@ import Bot_settings as bs
 
 
 class Revdel(c.Page):
-    def __init__(self):
+    def __init__(self,
+                 testing=False):
         "Intializes the revdel bot."
-        super().__init__('Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen')
+        # Argument "testing" can be set to True if the bot needs to be tested
+        super().__init__('Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen', testing)
 
     def check_request_on_line(self, line,
                               pattern=r'(((direction=next|diff=(\d{1,9}|next|prev))\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})',

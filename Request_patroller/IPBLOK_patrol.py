@@ -16,8 +16,10 @@ import re
 class IPBLOK(c.Page):
     "This class contains the main content for the page related operations"
 
-    def __init__(self):
-        super().__init__('Wikipedia:Verzoekpagina voor moderatoren/IPBlok')
+    def __init__(self,
+                 testing=False):
+        # Argument "testing" can be set to True if the bot needs to be tested
+        super().__init__('Wikipedia:Verzoekpagina voor moderatoren/IPBlok', testing)
         self.regex = None  # Store the default regex pattern here
         self.prepare_regex()
 
