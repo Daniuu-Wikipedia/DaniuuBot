@@ -193,9 +193,9 @@ class Request(c.GenReq):
         # Settings have been fully moved to the Bot_settings.py file
         # The move was done to centralize all this kind of settings
         # The "delay" setting gives the blocking sysop the chance to make a statement of their own
-        delay: int = bs.ipblok_processing_delay_minutes
+        delay = bs.ipblok_processing_delay_minutes
         # The "expiry" setting prevents the bot from flagging blocks that were made more than the given time ago
-        expiry: dt.timedelta = bs.ipblok_block_expiry
+        expiry = bs.ipblok_block_expiry
         self.get_blocks()  # First, get the blocks from the API
         self.blocks.sort(key=lambda i: i['timestamp'], reverse=True)  # Sort, most recent blocks first
         too_old = Request.now - expiry  # Don't handle blocks older than this delay
