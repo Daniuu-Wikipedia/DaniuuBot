@@ -272,9 +272,10 @@ class Page:
         pattern = r'(\d{1,2} (%s) \d{4})' % ('|'.join(Page.nldate))
         return re.findall(pattern, line)
 
-    def format_date(self, date):
-        "This function formats a date in the nlwiki format"
-        assert isinstance(date, str), "Please pass a string as the argument of format_nldate!"
+    def format_date(self, date) -> dt.datetime:
+        """This function formats a date in the nlwiki format. The returned date only contains information on the day,
+        month, and year the request was passed """
+        assert isinstance(date, str), "Please pass a string as the argument of format_date!"
         return dt.datetime.strptime(self.replace_months(date),
                                     '%d %m %Y')  # this is the object that can actually do the job for us
 
@@ -291,12 +292,12 @@ class Page:
         return len(lines)
 
     def get_date_for_lines(self, lines):
-        "This function will return the oldest date that corresponds with a given request."
+        "This function will return the most recent contribution date that corresponds with a given request."
         for k in lines[::-1]:  # Run the inverse
             try:
-                date_temp = self.filter_date(k)[0][0]
-                if isinstance(date_temp, str):
-                    return self.format_date(date_temp)
+                date_temp = self.filter_date(k)[0][0]  # Get the date on that line (using Regex)
+                if isinstance(date_temp, str):  # Check whether we actually found a valid date
+                    return self.format_date(date_temp)  # Convert the found date into an actual DateTime
             except IndexError:  # It's easier to ask for forgiveness, as this sin can be forgiven easily.
                 date_temp = None
         # No date was found, use an emergency procedure

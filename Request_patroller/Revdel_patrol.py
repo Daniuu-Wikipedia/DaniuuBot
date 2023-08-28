@@ -134,6 +134,7 @@ class Revdel(c.Page):
             request_date = self.get_date_for_lines(self._done[i:j])
             if isinstance(request_date, dt.datetime):
                 # A valid date has been found, check whether we can now delete
+                # The bot will only delete a request if it is older than 1 day + some hours
                 if request_date + dt.timedelta(days=days, hours=hours) <= dt.datetime.utcnow():
                     to_del.append((i, j))
         return self.clear_lines(self._done, to_del)
