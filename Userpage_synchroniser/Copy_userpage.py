@@ -9,12 +9,14 @@ This script synchronizes my userpages on nlwiki and vlswiki
 
 from Core_UP import NlBot, VlsBot
 
+
 def get_original_text():
-    bot = NlBot() #Prepare the correct bot
-    payload = {'action':'parse',
-               'page':'Gebruiker:Daniuu',
-               'prop':'wikitext'}
+    bot = NlBot()  # Prepare the correct bot
+    payload = {'action': 'parse',
+               'page': 'Gebruiker:Daniuu',
+               'prop': 'wikitext'}
     return bot.get(payload)['parse']['wikitext']['*'].split('\n')
+
 
 def remove_templates(text):
     "This method removes all sorts of unwanted templates from the page"
@@ -24,26 +26,31 @@ def remove_templates(text):
             out.append(i)
     return out
 
+
 def remove_divisions(text):
     "This method removes a second bunch of unwanted content"
-    t1 = [i for i in text if '<div' not in i and '</div>' not in i and 'Wikipedia:' not in i] #Remove all divisions
-    t2 = [i.replace('Bestand:', 'File:') for i in t1] #Fix a very common bug
+    t1 = [i for i in text if '<div' not in i and '</div>' not in i and 'Wikipedia:' not in i]  # Remove all divisions
+    t2 = [i.replace('Bestand:', 'File:') for i in t1]  # Fix a very common bug
     return t2
+
 
 def post_new_text(new):
     bot = VlsBot()
-    payload = {'action':'edit',
-               'title':'Gebruker:Daniuu',
-               'text':new,
-               'bot':True}
+    payload = {'action': 'edit',
+               'title': 'Gebruker:Daniuu',
+               'text': new,
+               'bot': True}
     return bot.post(payload)
+
 
 def get_old_text():
     bot = VlsBot()
-    payload = {'action':'parse',
-               'page':'Gebruker:Daniuu',
-               'prop':'wikitext'}
+    payload = {'action': 'parse',
+               'page': 'Gebruker:Daniuu',
+               'prop': 'wikitext'}
     return bot.get(payload)['parse']['wikitext']['*']
+
+
 text = get_original_text()
 s1 = remove_templates(text)
 s2 = remove_divisions(s1)

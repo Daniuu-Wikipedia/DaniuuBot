@@ -16,6 +16,7 @@ from os import chdir
 
 chdir(realpath(dirname(__file__)))
 
+
 class NlBot(Bot):
     def __init__(self):
         super().__init__('https://nl.wikipedia.org/w/api.php')
@@ -56,7 +57,7 @@ class Vote:
         #     'ucuser':user,
         #     'ucdir':'newer',
         #     'ucprop':'title|timestamp'}
-        #r = self._bot.get(p)['query']['usercontribs'][0]
+        # r = self._bot.get(p)['query']['usercontribs'][0]
         # d = datetime.datetime.strptime(r['timestamp'], "%Y-%m-%dT%H:%M:%S%z").replace(tzinfo=None) #Remove the timezone info
 
         # Return statement - will be used in further processing
@@ -96,12 +97,10 @@ class Vote:
         users = {i.split(':')[1].strip() for i in raw if ':' in i and 'Metaverse' not in i}
         newl, invalid = [], []  # New voters + their contribution
         work = users - self._checked  # No need to re-check users who voted before
-        
+
         print(datetime.datetime.utcnow(), len(users))
         print('\n'.join(sorted(self._checked)))
-        
-        
-        
+
         # Step 2: check whether the users are allowed to vote
         for i in work:
             if not i or '"' in i:
@@ -122,18 +121,18 @@ class Vote:
                         f'Zou je volgende stemmen op [[{self.page}]] kunnen nakijken?']
             template += [f'* {i} heeft slechts {j} bijdrage(n) in de onderzochte 12 maanden.' for i, j in invalid]
             template += {'Vriendelijke groet, ~~~~'}
-            pay = {'action':'edit',
-                   'title':'Overleg gebruiker:Daniuu',
-                   'nocreate':True,
-                   'appendtext':'\n' + '\n'.join(template) + '\n',
-                   'summary':'Melden van een mogelijke ongeldige stem'}
+            pay = {'action': 'edit',
+                   'title': 'Overleg gebruiker:Daniuu',
+                   'nocreate': True,
+                   'appendtext': '\n' + '\n'.join(template) + '\n',
+                   'summary': 'Melden van een mogelijke ongeldige stem'}
             print(self._bot.post(pay))
 
 
 # Code for the arbcom elections of March 2021
 start_vote = datetime.datetime(2022, 10, 11, 18)  # UTC TIME!!!
-#cand = datetime.datetime(2021, 3, 11, 12)
+# cand = datetime.datetime(2021, 3, 11, 12)
 page = "Wikipedia:Afzetting moderatoren"
-#page = 'Gebruiker:Drummingman/kladblok3'
+# page = 'Gebruiker:Drummingman/kladblok3'
 z = Vote(start_vote, None, page)
 z()
