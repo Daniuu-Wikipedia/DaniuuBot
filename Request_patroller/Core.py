@@ -171,7 +171,7 @@ class Page:
     donetemp = ('done', 'd', 'nd', 'Not done')  # Last ones are typical for nlwiki
 
     def __init__(self,
-                 name: str,
+                 name str,
                  testing=False):
         self.name = name
         self._content = []
@@ -185,7 +185,7 @@ class Page:
         # The boolean is called by the functions updating the final page
         # Furthermore, the boolean is checked by the function that gets the page content
         # If set to True, the Bot will operate in its testing mode!
-        self._testing: bool = testing
+        self._testing = testing
         # If the bot is called in its testing mode, write this to the terminal
         if self._testing is True:
             print('CAUTION: BOT CALLED IN TESTING MODE')
