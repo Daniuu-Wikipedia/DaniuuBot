@@ -13,6 +13,7 @@ Some functions were specifically modified for this little tool.
 import re  # Regex
 import datetime as dt  # Import support for dates and times
 import Core as c
+import Bot_settings as bs
 
 
 class Revdel(c.Page):
@@ -99,7 +100,7 @@ class Revdel(c.Page):
             if not isinstance(i, str):  # These ones should be ignored (we can do the deletion first)
                 if i:  # checks whether all requests have been handled
                     sto.append(self.requests[i] + (
-                    i.check_person(),))  # Add the desired indices to the list that will be processed later
+                        i.check_person(),))  # Add the desired indices to the list that will be processed later
 
         # Begin processing the requests that are done or flagged
         sto.sort()  # Do in place sorting to make things easier
@@ -122,7 +123,9 @@ class Revdel(c.Page):
             del self._queue[i:j]
         return len(sto)  # Return the number of processed requests
 
-    def check_removal(self, days=1, hours=4):
+    def check_removal(self,
+                      days=bs.revdel_removal_days,
+                      hours=bs.revdel_removal_hours):
         "Function determines which requests can be deleted."
         # Browse all lines of the 'done queue'
         if not self._done:
@@ -193,7 +196,10 @@ class Request(c.GenReq):
                     self._user = i['user']
                     return i['user']
 
-    def get_next_revision(self, prev, conti=None, jos=None):
+    def get_next_revision(self,
+                          prev,
+                          conti=None,
+                          jos=None):
         "This function gets the revision following a given revision. This function also supports continuation"
         if jos is None:  # Only run this if not passed
             d1 = {'action': 'query',
