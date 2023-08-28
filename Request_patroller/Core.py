@@ -40,7 +40,7 @@ class Bot:
                                          1::2])  # This is the reason why those keys should never be published
             except FileNotFoundError:  # A workaround for the shell file @toolforge
                 from os import getcwd
-                file = f'{getcwd()}/DaniuuBot/{file}'  # An attempt to fix a particular bug
+                file = getcwd() + '/DaniuuBot/' + file  # An attempt to fix a particular bug
                 with open(file, 'r') as secret:
                     self._auth = OAuth1(*[i.strip() for i in secret][1::2])
 
@@ -315,7 +315,7 @@ class Page:
             print('Bot update function was called in test mode!')
             # Inform user about the location of their output
             # This function requires Python 3.6+
-            print(f'Bot output was written to {bs.test_output}.')
+            print('Bot output was written to %s.' % bs.test_output)
             # Print the edit summary as a service to the tester
             print(summary)
         # End of the testing section
