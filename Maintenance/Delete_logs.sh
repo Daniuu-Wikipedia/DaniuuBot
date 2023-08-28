@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Script to remove old log files
+# Script to remove old log files
 cd ~
 
 rm *.err
