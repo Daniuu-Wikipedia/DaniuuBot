@@ -15,8 +15,6 @@ import re
 import Bot_settings as bs
 import sys
 
-print(sys.version)
-
 
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
