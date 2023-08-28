@@ -11,6 +11,7 @@ Please note: this script is still in an experimental phase,
 import Core as c
 import datetime as dt
 import re
+import Bot_settings as bs
 
 
 class IPBLOK(c.Page):
@@ -111,8 +112,12 @@ class IPBLOK(c.Page):
                         self._done.append(prefix + i.done_string())
         return self.clear_lines(self._queue, todel)
 
-    def check_removal(self, days=1, hours=4):
+    def check_removal(self):
         "Function determines which requests can be deleted."
+        # Previously, the settings controlling the delay in removing the request were implemented as keyword arguments
+        # Settings have been fully moved to the Bot_settings.py file
+        # The move was done to centralize all this kind of settings
+        days, hours = bs.ipblok_removal_days, bs.ipblok_removal_hours
         # Browse all lines of the 'done queue'
         if not self._done:
             self.separate()  # First generate the queue, much better
@@ -182,11 +187,18 @@ class Request(c.GenReq):
                 i['expiry'] = self.convert_api_date(end)
                 end = i['expiry']
 
-    def check_blocked(self, delay=10):  # For the test phase
+    def check_blocked(self):  # For the test phase
         "This function will check whether a given IP is blocked. A 10 minute delay prior to flagging is used"
+        # Previously, the setting controlling the delay in processing the request was implemented as keyword arguments
+        # Settings have been fully moved to the Bot_settings.py file
+        # The move was done to centralize all this kind of settings
+        # The "delay" setting gives the blocking sysop the chance to make a statement of their own
+        delay: int = bs.ipblok_processing_delay_minutes
+        # The "expiry" setting prevents the bot from flagging blocks that were made more than the given time ago
+        expiry: dt.timedelta = bs.ipblok_block_expiry
         self.get_blocks()  # First, get the blocks from the API
         self.blocks.sort(key=lambda i: i['timestamp'], reverse=True)  # Sort, most recent blocks first
-        too_old = Request.now - dt.timedelta(hours=1)
+        too_old = Request.now - expiry  # Don't handle blocks older than this delay
         for i in self.blocks:
             if too_old <= i['timestamp'] + dt.timedelta(
                     minutes=delay) <= Request.now:  # This gives the blocking sysop the time to place a block

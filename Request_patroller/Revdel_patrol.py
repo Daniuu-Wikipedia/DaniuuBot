@@ -125,10 +125,12 @@ class Revdel(c.Page):
             del self._queue[i:j]
         return len(sto)  # Return the number of processed requests
 
-    def check_removal(self,
-                      days=bs.revdel_removal_days,
-                      hours=bs.revdel_removal_hours):
+    def check_removal(self):
         "Function determines which requests can be deleted."
+        # Previously, the settings controlling the delay in removing the request were implemented as keyword arguments
+        # Settings have been fully moved to the Bot_settings.py file
+        # The move was done to centralize all this kind of settings
+        days, hours = bs.revdel_removal_days, bs.revdel_removal_hours
         # Browse all lines of the 'done queue'
         if not self._done:
             self.separate()  # First generate the queue, much better
