@@ -259,7 +259,13 @@ class Page:
                 return None  # Make sure the program stops here
         del temp_concent  # Checks are done, we don't need to store the content in lowercase anymore
 
-        if y == 0 and z == 0:
+        if y == 0 and z == 0 and self._testing is False:
+            # Main function of the code: avoid making useless requests to the API
+            # Requests are considered useless if no changes will be made
+            # This code is only executed in operational mode
+            # In testing mode, the edit API is not called
+            # In testing mode, we want the output to be updated in every iteration
+            # Hence, check bypassed in testing mode
             print('Nothing to be done!')
             print(self.requests)
             return self.print_termination()  # No need to go through the remainder of the function
@@ -310,6 +316,8 @@ class Page:
             # Inform user about the location of their output
             # This function requires Python 3.6+
             print(f'Bot output was written to {bs.test_output}.')
+            # Print the edit summary as a service to the tester
+            print(summary)
         # End of the testing section
         # The bot will now write a message to the terminal
         # The message indicates that the update run was performed without errors

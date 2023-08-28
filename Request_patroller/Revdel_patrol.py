@@ -309,5 +309,5 @@ class MultiRequest(c.GenMulti):
         return self.done_string()
 
 
-t = Revdel()
+t = Revdel()  # To set the bot to test mode, pass testing=True as an additional argument to this call
 t()  # Indien hier True wordt doorgegeven, draait het script in log-only mode, en worden geen veranderingen aangebracht
