@@ -166,7 +166,7 @@ class Page:
 
     donetemp = ('done', 'd', 'nd', 'Not done')  # Last ones are typical for nlwiki
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
         self._content = []
         self._preamble, self._queue, self._done = [], [], []  # three lists for three parts of the request page
