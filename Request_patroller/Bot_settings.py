@@ -5,6 +5,12 @@ It is used to store some parameters that would otherwise be hardcodes at weird p
 This file makes those parameters more easily accessible
 """
 
+# Parameters influencing all bots (called from the Core)
+# Strings that, if they appear on the page, stop the bot (use lowercase!)
+abort_strings: tuple = ('{{nobots}}',
+                        '{{nobots|deny=daniuubot',
+                        '{{bots|deny=daniuubot}}')
+
 # Parameters influencing the bot patrolling nl:WP:VV
 # Control the timespan between the handling and deletion of a revdel request (>= 1 days)
 # Set to 2 days after https://w.wiki/7M7u (the request will remain visible for 1 day prior to being removed)
@@ -12,3 +18,7 @@ revdel_removal_days: int = 2  # Must be at least one (remove the day after the r
 # Control the time in the morning (UTC) at which the removal will take place
 # Note: this parameter does not account for differences in CET and CEST
 revdel_removal_hours: int = 4  # Set to 4 (5 am in CET, 6 am in CEST - set this to a quiet time)
+
+
+# Parameters influencing the bot patrolling WP:IPBLOK
+# Not yet implemented

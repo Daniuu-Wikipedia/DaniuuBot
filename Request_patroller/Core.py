@@ -12,6 +12,7 @@ from requests_oauthlib import OAuth1
 import time
 import datetime as dt  # Import support for dates and times
 import re
+import Bot_settings as bs
 
 
 class Bot:
@@ -228,6 +229,16 @@ class Page:
              '\n'.join(self._queue),
              '\n'.join(self._done))
         new = '\n'.join(t)
+
+        # Following request made at https://w.wiki/7M8A
+        # Bot will automatically stop if {{nobots}} is added to the page
+        temp_concent = [i.lower() for i in self._content]
+        for line in temp_concent:
+            if any((i.lower() in line for i in bs.abort_strings)):
+                # If this code is called, abort all running and don't make any further requests
+                print('\nBOT FORCIBLY TERMINATED DUE TO STOP STRINGS\n')
+                return None  # Make sure the program stops here
+        del temp_concent  # Checks are done, we don't need to store the content in lowercase anymore
 
         if y == 0 and z == 0:
             print('Nothing to be done!')
