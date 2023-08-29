@@ -13,7 +13,6 @@ import time
 import datetime as dt  # Import support for dates and times
 import re
 import Bot_settings as bs
-import sys
 
 
 class Bot:
