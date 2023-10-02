@@ -91,15 +91,15 @@ class Revdel(c.Page):
         return self.requests
 
     def check_requests(self):
-        'This function will check whether all requests are done, and can move the request to the next part'
+        """This function will check whether all requests are done, and can move the request to the next part"""
         self.check_queue_done()
         # First, process the requests that were marked manually
         sto = [(i, j, None) for i, j in
                self.requests.get('flagged', ())]  # Generate a list of tuples with 'None' as third element
 
-        # Now, process the requestst that can be flagged automatically
+        # Now, process the requests that can be flagged automatically
         for i in self.requests:
-            if not isinstance(i, str):  # These ones should be ignored (we can do the deletion first)
+            if not isinstance(i, str):  # These should be ignored (we can do the deletion first)
                 if i:  # checks whether all requests have been handled
                     sto.append(self.requests[i] + (
                         i.check_person(),))  # Add the desired indices to the list that will be processed later
