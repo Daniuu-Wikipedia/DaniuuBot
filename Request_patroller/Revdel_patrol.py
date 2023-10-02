@@ -205,12 +205,20 @@ class Request(c.GenReq):
                           conti=None,
                           jos=None):
         "This function gets the revision following a given revision. This function also supports continuation"
+        # Bug observed on 2 October 2023: this code is unable to handle deleted pages
+        # Fix: if the desired revision is missing, this likely indicates that the page was deleted
+        # For deleted pages: just return the previous oldid - that should do the job for deleted pages
         if jos is None:  # Only run this if not passed
             d1 = {'action': 'query',
                   'prop': 'revisions',
                   'revids': prev,
                   'rvprop': 'ids'}
-            jos = next(iter(Request.bot.get(d1)['query']['pages'].keys()))
+            response = Request.bot.get(d1)
+            try:
+                jos = next(iter(response['query']['pages'].keys()))
+            except KeyError:
+                return prev  # Bugfix (https://w.wiki/7deG) - revisions 66081428 & 66081431 belong to deleted pages
+            del response  # Delete this variable (memory considerations & avoid naming issues)
         d2 = {'action': 'query',
               'prop': 'revisions',
               'rvlimit': 500,
