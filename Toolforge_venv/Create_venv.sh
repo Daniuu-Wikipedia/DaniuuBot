@@ -23,4 +23,5 @@ pip install -U pip wheel
 pip install requests
 pip install pyyaml
 pip install requests_oauthlib
+pip install toolforge
 
