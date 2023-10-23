@@ -15,3 +15,6 @@ __pycache__
 /.idea/vcs.xml
 /.idea
 *.log
+/www/Python/venv/*
+/www/Python/venv/
+/www/.idea/
