@@ -10,10 +10,13 @@ It just contains a general instance of a Bot, and some handy subclasses that are
 import requests
 from requests_oauthlib import OAuth1
 import time
+from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
 import re
 import Bot_settings as bs
 
+# Before taking any actions, change the UA to something nicer
+set_user_agent('Daniuu-Bot')
 
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
