@@ -10,6 +10,9 @@ The script performs one main action
 
 import datetime as dt
 from Core import NlBot
+from toolforge import set_user_agent
+
+set_user_agent('Daniuu-Bot')
 
 # Data for the task
 out_of_order_message = '{{Gebruiker:Daniuu/Buiten dienst}}'  # Place brackets here for the template

@@ -19,4 +19,4 @@ bash Reset_Toolforge_jobs.sh
 #When complete, submit a job to Kubernetes to remove the out of order message
 cd ~/DaniuuBot/Request_patroller
 
-toolforge-jobs run restart-bot --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Py_restart_bot.py" --image tf-python39 
+toolforge-jobs run restart-bot --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Py_restart_bot.py" --image python3.11

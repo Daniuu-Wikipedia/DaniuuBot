@@ -11,6 +11,9 @@ import requests
 from requests_oauthlib import OAuth1
 import time
 from os import getcwd
+from toolforge import set_user_agent
+
+set_user_agent('Daniuu-Bot')
 
 
 class Bot:
