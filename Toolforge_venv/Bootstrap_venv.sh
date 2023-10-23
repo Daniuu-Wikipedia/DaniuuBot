@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cd ~/Tools_venv
+cp Create_venv.sh ~/Create_venv.sh
+
 # Shell file to create the virtual environment using the desired Python interpreter
 cd ~
 
