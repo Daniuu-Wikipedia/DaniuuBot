@@ -5,5 +5,5 @@
 python -V
 python3 -V
 
-toolforge-jobs run revdel2 --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Revdel_patrol.py" --image tf-python3.11 --wait
+toolforge-jobs run revdel2 --command "./botenv/bin/python3.11 ./DaniuuBot/Request_patroller/Revdel_patrol.py" --image tf-python3.11 --wait
 
