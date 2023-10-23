@@ -7,6 +7,9 @@ cd ~
 # use bash strict mode
 set -euo pipefail
 
+python -V
+python3 -V
+
 # create the venv
 python3 -m venv botenv
 
