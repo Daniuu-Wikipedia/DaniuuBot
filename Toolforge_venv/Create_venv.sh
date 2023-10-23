@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Make sure the correct Python interpreter is selected before launching!
 #Launch from the main directory
 cd ~
 
