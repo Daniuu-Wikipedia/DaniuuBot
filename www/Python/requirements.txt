@@ -1,0 +1,3 @@
+Flask==3.0.0
+mwoauth>=0.4.0
+toolforge>=6.0.0
