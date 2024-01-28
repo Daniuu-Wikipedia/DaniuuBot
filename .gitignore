@@ -4,6 +4,7 @@ Beta.txt
 __pycache__/Core.cpython-37.pyc
 __pycache__
 *.txt
+*.tx
 *.pyc
 *.err
 *.out
