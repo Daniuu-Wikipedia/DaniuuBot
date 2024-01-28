@@ -13,7 +13,7 @@ import time
 from os import getcwd
 from toolforge import set_user_agent
 
-set_user_agent('Daniuu-Bot')
+set_user_agent('Daniuu-Bot TESTER')
 
 
 class Bot:
@@ -32,7 +32,7 @@ class Bot:
     def __str__(self):
         return self.api.copy()
 
-    def verify_OAuth(self, file="Operational.txt"):
+    def verify_OAuth(self, file="TB2.tx"):
         'This function will verify whether the OAuth-auth has been configured. If not, it will do the configuration.'
         if self._auth is None:
             try:
@@ -40,7 +40,7 @@ class Bot:
                     self._auth = OAuth1(*[i.strip() for i in secret][
                                          1::2])  # This is the reason why those keys should never be published
             except FileNotFoundError:  # Workaround for a bugfix @Toolforge
-                with open(f'{getcwd()}/DaniuuBot/Userpage_synchroniser/{file}') as secret:
+                with open(file) as secret:
                     self._auth = OAuth1(*[i.strip() for i in secret][1::2])
 
     def verify_token(self):
