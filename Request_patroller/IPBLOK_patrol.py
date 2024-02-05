@@ -42,6 +42,10 @@ class IPBLOK(c.Page):
         "This function checks whether an IP is on the line, and returns those. If forreq is False, the requests are not generated explicitly"
         if self.regex is None:
             self.prepare_regex()  # The regex has not yet been initialized properly
+        # Following issue of 2 February 2024: Don't list lines with a donetemp in there!
+        if any(('{{%s}}'%i in line.lower() for i in super().donetemp)) or any(('{{%s}}'%i in line.lower() for i in super().donetemp)):
+            return [] if forreq is True else False
+
         k = re.findall(self.regex, line.upper())  # Make it upper, so the regex can do it's job as it should do
         if not k:
             return None  # Returns None, indicating that the list of matches is empty
@@ -113,7 +117,7 @@ class IPBLOK(c.Page):
         return self.clear_lines(self._queue, todel)
 
     def check_removal(self):
-        "Function determines which requests can be deleted."
+        """Function determines which requests can be deleted."""
         # Previously, the settings controlling the delay in removing the request were implemented as keyword arguments
         # Settings have been fully moved to the Bot_settings.py file
         # The move was done to centralize all this kind of settings
@@ -320,5 +324,5 @@ class Test(IPBLOK):
 
 
 # Execution code
-s = IPBLOK()
+s = IPBLOK(testing=True)
 s()  # Pass True to place this bot into log-only
