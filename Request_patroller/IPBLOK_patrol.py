@@ -324,5 +324,5 @@ class Test(IPBLOK):
 
 
 # Execution code
-s = IPBLOK(testing=True)
+s = IPBLOK()
 s()  # Pass True to place this bot into log-only
