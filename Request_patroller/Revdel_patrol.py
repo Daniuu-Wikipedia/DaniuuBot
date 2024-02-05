@@ -17,6 +17,9 @@ import Bot_settings as bs
 
 
 class Revdel(c.Page):
+
+    pattern = r'(((direction=next|diff=(\d{1,9}|next|prev))\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})'
+
     def __init__(self,
                  testing=False):
         "Intializes the revdel bot."
@@ -24,9 +27,11 @@ class Revdel(c.Page):
         super().__init__('Wikipedia:Verzoekpagina voor moderatoren/Versies verbergen', testing)
 
     def check_request_on_line(self, line,
-                              pattern=r'(((direction=next|diff=(\d{1,9}|next|prev))\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})',
+                              pattern=None,
                               check=False, proc=False):
         "Checks whether the line passed as an argument contains any kind of requests"
+        if pattern is None:
+            pattern = Revdel.pattern  # Use the pattern stored as default for the class
         raw = re.findall(pattern, line.lower())  # this will unleash the regex on the poor little line
         if not raw:  # No pattern was found before
             raw = re.findall(r'\d{8,}', line.lower())  # Additional check to mark as a request
