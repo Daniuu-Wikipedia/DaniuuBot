@@ -245,7 +245,13 @@ class Page:
     def update(self, logonly=False):
         "This function will update the content of the page"
         print('Bot was called at ' + str(dt.datetime.now()))
-        y = self.check_removal()  # How many requests are deleted
+        # Following issue of 2 February 2024 (IPBLOK - https://w.wiki/93qd)
+        # We will only clear the page between 4:00 and 4:18 UTC
+        current_time = dt.datetime.utcnow()
+        if current_time.hour == 4 and 0 <= current_time.minute <= 17:
+            y = self.check_removal()  # How many requests are deleted
+        else:
+            y = 0  # Automatic way to bypass clearing requests & repeated instances
         z = self.check_requests()
         t = ('\n'.join(self._preamble),
              '\n'.join(self._queue),
@@ -357,8 +363,7 @@ class Page:
         for k in lines[::-1]:  # Run the inverse
             try:
                 date_temp = self.filter_date(k)[0][0]  # Get the date on that line (using Regex)
-                if isinstance(date_temp, str):  # Check whether we actually found a valid date
-                    return self.format_date(date_temp)  # Convert the found date into an actual DateTime
+                return self.format_date(date_temp)  # Convert the found date into an actual DateTime
             except IndexError:  # It's easier to ask for forgiveness, as this sin can be forgiven easily.
                 date_temp = None
         # No date was found, use an emergency procedure
