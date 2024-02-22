@@ -18,7 +18,7 @@ echo -e "${YELLOW}I have deleted all existing jobs."
 echo -e "${NOCOLOR}I will now resubmit the required jobs"
 
 #Job to patrol https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/Versies_verbergen
-toolforge-jobs run revdel --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Revdel_patrol.py" --image python3.11 --schedule "*/15 * * * *"
+toolforge-jobs run revdel --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Revdel_patrol.py" --image python3.11 --schedule "02,17,32,47 * * * *"
 
 echo -e "Job to patrol WP:VV ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
