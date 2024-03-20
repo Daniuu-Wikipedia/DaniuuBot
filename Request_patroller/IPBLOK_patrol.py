@@ -23,6 +23,9 @@ class IPBLOK(c.Page):
         super().__init__('Wikipedia:Verzoekpagina voor moderatoren/IPBlok', testing)
         self.regex = None  # Store the default regex pattern here
         self.prepare_regex()
+        self._logfile = 'IPBLOK_log.txt'
+        c.clear_log_file(self._logfile)
+        c.log(self._logfile, 'Initialization done')
 
     def separate(self):
         return super().separate('Nieuwe verzoeken', 'Afgehandelde verzoeken')
@@ -36,6 +39,7 @@ class IPBLOK(c.Page):
         regex_template = r'\{\{(%s)\s*\|\s*' % (
             '|'.join(templates)).upper()  # A pattern that makes handling the templates easier
         self.regex = ('(%s(%s|%s))' % (regex_template, ip4, ip6))
+        c.log(self._logfile, 'Regex prepared for IPBLOK')
         return self.regex  # Convert everything to capitals for consistency
 
     def check_line(self, line, forreq=True):
@@ -43,6 +47,7 @@ class IPBLOK(c.Page):
         if self.regex is None:
             self.prepare_regex()  # The regex has not yet been initialized properly
         # Following issue of 2 February 2024: Don't list lines with a donetemp in there!
+        log(self._logfile, 'Scanning for requests: %s'%line)
         if any(('{{%s}}'%i in line.lower() for i in super().donetemp)) or any(('{{%s}}'%i in line.lower() for i in super().donetemp)):
             return [] if forreq is True else False
 
@@ -51,6 +56,7 @@ class IPBLOK(c.Page):
             return None  # Returns None, indicating that the list of matches is empty
         if isinstance(k[0], tuple):
             k = [i[0] for i in k]  # Get the longest matching sequence
+        log(self._logfile, 'Done scanning line %s'%line)
         if forreq is True:
             return [Request(i) for i in k if ('{{' in i and '|' in i and (i.count('.') == 3 or i.count(
                 ':') >= 4))]  # Only return the matches that are real calls to the template
@@ -58,6 +64,7 @@ class IPBLOK(c.Page):
 
     def filter_queue(self):
         "This function will filter the required requests out of the queue."
+        c.log(self._logfile, 'Starting to go through the queue of existing requests')
         if not self._queue:  # This means that the split was not yet done
             self.separate()  # If the split was not yet done, then do the split, is it so difficult?
 
@@ -90,6 +97,7 @@ class IPBLOK(c.Page):
                     self.requests['flagged'] = self.requests.get('flagged', []) + [(self.requests[on_line][0], j[0])]
             else:
                 self.requests[on_line] = (i[0], j[0])  # Store this as a request in all cases
+        log(self._logfile, 'Done filtering the queue')
         return self.requests  # Return the updated dictionary
 
     def check_requests(self):
@@ -122,6 +130,7 @@ class IPBLOK(c.Page):
         # Settings have been fully moved to the Bot_settings.py file
         # The move was done to centralize all this kind of settings
         days, hours = bs.ipblok_removal_days, bs.ipblok_removal_hours
+        log(self._logfile, 'Checking which requests could be removed')
         # Browse all lines of the 'done queue'
         if not self._done:
             self.separate()  # First generate the queue, much better
@@ -138,6 +147,7 @@ class IPBLOK(c.Page):
             except IndexError:  # This popped up once because somebody did not take the time to sign off the request
                 self._done.insert(j,
                                   '**{{opm}}: Dit verzoek bevat mogelijks geen correcte datumstempel. Als deze melding klopt, kan u de datum toevoegen via {{tl|afzx}} en melding terug verwijderen. ~~~~')
+        log(self._logfile, 'Done checking which requests could be removed')
         return self.clear_lines(self._done, to_del)
 
 
