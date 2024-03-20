@@ -18,6 +18,18 @@ import Bot_settings as bs
 # Before taking any actions, change the UA to something nicer
 set_user_agent('Daniuu-Bot')
 
+
+# Functionality to allow logging
+def clear_log_file(file):
+    with open(file, 'w', encoding='utf8') as blankfile:
+        blankfile.write(f'{dt.datetime.utcnow()}\n')
+
+
+def log(file, text):
+    with open(file, 'a') as logfile:
+        logfile.write(f'{text.rstrip()}\n')
+
+
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
     max_edit = 1  # The maximum number of edits that a single bot can do per minute
