@@ -47,7 +47,7 @@ class IPBLOK(c.Page):
         if self.regex is None:
             self.prepare_regex()  # The regex has not yet been initialized properly
         # Following issue of 2 February 2024: Don't list lines with a donetemp in there!
-        log(self._logfile, 'Scanning for requests: %s'%line)
+        c.log(self._logfile, 'Scanning for requests: %s'%line)
         if any(('{{%s}}'%i in line.lower() for i in super().donetemp)) or any(('{{%s}}'%i in line.lower() for i in super().donetemp)):
             return [] if forreq is True else False
 
@@ -56,7 +56,7 @@ class IPBLOK(c.Page):
             return None  # Returns None, indicating that the list of matches is empty
         if isinstance(k[0], tuple):
             k = [i[0] for i in k]  # Get the longest matching sequence
-        log(self._logfile, 'Done scanning line %s'%line)
+        c.log(self._logfile, 'Done scanning line %s'%line)
         if forreq is True:
             return [Request(i) for i in k if ('{{' in i and '|' in i and (i.count('.') == 3 or i.count(
                 ':') >= 4))]  # Only return the matches that are real calls to the template
@@ -97,7 +97,7 @@ class IPBLOK(c.Page):
                     self.requests['flagged'] = self.requests.get('flagged', []) + [(self.requests[on_line][0], j[0])]
             else:
                 self.requests[on_line] = (i[0], j[0])  # Store this as a request in all cases
-        log(self._logfile, 'Done filtering the queue')
+        c.log(self._logfile, 'Done filtering the queue')
         return self.requests  # Return the updated dictionary
 
     def check_requests(self):
