@@ -130,7 +130,7 @@ class IPBLOK(c.Page):
         # Settings have been fully moved to the Bot_settings.py file
         # The move was done to centralize all this kind of settings
         days, hours = bs.ipblok_removal_days, bs.ipblok_removal_hours
-        log(self._logfile, 'Checking which requests could be removed')
+        c.log(self._logfile, 'Checking which requests could be removed')
         # Browse all lines of the 'done queue'
         if not self._done:
             self.separate()  # First generate the queue, much better
@@ -147,7 +147,7 @@ class IPBLOK(c.Page):
             except IndexError:  # This popped up once because somebody did not take the time to sign off the request
                 self._done.insert(j,
                                   '**{{opm}}: Dit verzoek bevat mogelijks geen correcte datumstempel. Als deze melding klopt, kan u de datum toevoegen via {{tl|afzx}} en melding terug verwijderen. ~~~~')
-        log(self._logfile, 'Done checking which requests could be removed')
+        c.log(self._logfile, 'Done checking which requests could be removed')
         return self.clear_lines(self._done, to_del)
 
 
