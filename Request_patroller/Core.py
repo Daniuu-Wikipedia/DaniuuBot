@@ -70,7 +70,7 @@ class Bot:
         "This function will provide functionality that does all the get requests"
         self.verify_OAuth()
         payload['format'] = 'json'  # Set the output format to json
-        return requests.get(self.api, params=payload, auth=self._auth).json()
+        return requests.get(self.api, params=payload, auth=self._auth, timeout=31).json()
 
     def get_token(self, t='csrf', n=0, store=True):
         'This function will get a token'
@@ -102,7 +102,7 @@ class Bot:
         params['format'] = 'json'
         params['maxlag'] = 5  # Using the standard that's implemented in PyWikiBot
         self.ti.append(float(time.time()))
-        k = requests.post(self.api, data=params, auth=self._auth).json()
+        k = requests.post(self.api, data=params, auth=self._auth, timeout=31).json()
         if 'error' in k:
             print('An error occured somewhere')  # We found an error
             print(k)
