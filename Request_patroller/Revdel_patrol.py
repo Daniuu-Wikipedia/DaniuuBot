@@ -75,14 +75,26 @@ class Revdel(c.Page):
         # First, check what lines contain requests
         reqs, flagged, jos = [], [], [None for _ in
                                       self._queue]  # Make a list with the lines containing requests, and where something got flagged
+
+        # Adjustment 20240626 - also detect headers
+        header_on_line = False
+
         for i, j in enumerate(self._queue[1:]):
-            z = self.check_request_on_line(j, check=True,
-                                           proc=True)  # Will also include IP's from now (check=True) keyword
-            if z:
-                reqs.append(i + 1)  # Just add i + 1 to the list of requests that were found
-                jos[i + 1] = z  # Store it...
-            elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)):  # check whether anything got marked
-                flagged.append(i + 1)
+            if self.header_on_line(j):
+                reqs.append(i + 1)
+                header_on_line = True  # Indicate that we found a header (this will change some stuff later)
+            else:
+                z = self.check_request_on_line(j,
+                                               check=True,
+                                               proc=True)  # Will also include IP's from now (check=True) keyword
+                if z:
+                    if header_on_line is False:
+                        reqs.append(i + 1)  # Just add i + 1 to the list of requests that were found
+                        jos[i + 1] = z  # Store it...
+                    elif header_on_line is False:
+                        jos[i], header_on_line = z, False  # Reset the part with the header
+                elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)):  # check whether anything got marked
+                    flagged.append(i + 1)
 
         # Now, do the processing of the lines
         if reqs:
@@ -139,8 +151,21 @@ class Revdel(c.Page):
         # Browse all lines of the 'done queue'
         if not self._done:
             self.separate()  # First generate the queue, much better
-        reqlines = [i for i, j in enumerate(self._done) if self.check_request_on_line(j, check=True)] + [
-            len(self._done)]  # Manually add the length
+
+        # Adjustment 20240626 - also account for headers when calculating the part to be deleted
+        # Previously, I used a simple list comprehension here, needed to change it :(
+        # My apologies to the gods of brief code
+        reqlines, header_detected = [], False
+        for i, j in enumerate(self._done):
+            if self.header_on_line(j):
+                header_detected = True
+                reqlines.append(i)
+            elif self.check_request_on_line(j, check=True):
+                if header_detected is False:
+                    reqlines.append(i)
+                else:
+                    header_detected = False  # Skip the line & merge the request with the previous one
+        reqlines.append(len(self._done))  # Manually adding the length of the queue to avoid trouble
         to_del = []  # List of tuples with requests that should be removed from Done
         for i, j in zip(reqlines[:-1], reqlines[1:]):
             request_date = self.get_date_for_lines(self._done[i:j])

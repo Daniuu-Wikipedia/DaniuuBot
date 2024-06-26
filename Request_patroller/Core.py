@@ -22,7 +22,7 @@ set_user_agent('Daniuu-Bot')
 # Functionality to allow logging
 def clear_log_file(file):
     with open(file, 'w', encoding='utf8') as blankfile:
-        blankfile.write('%s\n'%(dt.datetime.utcnow()))
+        blankfile.write('%s\n' % (dt.datetime.utcnow()))
 
 
 def log(file, text):
@@ -203,6 +203,9 @@ class Page:
         if self._testing is True:
             print('CAUTION: BOT CALLED IN TESTING MODE')
 
+        # Extension 20240626 - to process requests with a header
+        self._headerpattern = r'={3,}\s*[^=]+\s*={3,}'
+
     def __str__(self):
         return self.name
 
@@ -258,18 +261,18 @@ class Page:
         log(self._logfile, 'Now going through the requests and checking whether they are done')
         for i in self.requests:
             if not isinstance(i, str):  # Ignore strings, these are only added for administrative purposes
-                log(self._logfile, 'Checking request %s'%i)
+                log(self._logfile, 'Checking request %s' % i)
                 i.check_done()
         log(self._logfile, 'DONE checking requests')
 
-    def update(self, logonly=False):
+    def update(self, logonly=False, force_removal=False):
         "This function will update the content of the page"
         print('Bot was called at ' + str(dt.datetime.now()))
         # Following issue of 2 February 2024 (IPBLOK - https://w.wiki/93qd)
         # We will only clear the page between 4:00 and 4:18 UTC
         log(self._logfile, 'Starting update process')
         current_time = dt.datetime.utcnow()
-        if current_time.hour == 4 and 0 <= current_time.minute <= 17:
+        if (current_time.hour == 4 and 0 <= current_time.minute <= 17) or (force_removal is True):
             log(self._logfile, 'Starting checking what needs to be removed')
             y = self.check_removal()  # How many requests are deleted
             log(self._logfile, 'Removal fully processed')
@@ -364,12 +367,11 @@ class Page:
         self.print_termination()
         log(self._logfile, 'DONE')
 
-
     def print_termination(self):
         print('Bot terminated successfully at ' + str(dt.datetime.now()) + '\n')
 
     def filter_date(self, line):
-        log(self._logfile, 'Filtering data for %s'%line)
+        log(self._logfile, 'Filtering data for %s' % line)
         pattern = r'(\d{1,2} (%s) \d{4})' % ('|'.join(Page.nldate))
         return re.findall(pattern, line)
 
@@ -390,7 +392,7 @@ class Page:
 
     def clear_lines(self, parent, lines):
         "This function deletes the given lines from the parent list"
-        log(self._logfile, 'Starting deletion of lines %s'%lines)
+        log(self._logfile, 'Starting deletion of lines %s' % lines)
         for i, j in sorted(lines, reverse=True):
             del parent[i:j]
         log(self._logfile, 'DONE deleting lines')
@@ -409,6 +411,12 @@ class Page:
         if 4 <= now.hour <= 6:
             return dt.datetime.today() - dt.timedelta(days=1)
         return dt.datetime.today()
+
+    # Adjustment 20240626 - handy function for spotting headers on a line
+    def header_on_line(self, line):
+        if not isinstance(line, str):
+            raise TypeError('Only pass strings to the header_on_line method!')
+        return re.match(self._headerpattern, line.strip()) is not None
 
 
 class GenReq:

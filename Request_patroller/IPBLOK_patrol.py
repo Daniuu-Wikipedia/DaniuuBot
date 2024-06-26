@@ -63,21 +63,33 @@ class IPBLOK(c.Page):
         return bool(k)
 
     def filter_queue(self):
-        "This function will filter the required requests out of the queue."
+        """This function will filter the required requests out of the queue."""
+        # Additional logging for Toolforge
         c.log(self._logfile, 'Starting to go through the queue of existing requests')
         if not self._queue:  # This means that the split was not yet done
             self.separate()  # If the split was not yet done, then do the split, is it so difficult?
 
         # check what lines are containing requests (and are flagged)
         reqs, flagged = [], []  # List with line numbers where requests were found and where indication of flagged templates were found
+
+        # Adjustment 20240626 - also detect headers
+        header_on_line = False
+
         for i, j in enumerate(self._queue[1:]):
-            z = self.check_line(j)  # Check whether any requests are on this line
-            if z:  # We found requests on the line - this should be stored
-                reqs.append(
-                    (i + 1, z))  # +1 cause we left out the first element of the queue - make the MultiRequest later
-            elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)):  # check whether anything got marked
-                flagged.append(
-                    i + 1)  # Add this line to the list of lines where a template with a nice little flag is present
+            if self.header_on_line(j):
+                header_on_line = True
+            else:
+                z = self.check_line(j)  # Check whether any requests are on this line
+                if z:  # We found requests on the line - this should be stored
+                    if header_on_line is False:
+                        reqs.append(
+                            (i + 1, z))  # +1 cause we left out the first element of the queue - make the MultiRequest later
+                    elif header_on_line is True:
+                        reqs.append(
+                            (i, z))  # We actually want to append the previous line (code relies on people dropping their request on the first line and not after writing some novel...)
+                elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)):  # check whether anything got marked
+                    flagged.append(
+                        i + 1)  # Add this line to the list of lines where a template with a nice little flag is present
 
         # Cancel the loop, continue with putting the requests in a well structured format
         if not reqs:
@@ -134,8 +146,21 @@ class IPBLOK(c.Page):
         # Browse all lines of the 'done queue'
         if not self._done:
             self.separate()  # First generate the queue, much better
-        reqlines = [i for i, j in enumerate(self._done) if self.check_line(j, False)] + [
-            len(self._done)]  # Manually add the length
+
+        # Adjustment 20240626 - also account for headers above the requests
+        # My apologies to the Python gods of brief code - had to replace the previously-used list comprehension
+        # Note: this code is also used in the revdel patroller!
+        reqlines, header_detected = [], False
+        for i, j in enumerate(self._done):
+            if self.header_on_line(j):
+                header_detected = True
+                reqlines.append(i)
+            elif self.check_request_on_line(j, check=True):
+                if header_detected is False:
+                    reqlines.append(i)
+                else:
+                    header_detected = False  # Skip the line & merge the request with the previous one
+        reqlines.append(len(self._done))
         to_del = []  # List of tuples with requests that should be removed from Done
         for i, j in zip(reqlines[:-1], reqlines[1:]):
             try:
