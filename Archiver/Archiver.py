@@ -17,6 +17,7 @@ import time
 from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
 import re
+import pytz  # Timezone management
 import General_settings as gs
 
 # Before taking any actions, change the UA to something nicer
@@ -61,6 +62,8 @@ class Page:
                 'October': '10',
                 'November': '11',
                 'December': '12'}
+
+    timezone = pytz.timezone('Europe/Amsterdam')  # nlwiki uses Amsterdam time
 
     def __init__(self,
                  name,
@@ -141,8 +144,17 @@ class Page:
         """This function formats a date in the nlwiki format. The returned date only contains information on the day,
         month, and year the request was passed """
         assert isinstance(date, str), "Please pass a string as the argument of format_date!"
-        return dt.datetime.strptime(self.replace_months(date),
-                                    '%d %m %Y %H:%M')  # this is the object that can actually do the job for us
+        d = dt.datetime.strptime(self.replace_months(date),
+                                 '%d %m %Y %H:%M')  # this is the object that can actually do the job for us
+
+        # Return time, set back to UTC
+        # To avoid exceptions around transition, assume "winter time" (conservative approach)
+        return dt.datetime(year=d.year,
+                           month=d.month,
+                           day=d.day,
+                           hour=d.hour,
+                           minute=d.minute) - Page.timezone.utcoffset(d,
+                                                                      is_dst=False)
 
     def get_date_for_lines(self, lines):
         """This function will return the most recent contribution date that corresponds with a given request."""
@@ -218,6 +230,7 @@ class Page:
         suited.append(len(self._hot))  # Make sure the last request is also processed
 
         # Third step: check which requests can be thrown out
+        # Note: all times are reported in UTC, no need for additional corrections
         cutoff = dt.datetime.utcnow() - dt.timedelta(days=self._passed_dates)
         old = {}
         for start, end in zip(suited[:-1], suited[1:]):
@@ -240,6 +253,7 @@ class Page:
 
     def __call__(self):
         return self.update()
+
 
 # Testing
 jef = Page('Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen')
