@@ -213,7 +213,7 @@ class Page:
         return self.update(logonly, force_removal=force_removal)
 
     def get_page_content(self):
-        "This function will get the last revision of the request page"
+        """This function will get the last revision of the request page"""
         log(self._logfile, 'Starting to parse the request page')
         if self._testing is False:
             # Bot is called in operational mode
