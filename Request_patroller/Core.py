@@ -209,8 +209,8 @@ class Page:
     def __str__(self):
         return self.name
 
-    def __call__(self, logonly=False):
-        return self.update(logonly)
+    def __call__(self, logonly=False, force_removal=False):
+        return self.update(logonly, force_removal=force_removal)
 
     def get_page_content(self):
         "This function will get the last revision of the request page"
