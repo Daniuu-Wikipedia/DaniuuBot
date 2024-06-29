@@ -155,7 +155,7 @@ class IPBLOK(c.Page):
             if self.header_on_line(j):
                 header_detected = True
                 reqlines.append(i)
-            elif self.check_request_on_line(j, check=True):
+            elif self.check_line(j, forreq=False):
                 if header_detected is False:
                     reqlines.append(i)
                 else:
