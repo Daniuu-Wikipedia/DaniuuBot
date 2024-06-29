@@ -18,7 +18,8 @@ import Bot_settings as bs
 
 class Revdel(c.Page):
 
-    pattern = r'(((direction=next|diff=(\d{1,9}|next|prev))\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})'
+    pattern = (r'(((direction=next|diff=(\d{1,9}|next|prev))\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,'
+               r'9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})')
 
     def __init__(self,
                  testing=False):
@@ -29,7 +30,7 @@ class Revdel(c.Page):
     def check_request_on_line(self, line,
                               pattern=None,
                               check=False, proc=False):
-        "Checks whether the line passed as an argument contains any kind of requests"
+        """Checks whether the line passed as an argument contains any kind of requests"""
         if pattern is None:
             pattern = Revdel.pattern  # Use the pattern stored as default for the class
         raw = re.findall(pattern, line.lower())  # this will unleash the regex on the poor little line
@@ -42,7 +43,9 @@ class Revdel(c.Page):
                     if j.strip():  # Check that j is not empty
                         z.append(j.strip())
             elif i:  # We found a string or so, can just be added if not empty
-                z.append(i)
+                # Addition 20240629: safety check: ignore ticket
+                if 'ticket:%s'%i not in line.lower().replace(' ', ''):
+                    z.append(i)
         if proc is True:
             z = [Request(i) for i in z if i and any((j.isdigit() for j in i))]
         if check is True:
