@@ -47,7 +47,7 @@ class Bot:
     def __str__(self):
         return self.api.copy()
 
-    def verify_OAuth(self, file="Operational.txt"):
+    def verify_OAuth(self, file="Test_keys.txt"):
         'This function will verify whether the OAuth-auth has been configured. If not, it will do the configuration.'
         if self._auth is None:
             try:

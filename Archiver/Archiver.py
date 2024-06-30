@@ -67,14 +67,23 @@ class Page:
 
     def __init__(self,
                  name,
-                 testing=False):
+                 archive_target,
+                 testing=True):
+        # Names of relevant pages
+        self.archive_target = archive_target
         self.name = name
+
+        # Store page content
         self._content = []
         # Different parts of the page...
         self._hot = []
         self.requests = {}  # This is a list of requests that are in the queue
+
+        # The Bot that will perform the actions
         self.bot = c.NlBot()  # Initialize a bot to do operations on Testwiki
         self.id = None
+
+        # File for logging
         self._logfile = 'Log.txt'
         # Code implemented solely for testing purposes
         # A boolean value will be used to check whether we are testing the bot or fully operational
@@ -103,6 +112,17 @@ class Page:
         # If the bot is called in its testing mode, write this to the terminal
         if self._testing is True:
             print('CAUTION: BOT CALLED IN TESTING MODE')
+
+    # Property controlling testing
+    @property
+    def testing(self):
+        return self._testing
+
+    @testing.setter
+    def testing(self, testing):
+        if not isinstance(testing, bool):
+            raise TypeError('testing must be a boolean')
+        self._testing = testing
 
     # Utility to get the content of the page
     def get_page_content(self):
@@ -239,6 +259,7 @@ class Page:
         for start, end in zip(suited[:-1], suited[1:]):
             last_comment = self.get_date_for_lines(self._hot[start:end])
             if last_comment < cutoff:
+                print(last_comment, cutoff, start)
                 old[(start, end)] = last_comment
         self._delete += sorted(old.keys())
         return old  # Return the list of requests to be removed
@@ -250,14 +271,14 @@ class Page:
 
         if presort is False:
             self._delete.sort()
-        output_text = ''
+        output_text = '\n'
 
         # Oldest request first please (oldest = first listed on the request page)
         for start, end in self._delete:
             output_text += '\n'.join(self._hot[start:end])
             output_text += '\n'
-            if self._hot[end - 1]:  # Make sure a blank line is inserted after each request
-                output_text += '\n'
+            if self._hot[end - 1] and end != self._delete[-1][-1]:
+                output_text += '\n'  # Make sure a blank line is inserted after each request
         return output_text
 
     # Get the new text for the original page
@@ -283,15 +304,78 @@ class Page:
         output_text += '\n'.join(self.post)
         return output_text
 
-
     # The core of the algorithm: the update method
-    def update(self):
-        pass
+    def update(self, logonly=False, testing=False):
+        # Testing = True has been set as default value for the initial testing phase!
 
-    def __call__(self):
-        return self.update()
+        # First check: testing True ==> set bot into testing mode
+        if testing is True:
+            self.testing = True
+
+        # Get the page's content and perform all preparation steps
+        self.get_page_content()
+        self.split_page()
+
+        # Identify the old discussions
+        self.identify_old_discussions()
+
+        # And do the updating
+        if self._delete:  # Don't do anything if there are no requests to be archived
+            archived_sections = len(self._delete)  # For logging purposes
+            if archived_sections == 1:
+                summary_from = '1 verzoek verplaatst naar [[%s|archief]]' % (self.archive_target)
+                summary_dest = '1 verzoek verplaatst van [[%s|verzoekpagina]]' % (self.name)
+            else:
+                summary_from = '%d verzoeken verplaatst naar [[%s|archief]]' % (archived_sections,
+                                                                                self.archive_target)
+                summary_dest = '%d verzoeken verplaatst van [[%s|verzoekpagina]]' % (archived_sections,
+                                                                                     self.name)
+            print(summary_from, summary_dest)
+            # Time to do some updating
+            self._delete.sort()
+            new_original_text = self.get_text_for_page(presort=True)
+            add_archive = self.get_text_for_archive(presort=True)
+            # If testing is enabled, we should not be posting anything to the wiki!
+            if self.testing is True:
+                with open(gs.test_output, 'w', encoding='utf-8') as test_output:
+                    test_output.write(new_original_text)
+                with open(gs.test_archive, 'w', encoding='utf-8') as test_archive:
+                    test_archive.write(add_archive)
+                print('BOT RAN IN TEST MODE!')
+            else:
+                # Step 1: feed the archive
+                append_dic = {'action': 'edit',
+                            'title': self.archive_target,
+                            'appendtext': add_archive,
+                            'summary': summary_dest,
+                            'bot': True,
+                            'nocreate': True,
+                            'starttimestamp': self._timestamp}
+                # Step 2: write the new text to the request page
+                edit_dic = {'action': 'edit',
+                            'pageid': self.id,
+                            'text': new_original_text,
+                            'summary': summary_from,
+                            'bot': True,
+                            'nocreate': True,
+                            'basetimestamp': self._timestamp}
+                if logonly is False:
+                    self.bot.post(append_dic)
+                    self.bot.post(edit_dic)
+                elif logonly is True:
+                    print('LOGONLY!')
+                    print(append_dic)
+                    print('\n')
+                    print(edit_dic)
+        else:
+            print('Nothing to be done!')
+
+    def __call__(self, logonly=False):
+        return self.update(logonly=logonly)
 
 
 # Testing
-jef = Page('Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen')
-jef.identify_old_discussions()
+jef = Page('Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen',
+           'Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen/Archief/2024')
+jef.testing = False
+jef()
