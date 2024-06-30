@@ -97,6 +97,9 @@ class Page:
         # Store handy indices (improve memory-efficiency)
         self._startrule, self._endrule = None, None
 
+        # Store indices that can be deleted
+        self._delete = []
+
         # If the bot is called in its testing mode, write this to the terminal
         if self._testing is True:
             print('CAUTION: BOT CALLED IN TESTING MODE')
@@ -237,15 +240,49 @@ class Page:
             last_comment = self.get_date_for_lines(self._hot[start:end])
             if last_comment < cutoff:
                 old[(start, end)] = last_comment
+        self._delete += sorted(old.keys())
         return old  # Return the list of requests to be removed
 
     # Method to grab the text to add to the archive
-    def get_text_for_archive(self, lines):
-        pass
+    def get_text_for_archive(self, checked=False, presort=False):
+        if not self._delete and checked is False:
+            self.identify_old_discussions()  # Previous functions were not executed
+
+        if presort is False:
+            self._delete.sort()
+        output_text = ''
+
+        # Oldest request first please (oldest = first listed on the request page)
+        for start, end in self._delete:
+            output_text += '\n'.join(self._hot[start:end])
+            output_text += '\n'
+            if self._hot[end - 1]:  # Make sure a blank line is inserted after each request
+                output_text += '\n'
+        return output_text
 
     # Get the new text for the original page
-    def get_text_for_page(self, lines):
-        pass
+    def get_text_for_page(self, checked=False, presort=False):
+        if not self._delete and checked is False:
+            self.identify_old_discussions()
+
+        if presort is False:
+            self._delete.sort()
+
+        # Here, we need to bother about the oldest request first
+        temp = self._hot.copy()
+        for start, end in self._delete[::-1]:
+            del temp[start:end]
+
+        # Assemble the full text
+        output_text = ''
+        output_text += '\n'.join(self.pre)
+        output_text += '\n'
+        output_text += '\n'.join(temp)
+        del temp  # No longer needed in memory
+        output_text += '\n'
+        output_text += '\n'.join(self.post)
+        return output_text
+
 
     # The core of the algorithm: the update method
     def update(self):
