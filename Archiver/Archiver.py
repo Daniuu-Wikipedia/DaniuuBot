@@ -151,7 +151,7 @@ class Page:
 
     # Utilities dealing with dates
     def replace_months(self, date):
-        "This function replaces the names of months in the strings"
+        """This function replaces the names of months in the strings"""
         log(self._logfile, 'Replacing months')
         for i, j in Page.nldate.items():
             date = date.replace(i, j)
