@@ -16,8 +16,9 @@ abort_strings = ('{{nobots}}',
 
 # File in which the input for tests can be stored (to be located in the same directory as the code)
 # Please pass a string
-test_input = 'Bot_test_input.txt'
+test_input = 'Test_input.txt'
 # File in which the output for tests can be stored (will be written into the same directory as the code)
 # Be careful, writing an existing file here will overwrite it, possibly loosing all data stored therein
 # Please pass a string
 test_output = 'Bot_test_output.txt'
+test_archive = 'Bot_test_archive.txt'
