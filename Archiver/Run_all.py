@@ -22,16 +22,8 @@ def prepare_run(run_dict):
         Dictionary
     """
     # Substitute date parameters in the archive name
-    temp = run_dict['archive_target'].replace('$YEAR', str(Date_utils.year))
-    temp = temp.replace('$MONTH', str(Date_utils.month))
-    run_dict['archive_target'] = temp.replace('$DAY', str(Date_utils.day))
-
-    # Special case: REGBLOK parameter is present ==> make some substitutions there
-    if '$REGBLOKNR' in run_dict['archive_target']:
-        run_dict['archive_target'] = run_dict['archive_target'].replace('$REGBLOKNR',
-                                                                        Date_utils.determine_regblok_archive_number(
-                                                                            delay=run_dict['passed_dates']))
-        print(Date_utils.determine_regblok_archive_number(delay=run_dict['passed_dates']))
+    run_dict['archive_target'] = Date_utils.format_archive_for_date(Date_utils.current_time,
+                                                                    run_dict['archive_target'])
     return run_dict  # Not needed, but good to return it anyway
 
 

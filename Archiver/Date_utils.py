@@ -36,3 +36,13 @@ def determine_regblok_archive_number(date=None, delay=0):
     diff_year = date.year - startdate.year
     second_year_half = (date.month >= 7)*1  # New archive started every six months
     return str(start + 2*diff_year + second_year_half)
+
+
+# Format archive for any given date
+def format_archive_for_date(date, archive_with_parameters):
+    temp = archive_with_parameters.replace('$YEAR', str(date.year))
+    temp = temp.replace('$MONTH', str(date.month))
+    temp = temp.replace('$DAY', str(date.day))
+    if '$REGBLOKNR' in temp:
+        temp = temp.replace('$REGBLOKNR', determine_regblok_archive_number(date))
+    return temp
