@@ -35,4 +35,4 @@ def determine_regblok_archive_number(date=None, delay=0):
     # Calculate the difference between the current date and the reference
     diff_year = date.year - startdate.year
     second_year_half = (date.month >= 7)*1  # New archive started every six months
-    return start + 2*diff_year + second_year_half
+    return str(start + 2*diff_year + second_year_half)
