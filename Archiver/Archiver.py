@@ -68,12 +68,11 @@ class Page:
     bot = c.NlBot()
 
     def __init__(self,
-                 name,
-                 archive_target,
+                 configuration_dict,  # Read configuration from a JSON file
                  testing=True):
         # Names of relevant pages
-        self.archive_target = archive_target
-        self.name = name
+        self.archive_target = configuration_dict['archive_target']
+        self.name = configuration_dict['name']
 
         # Store page content
         self._content = []
@@ -100,10 +99,10 @@ class Page:
         # Properties to be read from the bot's settings
         # These include the level of headers to be archived & sections that need archiving
         # AT PRESENT: test values have been hardcoded!
-        self._startsection = 'Afgehandelde verzoeken'
-        self._endsection = '$END'
-        self._level = 3
-        self._passed_dates = 7
+        self._startsection = configuration_dict['startsection']
+        self._endsection = configuration_dict['endsection']
+        self._level = configuration_dict['level']
+        self._passed_dates = configuration_dict['passed_dates']
 
         # Store handy indices (improve memory-efficiency)
         self._startrule, self._endrule = None, None
@@ -261,7 +260,6 @@ class Page:
         for start, end in zip(suited[:-1], suited[1:]):
             last_comment = self.get_date_for_lines(self._hot[start:end])
             if last_comment < cutoff:
-                print(last_comment, cutoff, start)
                 old[(start, end)] = last_comment
         self._delete += sorted(old.keys())
         return old  # Return the list of requests to be removed
@@ -377,7 +375,8 @@ class Page:
 
 
 # Testing
-jef = Page('Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen',
-           'Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen/Archief/2024')
-jef.testing = False
-jef()
+if __name__ == '__main__':
+    from Write_JSON_settings import sokpop
+    jef = Page(sokpop, testing=True)
+    # jef.testing = False
+    jef()
