@@ -7,6 +7,14 @@
             "endsection": "$END",
             "level": 3,
             "passed_dates": 7
+        },
+        {
+            "archive_target": "Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen/Archief/$YEAR",
+            "name": "Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen",
+            "startsection": "Afgehandelde verzoeken",
+            "endsection": "$END",
+            "level": 3,
+            "passed_dates": 8
         }
     ]
 }

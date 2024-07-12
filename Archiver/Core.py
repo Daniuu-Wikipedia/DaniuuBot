@@ -33,7 +33,7 @@ def log(file, text):
 
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
-    max_edit = 1  # The maximum number of edits that a single bot can do per minute
+    max_edit = 5  # The maximum number of edits that a single bot can do per minute
 
     def __init__(self, api, m=None):
         'Constructs a bot, designed to interact with one Wikipedia'
@@ -47,7 +47,7 @@ class Bot:
     def __str__(self):
         return self.api.copy()
 
-    def verify_OAuth(self, file="Test_keys.txt"):
+    def verify_OAuth(self, file="Operational.txt"):
         'This function will verify whether the OAuth-auth has been configured. If not, it will do the configuration.'
         if self._auth is None:
             try:
