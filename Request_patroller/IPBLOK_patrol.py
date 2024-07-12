@@ -359,5 +359,6 @@ class Test(IPBLOK):
 
 
 # Execution code
-s = IPBLOK()
-s()  # Pass True to place this bot into log-only
+if __name__ == '__main__':
+    s = IPBLOK()
+    s()  # Pass True to place this bot into log-only
