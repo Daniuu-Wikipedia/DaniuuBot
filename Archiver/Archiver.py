@@ -372,11 +372,3 @@ class Page:
 
     def __call__(self, logonly=False):
         return self.update(logonly=logonly)
-
-
-# Testing
-if __name__ == '__main__':
-    from Write_JSON_settings import sokpop
-    jef = Page(sokpop, testing=True)
-    # jef.testing = False
-    jef()
