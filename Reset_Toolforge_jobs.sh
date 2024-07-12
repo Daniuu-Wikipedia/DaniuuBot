@@ -17,15 +17,21 @@ toolforge-jobs flush
 echo -e "${YELLOW}I have deleted all existing jobs."
 echo -e "${NOCOLOR}I will now resubmit the required jobs"
 
-#Job to patrol https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/Versies_verbergen
-toolforge-jobs run revdel --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Revdel_patrol.py" --image python3.11 --schedule "02,17,32,47 * * * *"
 
-echo -e "Job to patrol WP:VV ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
+# Job to patrol WP:VV & WP:IPBLOK
+toolforge-jobs run patroller-all --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Run_all.py" --image python3.11 --schedule "*/10 * * * *"
+echo -e "Job to patrol request pages ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
+
+
+#Job to patrol https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/Versies_verbergen
+# toolforge-jobs run revdel --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Revdel_patrol.py" --image python3.11 --schedule "02,17,32,47 * * * *"
+
+# echo -e "Job to patrol WP:VV ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
 #Job to patrol https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/IPBlok
-toolforge-jobs run ipblok --command "./botenv/bin/python ./DaniuuBot/Request_patroller/IPBLOK_patrol.py" --image python3.11 --schedule "*/10 * * * *"
+# toolforge-jobs run ipblok --command "./botenv/bin/python ./DaniuuBot/Request_patroller/IPBLOK_patrol.py" --image python3.11 --schedule "*/10 * * * *"
 
-echo -e "Job to patrol WP:IPBLOK ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
+# echo -e "Job to patrol WP:IPBLOK ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
 # Archiver
 toolforge-jobs run ipblok --command "./botenv/bin/python3.11 ./DaniuuBot/Archiver/Run_all.py" --image python3.11 --schedule "15 3 * * *"
