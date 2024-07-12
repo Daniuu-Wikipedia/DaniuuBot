@@ -2,7 +2,7 @@
     "runs": [
         {
             "archive_target": "Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen/Archief/$YEAR",
-            "name": "Wikipedia:Verzoekpagina voor moderatoren/Sokpoppen",
+            "name": "Wikipedia:Verzoekpagina voor moderatoren/RegBlok",
             "startsection": "Afgehandelde verzoeken",
             "endsection": "$END",
             "level": 3,
