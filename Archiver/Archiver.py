@@ -19,6 +19,7 @@ import datetime as dt  # Import support for dates and times
 import re
 import pytz  # Timezone management
 import General_settings as gs
+import Date_utils as du
 
 # Before taking any actions, change the UA to something nicer
 set_user_agent('Daniuu-Bot')
@@ -31,7 +32,7 @@ def clear_log_file(file):
 
 
 def log(file, text):
-    with open(file, 'a') as logfile:
+    with open(file, 'a', encoding='utf8') as logfile:
         logfile.write(text.rstrip() + '\n')
 
 
@@ -71,7 +72,7 @@ class Page:
                  configuration_dict,  # Read configuration from a JSON file
                  testing=True):
         # Names of relevant pages
-        self.archive_target = configuration_dict['archive_target']
+        self.archive_target = configuration_dict['archive_target']  # New version: this will be parameterized
         self.name = configuration_dict['name']
 
         # Store page content
@@ -108,7 +109,7 @@ class Page:
         self._startrule, self._endrule = None, None
 
         # Store indices that can be deleted
-        self._delete = []
+        self._delete = {}  # Dictionary, (rule start, rule end): archive name as items
 
         # If the bot is called in its testing mode, write this to the terminal
         if self._testing is True:
@@ -180,9 +181,9 @@ class Page:
                            minute=d.minute) - Page.timezone.utcoffset(d,
                                                                       is_dst=False)
 
-    def get_date_for_lines(self, lines):
+    def get_date_for_lines(self, lines, reverse=True):
         """This function will return the most recent contribution date that corresponds with a given request."""
-        for k in lines[::-1]:  # Run the inverse
+        for k in (lines[::-1] if reverse is True else lines):  # Run the inverse
             try:
                 date_temp = self.filter_date(k)[0][0]  # Get the date on that line (using Regex)
                 return self.format_date(date_temp)  # Convert the found date into an actual DateTime
@@ -260,25 +261,30 @@ class Page:
         for start, end in zip(suited[:-1], suited[1:]):
             last_comment = self.get_date_for_lines(self._hot[start:end])
             if last_comment < cutoff:
-                old[(start, end)] = last_comment
-        self._delete += sorted(old.keys())
+                reqdate = self.get_date_for_lines(self._hot[start:end], reverse=False)  # Date of actual request
+                dest = du.format_archive_for_date(reqdate, self.archive_target)
+                self._delete[(start, end)] = dest
+                del reqdate  # Just clearing a bit of memory & avoiding trouble
         return old  # Return the list of requests to be removed
 
     # Method to grab the text to add to the archive
-    def get_text_for_archive(self, checked=False, presort=False):
+    def get_text_for_archive(self, name, checked=False):
         if not self._delete and checked is False:
             self.identify_old_discussions()  # Previous functions were not executed
 
-        if presort is False:
-            self._delete.sort()
         output_text = '\n'
 
         # Oldest request first please (oldest = first listed on the request page)
-        for start, end in self._delete:
-            output_text += '\n'.join(self._hot[start:end])
-            output_text += '\n'
-            if self._hot[end - 1] and end != self._delete[-1][-1]:
-                output_text += '\n'  # Make sure a blank line is inserted after each request
+        for start, end in sorted(self._delete.keys()):
+            if self._delete[(start, end)] == name:
+                output_text += '\n'.join(self._hot[start:end])
+                output_text += '\n'
+                if self._hot[end - 1]:
+                    output_text += '\n'  # Make sure a blank line is inserted after each request
+
+        # Strip the last entry of the last line to be added
+        if not output_text[-1]:
+            del output_text[-1]
         return output_text
 
     # Get the new text for the original page
@@ -286,12 +292,9 @@ class Page:
         if not self._delete and checked is False:
             self.identify_old_discussions()
 
-        if presort is False:
-            self._delete.sort()
-
         # Here, we need to bother about the oldest request first
         temp = self._hot.copy()
-        for start, end in self._delete[::-1]:
+        for start, end in sorted(self._delete.keys(), reverse=True):
             del temp[start:end]
 
         # Assemble the full text
@@ -321,52 +324,64 @@ class Page:
 
         # And do the updating
         if self._delete:  # Don't do anything if there are no requests to be archived
-            archived_sections = len(self._delete)  # For logging purposes
-            if archived_sections == 1:
-                summary_from = '1 verzoek verplaatst naar [[%s|archief]]' % (self.archive_target)
-                summary_dest = '1 verzoek verplaatst van [[%s|verzoekpagina]]' % (self.name)
-            else:
-                summary_from = '%d verzoeken verplaatst naar [[%s|archief]]' % (archived_sections,
-                                                                                self.archive_target)
-                summary_dest = '%d verzoeken verplaatst van [[%s|verzoekpagina]]' % (archived_sections,
-                                                                                     self.name)
-            print(summary_from, summary_dest)
-            # Time to do some updating
-            self._delete.sort()
+            # Collect the names of all archives to which requests will be written
+            archives = set(self._delete.values())
+            for a in archives:
+                archived_sections = len([1 for j in self._delete.values() if j == a])  # For edit summary
+                if archived_sections == 1:
+                    summary_dest = '1 verzoek verplaatst van [[%s|verzoekpagina]]' % (self.name)
+                else:
+                    summary_dest = '%d verzoeken verplaatst van [[%s|verzoekpagina]]' % (archived_sections,
+                                                                                         self.name)
+                print(a, summary_dest)
+
+                # Time to do some updating
+                add_archive = self.get_text_for_archive(a)
+                # If testing is enabled, we should not be posting anything to the wiki!
+                if self.testing is True:
+                    with open(gs.test_archive, 'w', encoding='utf-8') as test_archive:
+                        test_archive.write('\n%s\n' % a)
+                        test_archive.write(add_archive)
+                    print('BOT RAN IN TEST MODE!')
+                else:
+                    # Step 1: feed the archive
+                    append_dic = {'action': 'edit',
+                                  'title': a,
+                                  'appendtext': add_archive,
+                                  'summary': summary_dest,
+                                  'bot': True,
+                                  'nocreate': True,
+                                  'starttimestamp': self._timestamp}
+
+                    if logonly is False:
+                        self.bot.post(append_dic)
+
+                    elif logonly is True:
+                        print('LOGONLY!')
+                        print(append_dic)
+                del add_archive  # To prevent weird accidents & edits
+            # Do some summary preparation work
+            total_archived = len(self._delete)
+            if total_archived == 1:
+                summary_from = '1 verzoek verplaatst naar archief'
+            elif total_archived > 1:
+                summary_from = '%d verzoeken verplaatst naar archief' % total_archived
+            # Update the request page (we will only do that once all archives were written)
             new_original_text = self.get_text_for_page(presort=True)
-            add_archive = self.get_text_for_archive(presort=True)
-            # If testing is enabled, we should not be posting anything to the wiki!
-            if self.testing is True:
+            edit_dic = {'action': 'edit',
+                        'title': self.name,
+                        'text': new_original_text,
+                        'summary': summary_from,
+                        'bot': True,
+                        'nocreate': True,
+                        'basetimestamp': self._timestamp}
+            if logonly is False and self.testing is False:
+                self.bot.post(edit_dic)
+            elif logonly is True:
+                print(edit_dic)
+            elif self.testing is True:
                 with open(gs.test_output, 'w', encoding='utf-8') as test_output:
                     test_output.write(new_original_text)
-                with open(gs.test_archive, 'w', encoding='utf-8') as test_archive:
-                    test_archive.write(add_archive)
-                print('BOT RAN IN TEST MODE!')
-            else:
-                # Step 1: feed the archive
-                append_dic = {'action': 'edit',
-                              'title': self.archive_target,
-                              'appendtext': add_archive,
-                              'summary': summary_dest,
-                              'bot': True,
-                              'nocreate': True,
-                              'starttimestamp': self._timestamp}
-                # Step 2: write the new text to the request page
-                edit_dic = {'action': 'edit',
-                            'pageid': self.id,
-                            'text': new_original_text,
-                            'summary': summary_from,
-                            'bot': True,
-                            'nocreate': True,
-                            'basetimestamp': self._timestamp}
-                if logonly is False:
-                    self.bot.post(append_dic)
-                    self.bot.post(edit_dic)
-                elif logonly is True:
-                    print('LOGONLY!')
-                    print(append_dic)
-                    print('\n')
-                    print(edit_dic)
         else:
             print('Nothing to be done!')
 
