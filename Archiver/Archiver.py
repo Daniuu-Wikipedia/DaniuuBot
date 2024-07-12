@@ -65,6 +65,8 @@ class Page:
 
     timezone = pytz.timezone('Europe/Amsterdam')  # nlwiki uses Amsterdam time
 
+    bot = c.NlBot()
+
     def __init__(self,
                  name,
                  archive_target,
@@ -80,7 +82,7 @@ class Page:
         self.requests = {}  # This is a list of requests that are in the queue
 
         # The Bot that will perform the actions
-        self.bot = c.NlBot()  # Initialize a bot to do operations on Testwiki
+        self.bot = Page.bot  # One bot for all pages should be fine
         self.id = None
 
         # File for logging
@@ -345,12 +347,12 @@ class Page:
             else:
                 # Step 1: feed the archive
                 append_dic = {'action': 'edit',
-                            'title': self.archive_target,
-                            'appendtext': add_archive,
-                            'summary': summary_dest,
-                            'bot': True,
-                            'nocreate': True,
-                            'starttimestamp': self._timestamp}
+                              'title': self.archive_target,
+                              'appendtext': add_archive,
+                              'summary': summary_dest,
+                              'bot': True,
+                              'nocreate': True,
+                              'starttimestamp': self._timestamp}
                 # Step 2: write the new text to the request page
                 edit_dic = {'action': 'edit',
                             'pageid': self.id,
