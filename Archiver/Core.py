@@ -12,8 +12,6 @@ from requests_oauthlib import OAuth1
 import time
 from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
-import re
-import General_settings as bs
 
 
 # Before taking any actions, change the UA to something nicer
@@ -130,3 +128,9 @@ class BetaBot(Bot):
 class TestBot(Bot):
     def __init__(self):
         super().__init__('https://test.wikipedia.org/w/api.php')
+
+
+# Exception to deal with forcibly aboorted bot runs
+class Aborted(Exception):
+    def __str__(self):
+        return 'BOT was stopped due to a stop trigger, like {{nobots}} being used!'

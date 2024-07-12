@@ -146,6 +146,12 @@ class Page:
             # This code is solely executed if the bot is called in its Test mode
             with open(gs.test_input, 'r', encoding='utf8') as inputfile:
                 temp = inputfile.readlines()  # We don't need to query the database, just some text
+        # 20240712 - add safeguard to stop bot from misbehaving
+        for line in temp:
+            if any((i.lower() in line for i in gs.abort_strings)):
+                # If this code is called, abort all running and don't make any further requests
+                print('\nBOT FORCIBLY TERMINATED DUE TO STOP STRINGS\n')
+                raise c.Aborted()  # Make sure the program stops here
         # Final code (always executed)
         self._content = [i.strip() for i in temp if i.strip()]
         log(self._logfile, 'Done getting the contents from the request page')
