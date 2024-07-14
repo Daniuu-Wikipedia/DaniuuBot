@@ -22,3 +22,7 @@ test_input = 'Test_input.txt'
 # Please pass a string
 test_output = 'Bot_test_output.txt'
 test_archive = 'Bot_test_archive.txt'
+
+# List of pages to ignore (manual safety measure - not the most stylish, but works)
+# Way of using: if a given title is in here, everything stops
+abort_file = 'Bot_abort_file.txt'

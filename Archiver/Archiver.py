@@ -112,6 +112,11 @@ class Page:
         # Store indices that can be deleted
         self._delete = {}  # Dictionary, (rule start, rule end): archive name as items
 
+        # Store list of faulty pages that should ignored until resolution by the developer
+        with open(gs.abort_file, 'r', encoding='utf8') as abortfile:
+            self.__faulty_pages = {i.strip() for i in abortfile}
+        print(self.__faulty_pages)
+
         # If the bot is called in its testing mode, write this to the terminal
         if self._testing is True:
             print('CAUTION: BOT CALLED IN TESTING MODE')
@@ -337,6 +342,11 @@ class Page:
         if testing is True:
             self.testing = True
 
+        # Second check: page has not given any faults up till now
+        if self.name in self.__faulty_pages:
+            print('Ignored', self.name)
+            return None  # Abort the method here, the developer must fix the issues first
+
         # Get the page's content and perform all preparation steps
         self.get_page_content()
         self.split_page()
@@ -378,7 +388,10 @@ class Page:
                     if logonly is False:
                         response = self.bot.post(append_dic)
                         if 'error' in response:
+                            with open(gs.abort_file, 'a', encoding='utf-8') as abort_file:
+                                abort_file.write(self.name + '\n')
                             raise c.API_Error(self.name)  # Abort all running for safety reasons
+                        del response  # No need to keep it stored, avoid overlap from previous runs
 
                     elif logonly is True:
                         print('LOGONLY!')
@@ -400,7 +413,10 @@ class Page:
                         'nocreate': True,
                         'basetimestamp': self._timestamp}
             if logonly is False and self.testing is False:
-                self.bot.post(edit_dic)
+                response = self.bot.post(edit_dic)
+                if 'error' in response:
+                    with open(gs.abort_file, 'a', encoding='utf-8') as abort_file:
+                        abort_file.write(self.name + '\n')
             elif logonly is True:
                 print(edit_dic)
             elif self.testing is True:
