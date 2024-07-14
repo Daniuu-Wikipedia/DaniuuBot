@@ -70,7 +70,7 @@ class Page:
 
     def __init__(self,
                  configuration_dict,  # Read configuration from a JSON file
-                 testing=True):
+                 testing=False):
         # Names of relevant pages
         self.archive_target = configuration_dict['archive_target']  # New version: this will be parameterized
         self.name = configuration_dict['name']
@@ -93,6 +93,7 @@ class Page:
         # Furthermore, the boolean is checked by the function that gets the page content
         # If set to True, the Bot will operate in its testing mode!
         self._testing = testing
+        self._use_real_page = True  # Default for testing
 
         # Timestamp to check for edit conflicts
         self._timestamp = None
@@ -126,11 +127,25 @@ class Page:
             raise TypeError('testing must be a boolean')
         self._testing = testing
 
+    # To test with the real page & not a dummy
+    @property
+    def use_real(self):
+        return self._use_real_page
+
+    @use_real.setter
+    def use_real(self, use_real):
+        if isinstance(use_real, bool):
+            self._use_real_page = use_real
+
+    @use_real.deleter
+    def use_real(self):
+        self._use_real_page = False
+
     # Utility to get the content of the page
     def get_page_content(self):
         """This function will get the last revision of the request page"""
         log(self._logfile, 'Starting to parse the request page')
-        if self._testing is False:
+        if self._testing is False or self._use_real_page is True:
             # Bot is called in operational mode
             d = {'action': 'query',
                  'prop': 'revisions',
@@ -257,7 +272,8 @@ class Page:
         pattern = "={%d}\s*[^=]+\s*={%d}" % (self._level, self._level)
 
         # Second step: find the headers & store their locations
-        suited = [i for i, line in enumerate(self._hot) if re.match(pattern, line)]
+        suited = [i for i, line in enumerate(self._hot) if re.match(pattern,
+                                                                    line) and '='*(self._level + 1) not in line]
         suited.append(len(self._hot))  # Make sure the last request is also processed
 
         # Third step: check which requests can be thrown out
