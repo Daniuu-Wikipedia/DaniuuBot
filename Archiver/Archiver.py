@@ -376,7 +376,9 @@ class Page:
                                   'starttimestamp': self._timestamp}
 
                     if logonly is False:
-                        self.bot.post(append_dic)
+                        response = self.bot.post(append_dic)
+                        if 'error' in response:
+                            raise c.API_Error(self.name)  # Abort all running for safety reasons
 
                     elif logonly is True:
                         print('LOGONLY!')
