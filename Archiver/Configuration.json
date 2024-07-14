@@ -14,7 +14,23 @@
             "startsection": "Afgehandelde verzoeken",
             "endsection": "$END",
             "level": 3,
-            "passed_dates": 8
+            "passed_dates": 7
+        },
+        {
+            "name": "Wikipedia:Verzoeken voor wijziging menu's en dialoogteksten",
+            "archive_target": "Wikipedia:Verzoeken voor wijziging menu's en dialoogteksten/Archief/$YEAR",
+            "startsection": "Afgeronde verzoeken",
+            "endsection": "$END",
+            "level": 3,
+            "passed_dates": 14
+        },
+        {
+            "name": "Wikipedia:Verzoekpagina voor moderatoren/Overige",
+            "archive_target": "Wikipedia:Verzoekpagina voor moderatoren/Overige/Archief/$YEAR",
+            "startsection": "Afgehandelde verzoeken",
+            "endsection": "$END",
+            "level": 3,
+            "passed_dates": 7
         }
     ]
 }
