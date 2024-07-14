@@ -137,5 +137,8 @@ class Aborted(Exception):
 
 
 class API_Error(Exception):
+    def __init__(self, name):
+        super().__init__()
+        self._name = name
     def __str__(self):
-        return 'API Error ==> ABORTING BOT'
+        return 'API Error ==> ABORTING BOT; error occured while handling page "%s"' % self._name
