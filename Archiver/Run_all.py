@@ -36,10 +36,10 @@ def execute(run_dict):
 
 
 # Make sure Toolforge also gets the right config file
+file = 'Configuration.json'
 if os.path.exists('Configuration.json'):
-    file = 'Configuration.json'
-else:
-    file = os.path.join('DaniuuBot', 'Archiver', 'Configuration.json')
+    os.chdir(os.path.join('DaniuuBot',
+                          'Archiver'))
 
 # Actual execution
 with open(file, 'r') as config_file:
