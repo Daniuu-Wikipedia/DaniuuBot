@@ -34,9 +34,9 @@ echo -e "Job to patrol request pages ${GREEN}successfully${NOCOLOR} submitted to
 # echo -e "Job to patrol WP:IPBLOK ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
 # Archiver
-toolforge-jobs run ipblok --command "./botenv/bin/python3.11 ./DaniuuBot/Archiver/Run_all.py" --image python3.11 --schedule "15 3 * * *"
+toolforge-jobs run archiver --command "./botenv/bin/python3.11 ./DaniuuBot/Archiver/Run_all.py" --image python3.11 --schedule "15 3 * * *"
 
-echo -e "Job to patrol WP:IPBLOK ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
+echo -e "Job to run the Archiver submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
 
 #Job to synchonize my nlwiki and vlswiki user pages
