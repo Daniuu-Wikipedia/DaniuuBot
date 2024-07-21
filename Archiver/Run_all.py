@@ -8,6 +8,7 @@ This is the sole script to be called on Toolforge!
 import json  # Default library
 import Archiver
 import Date_utils
+import os
 
 
 def prepare_run(run_dict):
@@ -34,8 +35,14 @@ def execute(run_dict):
     page()
 
 
+# Make sure Toolforge also gets the right config file
+if os.path.exists('Configuration.json'):
+    file = 'Configuration.json'
+else:
+    file = os.path.join('DaniuuBot', 'Archiver', 'Configuration.json')
+
 # Actual execution
-with open('Configuration.json', 'r') as config_file:
+with open(file, 'r') as config_file:
     config_data = json.load(config_file)['runs']
     for i in config_data:
         execute(i)
