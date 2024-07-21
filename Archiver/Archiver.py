@@ -17,6 +17,7 @@ import time
 from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
 import re
+import os
 import pytz  # Timezone management
 import General_settings as gs
 import Date_utils as du
@@ -70,7 +71,11 @@ class Page:
 
     def __init__(self,
                  configuration_dict,  # Read configuration from a JSON file
+                 dir=None,
                  testing=False):
+        if dir is not None and os.path.exists(dir):
+            os.chdir(dir)
+        print(os.getcwd())
         # Names of relevant pages
         self.archive_target = configuration_dict['archive_target']  # New version: this will be parameterized
         self.name = configuration_dict['name']

@@ -45,4 +45,4 @@ if not os.path.exists('Configuration.json'):
 with open(file, 'r') as config_file:
     config_data = json.load(config_file)['runs']
     for i in config_data:
-        execute(i)
+        execute(i, dir=os.getcwd())
