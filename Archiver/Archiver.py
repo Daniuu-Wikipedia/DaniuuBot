@@ -75,7 +75,6 @@ class Page:
                  testing=False):
         if dir is not None and os.path.exists(dir):
             os.chdir(dir)
-        print(os.getcwd())
         # Names of relevant pages
         self.archive_target = configuration_dict['archive_target']  # New version: this will be parameterized
         self.name = configuration_dict['name']
@@ -370,8 +369,6 @@ class Page:
                 else:
                     summary_dest = '%d verzoeken verplaatst van [[%s|verzoekpagina]]' % (archived_sections,
                                                                                          self.name)
-                print(a, summary_dest)
-
                 # Time to do some updating
                 add_archive = self.get_text_for_archive(a)
                 # If testing is enabled, we should not be posting anything to the wiki!
