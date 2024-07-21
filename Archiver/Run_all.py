@@ -30,7 +30,7 @@ def prepare_run(run_dict):
 
 def execute(run_dict):
     # prepare_run(run_dict)  # No longer used (due to migration of date formatting)
-    page = Archiver.Page(run_dict)
+    page = Archiver.Page(run_dict, os.getcwd())
     # page.testing = False  # Implemented for debugging purposes
     page()
 
@@ -45,4 +45,4 @@ if not os.path.exists('Configuration.json'):
 with open(file, 'r') as config_file:
     config_data = json.load(config_file)['runs']
     for i in config_data:
-        execute(i, dir=os.getcwd())
+        execute(i)
