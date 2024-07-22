@@ -9,11 +9,6 @@ This bot was developed following a request by Akoopal (for an archive bot that c
 # Main imports
 import Core as c
 
-# For each page, input: name of section to be archived, target directory
-
-import requests
-from requests_oauthlib import OAuth1
-import time
 from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
 import re
