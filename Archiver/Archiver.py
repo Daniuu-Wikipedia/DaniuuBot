@@ -254,7 +254,7 @@ class Page:
             level = self._level
 
         # Prepare pattern for regex search
-        pattern = "={2,%d}\s*[^=]+\s*={2,%d}" % (level - 1, level - 1)
+        pattern = "={1,%d}\s*[^=]+\s*={1,%d}" % (level - 1, level - 1)
 
         # If the page content is not yet loaded, load it
         if not self._content:
@@ -385,7 +385,7 @@ class Page:
         # And do the updating
         if self._delete:  # Don't do anything if there are no requests to be archived
             # Collect the names of all archives to which requests will be written
-            archives = sorted(self._delete.values())
+            archives = sorted(set(self._delete.values()))
             for a in archives:
                 archived_sections = len([1 for j in self._delete.values() if j == a])  # For edit summary
                 if archived_sections == 1:
