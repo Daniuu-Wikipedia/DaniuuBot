@@ -104,7 +104,8 @@ class Page:
 
         # 20240722 - allow some archivers to create new sections in the archive
         # This will only be allowed if the bot is configured accordingly
-        self._allow_new_sections = configuration_dict.get('allow_new_sections', False)  # Default to False
+
+        self._allow_new_sections = configuration_dict.get('allow_new_sections', False) == "True"  # Default to False
 
         # Store handy indices (improve memory-efficiency)
         self._startrule, self._endrule = None, None
