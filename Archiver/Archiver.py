@@ -110,6 +110,13 @@ class Page:
         self._level = configuration_dict['level']
         self._passed_dates = configuration_dict['passed_dates']
 
+        # 20240722 - enable archiving to a specific section in the archive
+        self.archive_target_section = configuration_dict.get('archive_target_section')
+
+        # Additional safeguard: is an empty string is passed: swap to None
+        if isinstance(self.archive_target_section, str) and not self.archive_target_section:
+            self.archive_target_section = None
+
         # Store handy indices (improve memory-efficiency)
         self._startrule, self._endrule = None, None
 
@@ -119,7 +126,8 @@ class Page:
         # Store list of faulty pages that should ignored until resolution by the developer
         with open(gs.abort_file, 'r', encoding='utf8') as abortfile:
             self.__faulty_pages = {i.strip() for i in abortfile}
-        print(self.__faulty_pages)
+        if self.__faulty_pages:
+            print(self.__faulty_pages)  # 20240722 - log if a page is skipped due to a fault
 
         # If the bot is called in its testing mode, write this to the terminal
         if self._testing is True:
@@ -149,6 +157,19 @@ class Page:
     @use_real.deleter
     def use_real(self):
         self._use_real_page = False
+
+    # 20240722 - Get the id of the section to write to
+    def calculate_archive_section(self, archive_title):
+        if self.archive_target_section is None:
+            return None
+        # Step 1: Parse the target archive page and parse the sections
+        pdic = {'action': 'parse',
+                'page': archive_title,
+                'prop': 'sections'}
+        parsed = Page.bot.get(pdic)['parse']['sections']
+        for i in parsed:
+            if i['line'] == self.archive_target_section and int(i['level']) == (self._level - 1):
+                return int(i['number'])  # Abort run (we found the desired section)
 
     # Utility to get the content of the page
     def get_page_content(self):
@@ -386,6 +407,11 @@ class Page:
                                   'bot': True,
                                   'nocreate': True,
                                   'starttimestamp': self._timestamp}
+
+                    # 20240722 - Extend code to write to individual sections
+                    if self.archive_target_section is not None:
+                        append_dic['section'] = self.calculate_archive_section(a)
+                    print(append_dic)
 
                     if logonly is False:
                         response = self.bot.post(append_dic)
