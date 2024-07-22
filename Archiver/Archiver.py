@@ -14,6 +14,7 @@ import datetime as dt  # Import support for dates and times
 import re
 import os
 import pytz  # Timezone management
+import nldate as nld
 import General_settings as gs
 import Date_utils as du
 
@@ -34,18 +35,7 @@ def log(file, text):
 
 class Page:
     "This is a class that allows the processing of a given request page"
-    nldate = {'jan': '01',
-              'feb': '02',
-              'mrt': '03',
-              'apr': '04',
-              'mei': '05',
-              'jun': '06',
-              'jul': '07',
-              'aug': '08',
-              'sep': '09',
-              'okt': '10',
-              'nov': '11',
-              "dec": '12'}
+    nldate = nld.nldate
 
     testdate = {'January': '01',
                 'February': '02',
@@ -62,7 +52,7 @@ class Page:
 
     timezone = pytz.timezone('Europe/Amsterdam')  # nlwiki uses Amsterdam time
 
-    bot = c.NlBot()
+    bot = c.BetaBot()  # Tijdelijk op de betawiki werken (testdoeleinden)
 
     def __init__(self,
                  configuration_dict,  # Read configuration from a JSON file
@@ -112,6 +102,10 @@ class Page:
         if isinstance(self.archive_target_section, str) and not self.archive_target_section:
             self.archive_target_section = None
 
+        # 20240722 - allow some archivers to create new sections in the archive
+        # This will only be allowed if the bot is configured accordingly
+        self._allow_new_sections = configuration_dict.get('allow_new_sections', False)  # Default to False
+
         # Store handy indices (improve memory-efficiency)
         self._startrule, self._endrule = None, None
 
@@ -154,7 +148,7 @@ class Page:
         self._use_real_page = False
 
     # 20240722 - Get the id of the section to write to
-    def calculate_archive_section(self, archive_title):
+    def calculate_archive_section(self, archive_title, section=None):
         if self.archive_target_section is None:
             return None
         # Step 1: Parse the target archive page and parse the sections
@@ -162,9 +156,20 @@ class Page:
                 'page': archive_title,
                 'prop': 'sections'}
         parsed = Page.bot.get(pdic)['parse']['sections']
+
+        # 20240722 - extension to allow writing to custom sections & making new sections
+        if section is None:
+            section = self.archive_target_section
         for i in parsed:
-            if i['line'] == self.archive_target_section and int(i['level']) == (self._level - 1):
+            if i['line'] == section and int(i['level']) == (self._level - 1):
                 return int(i['number'])  # Abort run (we found the desired section)
+
+        # 20240722 - allow creation of new sections if required
+        if self._allow_new_sections is not True:
+            raise ValueError('I could not find the section! You did not allow to create a new one: %s' % archive_title)
+        return max(
+            (i['number'] for i in parsed)), True  # If the section is not yet there, just append it (BE CAREFUL AT
+        # STARTUP)
 
     # Utility to get the content of the page
     def get_page_content(self):
@@ -298,7 +303,7 @@ class Page:
 
         # Second step: find the headers & store their locations
         suited = [i for i, line in enumerate(self._hot) if re.match(pattern,
-                                                                    line) and '='*(self._level + 1) not in line]
+                                                                    line) and '=' * (self._level + 1) not in line]
         suited.append(len(self._hot))  # Make sure the last request is also processed
 
         # Third step: check which requests can be thrown out
@@ -310,7 +315,9 @@ class Page:
             if last_comment < cutoff:
                 reqdate = self.get_date_for_lines(self._hot[start:end], reverse=False)  # Date of actual request
                 dest = du.format_archive_for_date(reqdate, self.archive_target)
-                self._delete[(start, end)] = dest
+                # 20240722 - changes to enable writing to custom sections & creation of new section
+                dsec = du.format_archive_for_date(reqdate, self.archive_target_section)
+                self._delete[(start, end)] = (dest, dsec)
                 del reqdate  # Just clearing a bit of memory & avoiding trouble
         return old  # Return the list of requests to be removed
 
@@ -377,11 +384,11 @@ class Page:
         # And do the updating
         if self._delete:  # Don't do anything if there are no requests to be archived
             # Collect the names of all archives to which requests will be written
-            archives = set(self._delete.values())
+            archives = sorted(self._delete.values())
             for a in archives:
                 archived_sections = len([1 for j in self._delete.values() if j == a])  # For edit summary
                 if archived_sections == 1:
-                    summary_dest = '1 verzoek verplaatst van [[%s|verzoekpagina]]' % (self.name)
+                    summary_dest = '1 verzoek verplaatst van [[%s|verzoekpagina]]' % self.name
                 else:
                     summary_dest = '%d verzoeken verplaatst van [[%s|verzoekpagina]]' % (archived_sections,
                                                                                          self.name)
@@ -390,13 +397,13 @@ class Page:
                 # If testing is enabled, we should not be posting anything to the wiki!
                 if self.testing is True:
                     with open(gs.test_archive, 'w', encoding='utf-8') as test_archive:
-                        test_archive.write('\n%s\n' % a)
+                        test_archive.write('\n%s\n' % a[0])
                         test_archive.write(add_archive)
                     print('BOT RAN IN TEST MODE!')
                 else:
                     # Step 1: feed the archive
                     append_dic = {'action': 'edit',
-                                  'title': a,
+                                  'title': a[0],
                                   'appendtext': add_archive,
                                   'summary': summary_dest,
                                   'bot': True,
@@ -405,8 +412,16 @@ class Page:
 
                     # 20240722 - Extend code to write to individual sections
                     if self.archive_target_section is not None:
-                        append_dic['section'] = self.calculate_archive_section(a)
-                    print(append_dic)
+                        append_dic['section'] = self.calculate_archive_section(a[0], a[1])
+                        # 20240722 - Extend code to write new sections if needed
+                        if isinstance(append_dic['section'], tuple):
+                            # No need to check for self._allow_new_sections (is done in self.calculate_archive_section
+                            # We need to write a new section ==> make the change!
+                            del append_dic['section']  # Just append at bottom of page
+                            new_text = '\n'
+                            new_text += '=' * (self._level - 1) + ' %s' % a[1] + '=' * (self._level - 1) + '\n'
+                            new_text += append_dic['appendtext'].lstrip()
+                            append_dic['appendtext'] = new_text
 
                     if logonly is False:
                         response = self.bot.post(append_dic)
