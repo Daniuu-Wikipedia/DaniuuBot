@@ -31,6 +31,15 @@
             "endsection": "$END",
             "level": 3,
             "passed_dates": 7
+        },
+        {
+            "archive_target": "Wikipedia:Verzoekpagina voor bots/Archief/$YEAR",
+            "name": "Wikipedia:Verzoekpagina voor bots",
+            "startsection": "Uitgevoerde verzoeken",
+            "endsection": "$END",
+            "level": 3,
+            "passed_dates": 21,
+            "archive_target_section": "Uitgevoerde verzoeken"
         }
     ]
 }
