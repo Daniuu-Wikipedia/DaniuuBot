@@ -166,7 +166,7 @@ class Page:
 
         # 20240722 - allow creation of new sections if required
         if self._allow_new_sections is not True:
-            raise ValueError('I could not find the section! You did not allow to create a new one: %s' % archive_title)
+            raise ValueError('I could not find the section! You did not allow to create a new one: %s' % section)
         return max(
             (i['number'] for i in parsed)), True  # If the section is not yet there, just append it (BE CAREFUL AT
         # STARTUP)
