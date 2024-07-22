@@ -41,6 +41,8 @@ if not os.path.exists('Configuration.json'):
     os.chdir(os.path.join('DaniuuBot',
                           'Archiver'))
 
+import Config_updater  # Just run this script
+
 # Actual execution
 with open(file, 'r') as config_file:
     config_data = json.load(config_file)['runs']
