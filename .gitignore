@@ -22,3 +22,4 @@ __pycache__
 /www/*
 /Userspace/TB2.txt
 /Archiver/Write_JSON_settings.py
+/Archiver/Configuration.json
