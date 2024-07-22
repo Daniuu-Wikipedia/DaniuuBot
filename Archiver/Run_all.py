@@ -31,7 +31,7 @@ def prepare_run(run_dict):
 def execute(run_dict):
     # prepare_run(run_dict)  # No longer used (due to migration of date formatting)
     page = Archiver.Page(run_dict, os.getcwd())
-    # page.testing = False  # Implemented for debugging purposes
+    # page.testing = True  # Implemented for debugging purposes
     page()
 
 
