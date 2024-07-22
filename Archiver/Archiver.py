@@ -52,7 +52,7 @@ class Page:
 
     timezone = pytz.timezone('Europe/Amsterdam')  # nlwiki uses Amsterdam time
 
-    bot = c.BetaBot()  # Tijdelijk op de betawiki werken (testdoeleinden)
+    bot = c.NlBot()  # Tijdelijk op de betawiki werken (testdoeleinden)
 
     def __init__(self,
                  configuration_dict,  # Read configuration from a JSON file
