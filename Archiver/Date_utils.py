@@ -10,6 +10,7 @@ Functions implemented:
 
 import pytz
 import datetime as dt
+import nldate
 
 timezone = pytz.timezone('Europe/Amsterdam')
 
@@ -40,8 +41,13 @@ def determine_regblok_archive_number(date=None, delay=0):
 
 # Format archive for any given date
 def format_archive_for_date(date, archive_with_parameters):
+    # 20240722 - implement failsafe for None type
+    # This feature will be used for pages that don't use sections
+    if archive_with_parameters is None:
+        return None
     temp = archive_with_parameters.replace('$YEAR', str(date.year))
     temp = temp.replace('$MONTH', str(date.month))
+    temp = temp.replace('$NAMEMONTH', nldate.match[date.month])
     temp = temp.replace('$DAY', str(date.day))
     if '$REGBLOKNR' in temp:
         temp = temp.replace('$REGBLOKNR', determine_regblok_archive_number(date))
