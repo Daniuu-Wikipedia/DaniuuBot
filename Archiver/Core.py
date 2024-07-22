@@ -119,7 +119,7 @@ class BetaBot(Bot):
     """This is a bot that will allow for editing from the BetaWiki of the Dutch Wikipedia"""
 
     def __init__(self):
-        super().__init__("https://nl.wikipedia.beta.wmflabs.org/api.php")
+        super().__init__("https://nl.wikipedia.beta.wmflabs.org/w/api.php")
 
     def verify_OAuth(self):
         super().verify_OAuth('Beta.txt')
