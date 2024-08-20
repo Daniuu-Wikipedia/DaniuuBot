@@ -13,7 +13,6 @@ import time
 from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
 
-
 # Before taking any actions, change the UA to something nicer
 set_user_agent('Daniuu-Bot')
 
@@ -111,8 +110,11 @@ class Bot:
 
 
 class NlBot(Bot):
+    max_edit = 12  # We have a bot flag on nlwiki ==> allow 12 edits per minute for this one
+
     def __init__(self):
         super().__init__('https://nl.wikipedia.org/w/api.php')
+        self._max = NlBot.max_edit
 
 
 class BetaBot(Bot):
@@ -140,5 +142,6 @@ class API_Error(Exception):
     def __init__(self, name):
         super().__init__()
         self._name = name
+
     def __str__(self):
         return 'API Error ==> ABORTING BOT; error occured while handling page "%s"' % self._name
