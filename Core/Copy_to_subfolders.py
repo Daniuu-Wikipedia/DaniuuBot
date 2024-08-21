@@ -27,12 +27,13 @@ subdirs = [d for d in os.listdir(parent_dir) if os.path.isdir(os.path.join(paren
 # Filter out the subdirectories in the ignore list and those starting with '.'
 subdirs = [d for d in subdirs if d not in ignore_list and not d.startswith('.')]
 
-# Path to the Core.py file in the current directory
-core_file_path = os.path.join(os.getcwd(), 'Core.py')
+
 
 # Move Core.py to each remaining subdirectory
 for subdir in subdirs:
     for file in files_to_copy:
+        # Path to the Core.py file in the current directory
+        core_file_path = os.path.join(os.getcwd(), file)
         dest_path = os.path.join(parent_dir, subdir, file)
         shutil.copy2(core_file_path, dest_path)
     if '__pycache__' in os.listdir(os.path.join(parent_dir, subdir)):
