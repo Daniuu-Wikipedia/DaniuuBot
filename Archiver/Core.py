@@ -111,10 +111,17 @@ class Bot:
 
 class NlBot(Bot):
     max_edit = 12  # We have a bot flag on nlwiki ==> allow 12 edits per minute for this one
+    timestamps_all = []  # All timestamps of all bots
 
     def __init__(self):
         super().__init__('https://nl.wikipedia.org/w/api.php')
         self._max = NlBot.max_edit
+
+    def post(self, params):  # Centralizes all runs & prevents DaniuuBot from making > 12 edits/min on nlwiki
+        self.ti = NlBot.timestamps_all
+        k = super().post(params)
+        NlBot.timestamps_all.append(self.ti[-1])  # Be careful: other instances might also pop up
+        return k
 
 
 class BetaBot(Bot):
