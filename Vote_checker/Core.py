@@ -10,13 +10,27 @@ It just contains a general instance of a Bot, and some handy subclasses that are
 import requests
 from requests_oauthlib import OAuth1
 import time
+from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
-import re
+
+# Before taking any actions, change the UA to something nicer
+set_user_agent('Daniuu-Bot')
+
+
+# Functionality to allow logging
+def clear_log_file(file):
+    with open(file, 'w', encoding='utf8') as blankfile:
+        blankfile.write('%s\n' % (dt.datetime.utcnow()))
+
+
+def log(file, text):
+    with open(file, 'a') as logfile:
+        logfile.write(text.rstrip() + '\n')
 
 
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
-    max_edit = 1  # The maximum number of edits that a single bot can do per minute
+    max_edit = 5  # The maximum number of edits that a single bot can do per minute
 
     def __init__(self, api, m=None):
         'Constructs a bot, designed to interact with one Wikipedia'
@@ -39,7 +53,7 @@ class Bot:
                                          1::2])  # This is the reason why those keys should never be published
             except FileNotFoundError:  # A workaround for the shell file @toolforge
                 from os import getcwd
-                file = f'{getcwd()}/DaniuuBot/{file}'  # An attempt to fix a particular bug
+                file = getcwd() + '/DaniuuBot/' + file  # An attempt to fix a particular bug
                 with open(file, 'r') as secret:
                     self._auth = OAuth1(*[i.strip() for i in secret][1::2])
 
@@ -54,7 +68,7 @@ class Bot:
         "This function will provide functionality that does all the get requests"
         self.verify_OAuth()
         payload['format'] = 'json'  # Set the output format to json
-        return requests.get(self.api, params=payload, auth=self._auth).json()
+        return requests.get(self.api, params=payload, auth=self._auth, timeout=31).json()
 
     def get_token(self, t='csrf', n=0, store=True):
         'This function will get a token'
@@ -86,7 +100,7 @@ class Bot:
         params['format'] = 'json'
         params['maxlag'] = 5  # Using the standard that's implemented in PyWikiBot
         self.ti.append(float(time.time()))
-        k = requests.post(self.api, data=params, auth=self._auth).json()
+        k = requests.post(self.api, data=params, auth=self._auth, timeout=31).json()
         if 'error' in k:
             print('An error occured somewhere')  # We found an error
             print(k)
@@ -96,5 +110,45 @@ class Bot:
 
 
 class NlBot(Bot):
+    max_edit = 12  # We have a bot flag on nlwiki ==> allow 12 edits per minute for this one
+    timestamps_all = []  # All timestamps of all bots
+
     def __init__(self):
         super().__init__('https://nl.wikipedia.org/w/api.php')
+        self._max = NlBot.max_edit
+
+    def post(self, params):  # Centralizes all runs & prevents DaniuuBot from making > 12 edits/min on nlwiki
+        self.ti = NlBot.timestamps_all
+        k = super().post(params)
+        NlBot.timestamps_all.append(self.ti[-1])  # Be careful: other instances might also pop up
+        return k
+
+
+class BetaBot(Bot):
+    """This is a bot that will allow for editing from the BetaWiki of the Dutch Wikipedia"""
+
+    def __init__(self):
+        super().__init__("https://nl.wikipedia.beta.wmflabs.org/w/api.php")
+
+    def verify_OAuth(self):
+        super().verify_OAuth('Beta.txt')
+
+
+class TestBot(Bot):
+    def __init__(self):
+        super().__init__('https://test.wikipedia.org/w/api.php')
+
+
+# Exception to deal with forcibly aboorted bot runs
+class Aborted(Exception):
+    def __str__(self):
+        return 'BOT was stopped due to a stop trigger, like {{nobots}} being used!'
+
+
+class API_Error(Exception):
+    def __init__(self, name):
+        super().__init__()
+        self._name = name
+
+    def __str__(self):
+        return 'API Error ==> ABORTING BOT; error occured while handling page "%s"' % self._name
