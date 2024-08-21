@@ -10,7 +10,7 @@ Functions implemented:
 
 import pytz
 import datetime as dt
-import nldate
+import nldate_utils
 
 timezone = pytz.timezone('Europe/Amsterdam')
 
@@ -56,7 +56,7 @@ def format_archive_for_date(date, archive_with_parameters):
         return None
     temp = archive_with_parameters.replace('$YEAR', str(date.year))
     temp = temp.replace('$MONTH', str(date.month))
-    temp = temp.replace('$NAMEMONTH', nldate.match[date.month])
+    temp = temp.replace('$NAMEMONTH', nldate_utils.match[date.month])
     temp = temp.replace('$DAY', str(date.day))
     if '$REGBLOKNR' in temp:
         temp = temp.replace('$REGBLOKNR', determine_regblok_archive_number(date))

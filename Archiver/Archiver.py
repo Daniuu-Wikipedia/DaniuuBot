@@ -14,7 +14,7 @@ import datetime as dt  # Import support for dates and times
 import re
 import os
 import pytz  # Timezone management
-import nldate as nld
+import nldate_utils as nld
 import General_settings as gs
 import Date_utils as du
 
