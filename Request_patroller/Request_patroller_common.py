@@ -8,22 +8,12 @@ import re
 import Bot_settings as bs
 from Core import clear_log_file, log, NlBot
 import datetime as dt
+import nldate_utils as nld
 
 # Below: classes that implement general page patrollers and requests
 class Page:
     "This is a class that allows the processing of a given request page"
-    nldate = {'jan': '01',
-              'feb': '02',
-              'mrt': '03',
-              'apr': '04',
-              'mei': '05',
-              'jun': '06',
-              'jul': '07',
-              'aug': '08',
-              'sep': '09',
-              'okt': '10',
-              'nov': '11',
-              "dec": '12'}
+    nldate = nld.nldate
 
     testdate = {'January': '01',
                 'February': '02',
