@@ -23,3 +23,8 @@ __pycache__
 /Userspace/TB2.txt
 /Archiver/Write_JSON_settings.py
 /Archiver/Configuration.json
+/Archiver/Core.py
+/CVN_Watchlist/Core.py
+/Request_patroller/Core.py
+/Userspace/Core.py
+/Vote_checker/Core.py
