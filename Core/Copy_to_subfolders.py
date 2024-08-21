@@ -14,6 +14,10 @@ ignore_list = ['Core',
                'Maintenance',
                'Toolforge_venv']  # Replace with your actual subdirectory names
 
+# Define the files to be moved
+files_to_copy = ['Core.py',
+                 'nldate_utils.py']
+
 # Get the parent directory of the current working directory
 parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
@@ -28,8 +32,9 @@ core_file_path = os.path.join(os.getcwd(), 'Core.py')
 
 # Move Core.py to each remaining subdirectory
 for subdir in subdirs:
-    dest_path = os.path.join(parent_dir, subdir, 'Core.py')
-    shutil.copy2(core_file_path, dest_path)
+    for file in files_to_copy:
+        dest_path = os.path.join(parent_dir, subdir, file)
+        shutil.copy2(core_file_path, dest_path)
     if '__pycache__' in os.listdir(os.path.join(parent_dir, subdir)):
         shutil.rmtree(os.path.join(parent_dir, subdir, '__pycache__'))
 
