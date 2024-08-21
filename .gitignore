@@ -28,3 +28,8 @@ __pycache__
 /Request_patroller/Core.py
 /Userspace/Core.py
 /Vote_checker/Core.py
+/Archiver/nldate_utils.py
+/CVN_Watchlist/nldate_utils.py
+/Request_patroller/nldate_utils.py
+/Userspace/nldate_utils.py
+/Vote_checker/nldate_utils.py
