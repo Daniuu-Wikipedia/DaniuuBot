@@ -9,12 +9,13 @@ Please note: this script is still in an experimental phase,
 """
 
 import Core as c
+import Request_patroller_common as com
 import datetime as dt
 import re
 import Bot_settings as bs
 
 
-class IPBLOK(c.Page):
+class IPBLOK(com.Page):
     "This class contains the main content for the page related operations"
 
     def __init__(self,
@@ -176,7 +177,7 @@ class IPBLOK(c.Page):
         return self.clear_lines(self._done, to_del)
 
 
-class Request(c.GenReq):
+class Request(com.GenReq):
     bot = c.NlBot()  # We are now testing
     now = dt.datetime.utcnow()  # Store the current time to check whether
 
@@ -313,7 +314,7 @@ class Request(c.GenReq):
         return self.short_string()  # Especially handy when this has to be combined with MultiRequest
 
 
-class MultiRequest(c.GenMulti):
+class MultiRequest(com.GenMulti):
     def check_done(self):
         "Checks whether all requests were already handled or not."
         self.done = all((bool(i) for i in self.targets))
@@ -351,9 +352,9 @@ class Test(IPBLOK):
     def format_date(self, date):
         "Overrides this with the conventions for testwiki"
         assert isinstance(date, str), "Please pass a string as the argument of format_nldate!"
-        for k, l in c.Page.testdate.items():
+        for k, l in com.Page.testdate.items():
             date = date.replace(k, l)
-        for k, l in c.Page.nldate.items():
+        for k, l in com.Page.nldate.items():
             date = date.replace(k, l)
         return dt.datetime.strptime(date, '%d %m %Y')  # this is the object that can actually do the job for us
 

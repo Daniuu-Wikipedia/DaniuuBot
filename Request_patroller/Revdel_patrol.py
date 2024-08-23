@@ -13,10 +13,11 @@ Some functions were specifically modified for this little tool.
 import re  # Regex
 import datetime as dt  # Import support for dates and times
 import Core as c
+import Request_patroller_common as com
 import Bot_settings as bs
 
 
-class Revdel(c.Page):
+class Revdel(com.Page):
 
     pattern = (r'(((direction=next|diff=(\d{1,9}|next|prev))\&)?oldid=\d{1,9}|permalink:\d{1,9}|\{\{diff\|\d{1,'
                r'9}|speci(a|aa)l:diff(\/\d{1,9}){1,}|diff=\d{1,9})')
@@ -96,7 +97,7 @@ class Revdel(c.Page):
                         jos[i + 1] = z  # Store it...
                     elif header_on_line is False:
                         jos[i], header_on_line = z, False  # Reset the part with the header
-                elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)):  # check whether anything got marked
+                elif any(('{{' + k + '}}' in j for k in com.Page.donetemp)):  # check whether anything got marked
                     flagged.append(i + 1)
 
         # Now, do the processing of the lines
@@ -180,7 +181,7 @@ class Revdel(c.Page):
         return self.clear_lines(self._done, to_del)
 
 
-class Request(c.GenReq):
+class Request(com.GenReq):
     "This object class will implement the main functionalities for a certain request"
     bot = c.NlBot()
 
@@ -303,7 +304,7 @@ class UserRequest(Request):
         return self._user  # Just return None, as this function doesn't really do something
 
 
-class MultiRequest(c.GenMulti):
+class MultiRequest(com.GenMulti):
     "This class can be used to check for a series of requests that would otherwise be filed in parallel."
 
     def __init__(self, req):
