@@ -88,7 +88,7 @@ class IPBLOK(com.Page):
                     elif header_on_line is True:
                         reqs.append(
                             (i, z))  # We actually want to append the previous line (code relies on people dropping their request on the first line and not after writing some novel...)
-                elif any(('{{' + k + '}}' in j for k in c.Page.donetemp)):  # check whether anything got marked
+                elif any(('{{' + k + '}}' in j for k in com.Page.donetemp)):  # check whether anything got marked
                     flagged.append(
                         i + 1)  # Add this line to the list of lines where a template with a nice little flag is present
 
