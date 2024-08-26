@@ -16,7 +16,7 @@ import Bot_settings as bs
 
 
 class IPBLOK(com.Page):
-    "This class contains the main content for the page related operations"
+    """This class contains the main content for the page related operations"""
 
     def __init__(self,
                  testing=False):
@@ -32,7 +32,7 @@ class IPBLOK(com.Page):
         return super().separate('Nieuwe verzoeken', 'Afgehandelde verzoeken')
 
     def prepare_regex(self):
-        "Prepare the regex-pattern for future searches"
+        """Prepare the regex-pattern for future searches"""
         # Prepare the regex pattern
         ip4 = r'(\d{1,3}\.){3}\d{1,3}'  # Regex pattern used to detect ip4-adresses (and ranges)
         ip6 = r'([\dABCDEF]{1,4}:){4,7}([\dABCDEF:]{1,4})+?'  # Regex pattern used to detect ip4-adresses (and ranges)
@@ -44,7 +44,8 @@ class IPBLOK(com.Page):
         return self.regex  # Convert everything to capitals for consistency
 
     def check_line(self, line, forreq=True):
-        "This function checks whether an IP is on the line, and returns those. If forreq is False, the requests are not generated explicitly"
+        """This function checks whether an IP is on the line, and returns those. If forreq is False, the requests are
+        not generated explicitly"""
         if self.regex is None:
             self.prepare_regex()  # The regex has not yet been initialized properly
         # Following issue of 2 February 2024: Don't list lines with a donetemp in there!
@@ -70,8 +71,9 @@ class IPBLOK(com.Page):
         if not self._queue:  # This means that the split was not yet done
             self.separate()  # If the split was not yet done, then do the split, is it so difficult?
 
-        # check what lines are containing requests (and are flagged)
-        reqs, flagged = [], []  # List with line numbers where requests were found and where indication of flagged templates were found
+        # check what lines contain requests (and are flagged)
+        reqs, flagged = [], []  # List with line numbers where requests were found and where indication of flagged
+        # templates were found
 
         # Adjustment 20240626 - also detect headers
         header_on_line = False
