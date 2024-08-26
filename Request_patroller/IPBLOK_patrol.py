@@ -86,20 +86,23 @@ class IPBLOK(com.Page):
                 if z:  # We found requests on the line - this should be stored
                     if header_on_line is False:
                         reqs.append(
-                            (i + 1, z))  # +1 cause we left out the first element of the queue - make the MultiRequest later
+                            (i + 1, z))  # +1 because we left out the first element of the queue - make the
+                        # MultiRequest later
                     elif header_on_line is True:
                         reqs.append(
-                            (i, z))  # We actually want to append the previous line (code relies on people dropping their request on the first line and not after writing some novel...)
+                            (i, z))  # We actually want to append the previous line (code relies on people dropping
+                        # their request on the first line and not after writing some novel...)
                 elif any(('{{' + k + '}}' in j for k in com.Page.donetemp)):  # check whether anything got marked
                     flagged.append(
                         i + 1)  # Add this line to the list of lines where a template with a nice little flag is present
 
-        # Cancel the loop, continue with putting the requests in a well structured format
+        # Cancel the loop, continue with putting the requests in a well-structured format
         if not reqs:
             return self.requests  # No additional requests found, return this dictionary
         reqs.append((len(self._queue), None))  # Add a placeholder that makes life easier
         for i, j in zip(reqs[:-1], reqs[1:]):
-            req_flagged = False  # Reset this to False when starting a new iteration, will be used to detect a flagged request
+            req_flagged = False  # Reset this to False when starting a new iteration, will be used to detect a
+            # flagged request
             # i is the line where a request is present, j where the next request starts (or where the queue ends)
             if any((k in flagged for k in range(i[0], j[0]))):
                 self.requests['flagged'] = self.requests.get('flagged', []) + [
