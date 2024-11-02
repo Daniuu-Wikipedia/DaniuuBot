@@ -6,7 +6,7 @@ Functions are mainly related to patrolling request pages
 
 import re
 import Bot_settings as bs
-from Core import clear_log_file, log, NlBot
+from Core import clear_log_file, log, NlBot, BetaBot
 import datetime as dt
 import nldate_utils as nld
 
@@ -37,7 +37,7 @@ class Page:
         self._content = []
         self._preamble, self._queue, self._done = [], [], []  # three lists for three parts of the request page
         self.requests = {}  # This is a list of requests that are in the queue
-        self.bot = NlBot()  # Initialize a bot to do operations on Testwiki
+        self.bot = BetaBot()  # Initialize a bot to do operations on Testwiki
         self.id = None
         self._logfile = 'Log.txt'
 
@@ -104,6 +104,8 @@ class Page:
 
     def check_queue_done(self):
         """Check which requests in the queue are done (and flags them accordingly)"""
+        # Method just makes sure that all requests check whether they're acutally done
+        # Methods that check whether a request is done ==> implemented in the Request class
         if not self.requests:
             self.filter_queue()
         log(self._logfile, 'Now going through the requests and checking whether they are done')
