@@ -24,7 +24,7 @@ def clear_log_file(file):
 
 
 def log(file, text):
-    with open(file, 'a') as logfile:
+    with open(file, 'a', encoding='utf8') as logfile:
         logfile.write(text.rstrip() + '\n')
 
 
