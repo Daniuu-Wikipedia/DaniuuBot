@@ -20,3 +20,8 @@ cp *.sh ~/Tools_venv
 # Safety measure: make sure that all .txt-files are properly chmodded (and invisble to other users)
 cd ~/Handy_scripts
 bash Perm.sh
+
+# Additional task: copy the updated Core.py file
+# Not always used!
+cd ~/DaniuuBot/Core
+python3 Copy_to_subfolders.py
