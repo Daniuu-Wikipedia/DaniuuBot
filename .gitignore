@@ -33,3 +33,5 @@ __pycache__
 /Request_patroller/nldate_utils.py
 /Userspace/nldate_utils.py
 /Vote_checker/nldate_utils.py
+/Maintenance/nldate_utils.py
+/Maintenance/Core.py
