@@ -11,7 +11,6 @@ import shutil
 
 # Define the list of subdirectories to ignore
 ignore_list = ['Core',
-               'Maintenance',
                'Toolforge_venv']  # Replace with your actual subdirectory names
 
 # Define the files to be moved
