@@ -33,7 +33,7 @@ class Vote:
         # self.reg = datetime.datetime(start.year, start.month - 1, start.day, start.hour) #When a given user should be registered
         # self.ec = datetime.datetime(self.tw.year - 1, self.tw.month, self.tw.day, self.tw.hour) #Queries for one year prior to start of candid
         self.page = page  # The page that should be used for our tests
-        self._bot = Bot(Vote.API)
+        self._bot = NlBot()
         self.nc = 100  # Only users with 100+ edits are eligible to vote
         self._log = 'Logs.txt'
         self._checked = set()
@@ -48,7 +48,12 @@ class Vote:
              'ucstart': self.start - datetime.timedelta(weeks=2),
              'ucend': self.start - datetime.timedelta(weeks=2) - datetime.timedelta(weeks=52),
              'ucuser': user}
-        l = len(self._bot.get(p)['query']['usercontribs'])
+        print(user)  # Just for internal logging
+        try:
+            l = len(self._bot.get(p)['query']['usercontribs'])
+        except KeyError:
+            print(f'Ignored {user}')
+            return user, True, self.nc + 1
 
         # Check whether the editor made at least one edit prior to the self.reg treshold
         # p = {'action':'query',
@@ -94,7 +99,7 @@ class Vote:
         # Step 1: get the list of all users that have voted
         regex = r'#[^\}\/\|\]]+'
         raw = re.findall(regex, self.get_page_content())
-        users = {i.split(':')[1].strip() for i in raw if ':' in i and 'Metaverse' not in i}
+        users = {i.split(':')[1].strip() for i in raw if ':' in i and 'padding' not in i}
         newl, invalid = [], []  # New voters + their contribution
         work = users - self._checked  # No need to re-check users who voted before
 
@@ -130,9 +135,9 @@ class Vote:
 
 
 # Code for the arbcom elections of March 2021
-start_vote = datetime.datetime(2022, 10, 11, 18)  # UTC TIME!!!
+start_vote = datetime.datetime(2024, 9, 22, 19)  # UTC TIME!!!
 # cand = datetime.datetime(2021, 3, 11, 12)
-page = "Wikipedia:Afzetting moderatoren"
+page = "Wikipedia:Arbitragecommissie/Stemlokaal/Verkiezing september 2024/Stemming"
 # page = 'Gebruiker:Drummingman/kladblok3'
 z = Vote(start_vote, None, page)
 z()
