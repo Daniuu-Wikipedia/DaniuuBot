@@ -7,12 +7,9 @@ A Python script to patrol the Dutch Wikipedia's REGBLOK page.
 
 import re
 import Core as c
-import Request_patroller_common as com
-import datetime as dt
 import REGBLOK_approved_reasons as rar
 from IPBLOK_patrol import IPBLOK
 from IPBLOK_patrol import Request as ParentRequest
-from IPBLOK_patrol import MultiRequest as Mparent
 
 
 def has_lock_message(request_lines, request):
