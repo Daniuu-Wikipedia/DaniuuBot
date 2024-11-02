@@ -26,8 +26,6 @@ subdirs = [d for d in os.listdir(parent_dir) if os.path.isdir(os.path.join(paren
 # Filter out the subdirectories in the ignore list and those starting with '.'
 subdirs = [d for d in subdirs if d not in ignore_list and not d.startswith('.')]
 
-
-
 # Move Core.py to each remaining subdirectory
 for subdir in subdirs:
     for file in files_to_copy:

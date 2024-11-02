@@ -1,0 +1,21 @@
+{
+    "jobs": [
+        {
+            "clear": [
+                "patroller-all.err",
+                "patroller-all.out",
+                "Log.txt",
+                "IPBLOK_log.txt",
+                "REGBLOK_log.txt"
+            ],
+            "errorlog": "patroller-all.err"
+        },
+        {
+            "clear": [
+                "archiver.err",
+                "archiver.out"
+            ],
+            "errorlog": "archiver.err"
+        }
+    ]
+}
