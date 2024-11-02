@@ -138,11 +138,7 @@ class IPBLOK(com.Page):
                     todel.append(j)  # Add to the list of indices that should be deleted later on
                     if j not in flagged:  # The request has not yet been flagged manually, fix this
                         pre = self._queue[j[1] - 1].split()[0]
-                        if "*" in pre:
-                            prefix = '*' * (pre.count('*') + 1)
-                        else:
-                            prefix = ':'
-                        self._done.append(prefix + i.done_string())
+                        self._done.append(c.get_prefix(pre) + i.done_string())
         return self.clear_lines(self._queue, todel)
 
     def check_removal(self):
@@ -353,6 +349,15 @@ class MultiRequest(com.GenMulti):
                                                                  ' & ' * (len(subs) > 1),
                                                                  subs[
                                                                      -1])  # Generate the string that indicates that all blocks were administered
+
+    @property
+    def locked(self):
+        try:
+            if any((i.locked for i in self.targets)):
+                return True
+            return False
+        except:
+            return False
 
 
 class Test(IPBLOK):

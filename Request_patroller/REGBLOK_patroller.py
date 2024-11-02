@@ -12,6 +12,17 @@ import datetime as dt
 import REGBLOK_approved_reasons as rar
 from IPBLOK_patrol import IPBLOK
 from IPBLOK_patrol import Request as ParentRequest
+from IPBLOK_patrol import MultiRequest as Mparent
+
+
+def has_lock_message(request_lines, request):
+    """
+    Checks whether a lock message is present in the request.
+    """
+    if request.locked is True:
+        if not(any(Request.lockstring in i for i in request_lines)):
+            return False
+    return True
 
 
 class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and REGBLOK
@@ -77,8 +88,31 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
             return [Request(i) for i in k if '{{' in i and '|' in i]  # No need to test for IP match here...
         return bool(k)
 
+    # Override needed to deal with lock messages
+    def filter_queue(self, ran=False):
+        super().filter_queue()
+        if ran is False:  # Lock messages are just appended to the queue, so we need to add them manually
+            if self.check_lock_messages() is True:
+                return self.filter_queue(True)
+        return self.requests  # To mimic the behaviour of the parent function
+
     def check_removal(self, *args, **kwargs):
         return 0  # REGBLOK entries should never be deleted!
+
+    # Additional feature: leave a remark whenever a user has been locked
+    def check_lock_messages(self):
+        insert = []
+        if not self._queue:
+            self.separate()
+        for i, j in self.requests.items():
+            if not isinstance(i, str):  # Ignore flagged requests
+                if i.locked and not has_lock_message(self._queue[j[0]: j[1]], i):
+                    insert.append((j[1], f'{Request.lockstring} ~~~~'))
+        # And now add the lock messages
+        insert.sort(reverse=True)
+        for i, j in insert:
+            self._queue.insert(i, f'{c.get_prefix(self._queue[i - 1])}{j}')
+        return bool(insert)
 
 
 class Request(ParentRequest):
@@ -91,9 +125,12 @@ class Request(ParentRequest):
                          '{',
                          '}')  # Forbidden characters in account names, minus | (used in templates)
 
+    lockstring = '{{Vergrendeld}}'
+
     def __init__(self, line):
         super().__init__(line)
-        self.locked = False  # Check if a given user was locked (special treat for accounts)
+        self.locked = False  # For safety
+        self.check_locked()  # Check if a given user was locked (special treat for accounts)
 
     def process(self, origin, **kwargs):
         # Additional part for accounts: strip out forbidden characters
@@ -107,6 +144,15 @@ class Request(ParentRequest):
                    property_l='bkusers',
                    property_g='bgtargets'):
         super().get_blocks(property_l, property_g)  # Pass our keywords directly
+
+    # Add-on for accounts: is the account globally locked
+    def check_locked(self):
+        payload = {'action': 'query',
+                   'meta': 'globaluserinfo',
+                   'guiuser': self.target}
+        out = Request.bot.get(payload)['query']['globaluserinfo']
+        self.locked = 'locked' in out
+        return self.locked
 
     def process_blocks(self, target_name='target'):
         super().process_blocks(target_name)
