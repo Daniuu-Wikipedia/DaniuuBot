@@ -58,6 +58,8 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
         This function checks whether an IP is on the line, and returns those. If forreq is False, the requests are
         not generated explicitly
         """
+        if 'Naam account' in line:  # Stupid way of avoiding the explanation, but it works :)
+            return False
         if self.regex is None:
             self.prepare_regex()  # The regex has not yet been initialized properly
         # Following issue of 2 February 2024: Don't list lines with a donetemp in there!
@@ -129,11 +131,9 @@ class Request(ParentRequest):
 
     def __bool__(self):
         # Be aware chap, these requests can only be handled if the block was performed for a very specifiic set of reasons
-        # Lorem
         return super().__bool__() and self.verify_reason()
 
 
 if __name__ == '__main__':
     a = REGBLOK()
-    a.separate()
-    print(a.filter_queue())
+    a()

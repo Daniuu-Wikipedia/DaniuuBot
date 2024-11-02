@@ -186,7 +186,7 @@ class IPBLOK(com.Page):
 
 
 class Request(com.GenReq):
-    bot = c.NlBot()  # We are now testing
+    bot = c.BetaBot()  # We are now testing
     now = dt.datetime.utcnow()
 
     def __init__(self, ip):
@@ -218,6 +218,7 @@ class Request(com.GenReq):
         output = Request.bot.get(dic)['query']
         self.blocks, self.gb = output['blocks'], output['globalblocks']
         self.process_blocks()  # Automatically call this function too
+        del output  # A little bit of cleaning
 
     def process_blocks(self, target_name='address'):
         "This function will ensure the blocks are properly formatted"
@@ -231,7 +232,6 @@ class Request(com.GenReq):
                 i['timestamp'] = self.convert_api_date(start)
             if not isinstance(end, dt.datetime):
                 i['expiry'] = self.convert_api_date(end)
-                end = i['expiry']
 
         for i in self.blocks:
             i['global'] = False  # Someone is only locally blocked, just add False in the global header
@@ -240,7 +240,6 @@ class Request(com.GenReq):
                 i['timestamp'] = self.convert_api_date(start)
             if not isinstance(end, dt.datetime):
                 i['expiry'] = self.convert_api_date(end)
-                end = i['expiry']
 
     def check_blocked(self):  # For the test phase
         "This function will check whether a given IP is blocked. A 10 minute delay prior to flagging is used"
@@ -257,7 +256,7 @@ class Request(com.GenReq):
         for i in self.blocks:
             if too_old <= i['timestamp'] + dt.timedelta(
                     minutes=delay) <= Request.now:  # This gives the blocking sysop the time to place a block
-                if i['expiry'] > Request.now:  # Verify that the block did not yet expire
+                if i['expiry'] > Request.now or i['expiry'] == 'infinity':  # Verify that the block did not yet expire
                     self.main = i
                     return self.main
 
@@ -266,7 +265,7 @@ class Request(com.GenReq):
         for i in self.gb:
             if i['timestamp'] + dt.timedelta(
                     minutes=delay) <= Request.now:  # This gives the blocking sysop the time to place a block
-                if i['expiry'] > Request.now:  # Verify that the block did not yet expire
+                if i['expiry'] > Request.now or i['expiry'] == 'infinity':  # Verify that the block did not yet expire
                     self.main = i
                     return self.main
 
