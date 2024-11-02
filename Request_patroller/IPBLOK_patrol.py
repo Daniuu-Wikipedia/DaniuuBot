@@ -19,9 +19,10 @@ class IPBLOK(com.Page):
     """This class contains the main content for the page related operations"""
 
     def __init__(self,
+                 name='Wikipedia:Verzoekpagina voor moderatoren/IPBlok',
                  testing=False):
         # Argument "testing" can be set to True if the bot needs to be tested
-        super().__init__('Wikipedia:Verzoekpagina voor moderatoren/IPBlok', testing)
+        super().__init__(name, testing)
         self.regex = None  # Store the default regex pattern here
         self.prepare_regex()
         self._logfile = 'IPBLOK_log.txt'
