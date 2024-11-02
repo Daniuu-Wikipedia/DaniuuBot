@@ -28,6 +28,16 @@ def log(file, text):
         logfile.write(text.rstrip() + '\n')
 
 
+# Convenient utility: get prefix for discussion entry
+def get_prefix(pre):
+    if "*" in pre:
+        return '*' * (pre.count('*') + 1)
+    elif ":" in pre:
+        return ':' * (pre.count(':') + 1)
+    else:
+        return ':'
+
+
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
     max_edit = 5  # The maximum number of edits that a single bot can do per minute
