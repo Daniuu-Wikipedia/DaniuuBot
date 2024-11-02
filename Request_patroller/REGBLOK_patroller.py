@@ -30,7 +30,6 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
                  name = 'Wikipedia:Verzoekpagina voor moderatoren/RegBlok',
                  testing = False):
         super().__init__(name, testing)
-        self._inter = []  # Store requests in the 5-sysop section
         self._logfile = 'REGBLOK_log.txt'
 
     # Override separate function from the common file

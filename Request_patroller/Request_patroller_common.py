@@ -36,6 +36,7 @@ class Page:
         self.name = name
         self._content = []
         self._preamble, self._queue, self._done = [], [], []  # three lists for three parts of the request page
+        self._inter = []  # Addition 20241102 - to get backwards compatibility with WP:REGBLOK handler
         self.requests = {}  # This is a list of requests that are in the queue
         self.bot = BetaBot()  # Initialize a bot to do operations on Testwiki
         self.id = None
@@ -115,6 +116,9 @@ class Page:
                 i.check_done()
         log(self._logfile, 'DONE checking requests')
 
+    def process_intermediate(self):
+        return None  # Just a dummy function
+
     def update(self, logonly=False, force_removal=False):
         "This function will update the content of the page"
         print('Bot was called at ' + str(dt.datetime.now()))
@@ -131,8 +135,13 @@ class Page:
         log(self._logfile, 'Patrolling new requests')
         z = self.check_requests()
         log(self._logfile, 'Done checking new requests')
+
+        # 20241102 - REGBLOK has an intermediate section - also handle that one as well
+        self.process_intermediate()
+
         t = ('\n'.join(self._preamble),
              '\n'.join(self._queue),
+             '\n'.join(self._inter),
              '\n'.join(self._done))
         new = '\n'.join(t)
         log(self._logfile, 'New page text has been prepared')
