@@ -39,22 +39,24 @@ class IPBLOK(com.Page):
         ip6 = r'([\dABCDEF]{1,4}:){4,7}([\dABCDEF:]{1,4})+?'  # Regex pattern used to detect ip4-adresses (and ranges)
         templates = ('lg', 'lgipcw', 'lgcw', 'linkgebruiker', 'Link IP-gebruiker cross-wiki', 'lgx')
         regex_template = r'\{\{(%s)\s*\|\s*' % (
-            '|'.join(templates)).upper()  # A pattern that makes handling the templates easier
+            '|'.join(templates))  # A pattern that makes handling the templates easier
         self.regex = ('(%s(%s|%s))' % (regex_template, ip4, ip6))
         c.log(self._logfile, 'Regex prepared for IPBLOK')
         return self.regex  # Convert everything to capitals for consistency
 
-    def check_line(self, line, forreq=True):
+    def check_line(self,
+                   line,
+                   forreq=True):
         """This function checks whether an IP is on the line, and returns those. If forreq is False, the requests are
         not generated explicitly"""
         if self.regex is None:
             self.prepare_regex()  # The regex has not yet been initialized properly
         # Following issue of 2 February 2024: Don't list lines with a donetemp in there!
-        c.log(self._logfile, 'Scanning for requests: %s'%line)
+        # c.log(self._logfile, 'Scanning for requests: %s'%line)
         if any(('{{%s}}'%i in line.lower() for i in super().donetemp)) or any(('{{%s}}'%i in line.lower() for i in super().donetemp)):
             return [] if forreq is True else False
 
-        k = re.findall(self.regex, line.upper())  # Make it upper, so the regex can do it's job as it should do
+        k = re.findall(self.regex, line, re.IGNORECASE)  # Make it upper, so the regex can do it's job as it should do
         if not k:
             return None  # Returns None, indicating that the list of matches is empty
         if isinstance(k[0], tuple):
@@ -185,38 +187,45 @@ class IPBLOK(com.Page):
 
 class Request(com.GenReq):
     bot = c.NlBot()  # We are now testing
-    now = dt.datetime.utcnow()  # Store the current time to check whether
+    now = dt.datetime.utcnow()
 
     def __init__(self, ip):
         super().__init__(ip, (str,))
         self.blocks, self.gb = [], []
         self.main = None  # This is where we will store the block that is primarily affecting the person here
 
-    def process(self, origin):
+    def process(self, origin, capitals=True):
         if '|' not in origin:
-            return origin.strip().upper().strip()
-        return origin.split('|')[1].strip().upper()  # Always convert to capitals
+            if capitals is True:
+                return origin.strip().upper().strip()
+            return origin.strip()
+        if capitals is True:
+            return origin.split('|')[1].strip().upper()  # Always convert to capitals
+        return origin.split('|')[1].strip()  # Also add some support to avoid capitalizing user names
 
-    def get_blocks(self):
+    def get_blocks(self,
+                   property_l='bkip',
+                   property_g='bgip'):
         "This function will check whether the user was blocked or not"
         dic = {'action': 'query',
                'list': 'blocks|globalblocks',
-               'bkip': self.target,
-               'bgip': self.target,
+               property_l: self.target,
+               property_g: self.target,
                'bklimit': 500,
                'bglimit': 500,
-               'bkprop': 'user|by|timestamp|expiry',
-               'bgprop': 'address|by|timestamp|expiry'}
+               'bkprop': 'user|by|timestamp|expiry|reason',
+               'bgprop': 'address|by|timestamp|expiry|reason'}
         output = Request.bot.get(dic)['query']
         self.blocks, self.gb = output['blocks'], output['globalblocks']
         self.process_blocks()  # Automatically call this function too
 
-    def process_blocks(self):
+    def process_blocks(self, target_name='address'):
         "This function will ensure the blocks are properly formatted"
         # Begin with the global blocks
         for i in self.gb:
             i['global'] = True  # Just adding this for further use in the API
-            i['user'] = i['address']  # Something to make it compatible with the normal blocks
+            i['user'] = i[target_name]  # Something to make it compatible with the normal blocks
+            del i[target_name]  # Remove key that is no longer needed (memory stuff)
             start, end = i['timestamp'], i['expiry']  # Some date formatting
             if not isinstance(start, dt.datetime):
                 i['timestamp'] = self.convert_api_date(start)
