@@ -6,7 +6,7 @@ Functions are mainly related to patrolling request pages
 
 import re
 import Bot_settings as bs
-from Core import clear_log_file, log, NlBot, BetaBot
+from Core import clear_log_file, log, NlBot
 import datetime as dt
 import nldate_utils as nld
 
@@ -38,7 +38,7 @@ class Page:
         self._preamble, self._queue, self._done = [], [], []  # three lists for three parts of the request page
         self._inter = []  # Addition 20241102 - to get backwards compatibility with WP:REGBLOK handler
         self.requests = {}  # This is a list of requests that are in the queue
-        self.bot = BetaBot()  # Initialize a bot to do operations on Testwiki
+        self.bot = NlBot()  # Initialize a bot to do operations on Testwiki
         self.id = None
         self._logfile = 'Log.txt'
 

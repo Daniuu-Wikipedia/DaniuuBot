@@ -182,7 +182,7 @@ class IPBLOK(com.Page):
 
 
 class Request(com.GenReq):
-    bot = c.BetaBot()  # We are now testing
+    bot = c.NlBot()  # We are now testing
     now = dt.datetime.utcnow()
 
     def __init__(self, ip):
