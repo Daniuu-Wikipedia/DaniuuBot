@@ -55,7 +55,7 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
         regex_template = r'\{\{(%s)\s*\|\s*' % (
             '|'.join(templates)).lower()  # A pattern that makes handling the templates easier
         self.regex = ('(%s(%s))' % (regex_template, user_string))
-        c.log(self._logfile, 'Regex prepared for IPBLOK')
+        c.log(self._logfile, 'Regex prepared for REGBLOK')
         return self.regex  # Searches will be case-insentive here
 
     def check_line(self,
