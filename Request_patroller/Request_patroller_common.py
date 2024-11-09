@@ -56,6 +56,10 @@ class Page:
         # Extension 20240626 - to process requests with a header
         self._headerpattern = r'={3,}\s*[^=]+\s*={3,}'
 
+        # Extension 20241109 - to force a bot to renew the content of the page
+        # Application: flagging locked accounts on REGBLOK
+        self._force_processing = False
+
     def __str__(self):
         return self.name
 
@@ -157,7 +161,7 @@ class Page:
                 return None  # Make sure the program stops here
         del temp_concent  # Checks are done, we don't need to store the content in lowercase anymore
 
-        if y == 0 and z == 0 and self._testing is False:
+        if y == 0 and z == 0 and self._testing is False and self._force_processing is False:
             # Main function of the code: avoid making useless requests to the API
             # Requests are considered useless if no changes will be made
             # This code is only executed in operational mode
@@ -166,7 +170,7 @@ class Page:
             # Hence, check bypassed in testing mode
             print('Nothing to be done!')
             log(self._logfile, 'Stopping, no need to do anything')
-            print(self.requests)
+            print(self.requests)  # For logging on Toolforge
             return self.print_termination()  # No need to go through the remainder of the function
 
         # Determine whether there are still requests open.
@@ -174,7 +178,6 @@ class Page:
         remain *= remain >= 0
 
         # Prepare the edit summary
-        # summary = ('%d verzoek(en) gemarkeerd als afgehandeld'%z if z else '') + (' & '*(bool(y*z))) + ('%d verzoek(en) weggebezemd'%y if y else '')
         tup = (('%d verzoek(en) gemarkeerd als afgehandeld' % z) if z else '',
                ('%d verzoek(en) weggebezemd' % y) if y else '',
                ('%d verzoek(en) nog af te handelen' % remain))
@@ -222,6 +225,10 @@ class Page:
             # Print the edit summary as a service to the tester
             print(summary)
         # End of the testing section
+
+        # Addition 20241109 - we processed the page, so we can do some resetting
+        self._force_processing = False  # Reset variable
+
         # The bot will now write a message to the terminal
         # The message indicates that the update run was performed without errors
         self.print_termination()

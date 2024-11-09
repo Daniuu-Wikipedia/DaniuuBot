@@ -89,6 +89,7 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
         super().filter_queue()
         if ran is False:  # Lock messages are just appended to the queue, so we need to add them manually
             if self.check_lock_messages() is True:
+                self._force_processing = True  # Make sure the bot processes!
                 return self.filter_queue(True)
         return self.requests  # To mimic the behaviour of the parent function
 
