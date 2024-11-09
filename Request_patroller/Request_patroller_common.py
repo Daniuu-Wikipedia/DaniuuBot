@@ -10,6 +10,7 @@ from Core import clear_log_file, log, NlBot
 import datetime as dt
 import nldate_utils as nld
 
+
 # Below: classes that implement general page patrollers and requests
 class Page:
     "This is a class that allows the processing of a given request page"
