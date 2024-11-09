@@ -172,7 +172,8 @@ class Request(ParentRequest):
         return False
 
     def __bool__(self):
-        # Be aware chap, these requests can only be handled if the block was performed for a very specifiic set of reasons
+        # Be aware chap, these requests can only be handled if the block was performed for a very specifiic set of
+        # reasons
         return super().__bool__() and self.verify_reason()
 
 
