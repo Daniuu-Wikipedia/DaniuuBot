@@ -180,4 +180,4 @@ class Request(ParentRequest):
 
 if __name__ == '__main__':
     a = REGBLOK()
-    a(logonly=True)  # We don't want the script to actually write to the wiki YET
+    a()  # We don't want the script to actually write to the wiki YET
