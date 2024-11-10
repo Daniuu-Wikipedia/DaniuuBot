@@ -22,28 +22,14 @@ echo -e "${NOCOLOR}I will now resubmit the required jobs"
 toolforge-jobs run patroller-all --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Run_all.py" --image python3.11 --schedule "*/10 * * * *"
 echo -e "Job to patrol request pages ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
-
-#Job to patrol https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/Versies_verbergen
-# toolforge-jobs run revdel --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Revdel_patrol.py" --image python3.11 --schedule "02,17,32,47 * * * *"
-
-# echo -e "Job to patrol WP:VV ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
-
-#Job to patrol https://nl.wikipedia.org/wiki/Wikipedia:Verzoekpagina_voor_moderatoren/IPBlok
-# toolforge-jobs run ipblok --command "./botenv/bin/python ./DaniuuBot/Request_patroller/IPBLOK_patrol.py" --image python3.11 --schedule "*/10 * * * *"
-
-# echo -e "Job to patrol WP:IPBLOK ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
-
 # Archiver
 toolforge-jobs run archiver --command "./botenv/bin/python3.11 ./DaniuuBot/Archiver/Run_all.py" --image python3.11 --schedule "13 2 * * *" --retry 3
 
 echo -e "Job to run the Archiver submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
-
-#Job to synchonize my nlwiki and vlswiki user pages
-# This job was stopped on 2023-10-23
-# toolforge-jobs run up-sync --command "./botenv/bin/python ./DaniuuBot/Userspace/Copy_userpage.py" --image python3.11 --schedule "20 4 * * *"
-
-# echo -e "Job to sync your vlswiki and nlwiki user pages ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
+# 20241110 - Internal cleanup of logs
+toolforge-jobs run logcleaner --command "./botenv/bin/python3.11 ./DaniuuBot/Maintenance/Remove_logs.py" --image python3.11 --schedule "@weekly" --emails onfailure
+echo -e "Job to run the log cleaner submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
 # Just write a message that we're done submitting jobs to the grid
 echo -e "I have ${GREEN}SUCCESSFULLY${NOCOLOR} submitted the jobs I had to submit!"
