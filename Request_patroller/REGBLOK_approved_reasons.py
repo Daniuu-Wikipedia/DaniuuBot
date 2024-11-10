@@ -10,6 +10,8 @@ regblok_contains = ['vandaal',
                     'vandalisme',
                     'spam',
                     'spambot',
-                    'ongewenste gebruikersnaam']
+                    'ongewenste gebruikersnaam',
+                    'sokpopmisbruik',
+                    'sokpop']
 
 regblok_matches = ['On request, to test a script']  # Just for development purposes
