@@ -1,5 +1,6 @@
 import Revdel_patrol
 import IPBLOK_patrol
+import REGBLOK_patroller
 import time
 
 # First job: run Revdel patrol
@@ -18,4 +19,9 @@ ip = IPBLOK_patrol.IPBLOK()
 ip()
 print('DONE IPBLOK')
 del ip
+
+# Third job: run REGBLOK patrol
+rb = REGBLOK_patroller.REGBLOK()
+rb()
+del rb  # Clear some memory
 # End of script
