@@ -361,7 +361,7 @@ class MultiRequest(com.GenMulti):
 
 
 class Test(IPBLOK):
-    "The function that should be put to testwiki"
+    """The function that should be put to testwiki"""
 
     def __init__(self):
         super().__init__()
