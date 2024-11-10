@@ -6,7 +6,7 @@ Functions are mainly related to patrolling request pages
 
 import re
 import Bot_settings as bs
-from Core import clear_log_file, log, NlBot
+from Core import log, NlBot
 import datetime as dt
 import nldate_utils as nld
 
@@ -153,13 +153,13 @@ class Page:
 
         # Following request made at https://w.wiki/7M8A
         # Bot will automatically stop if {{nobots}} is added to the page
-        temp_concent = [i.lower() for i in self._content]
-        for line in temp_concent:
+        temp_content = [i.lower() for i in self._content]
+        for line in temp_content:
             if any((i.lower() in line for i in bs.abort_strings)):
                 # If this code is called, abort all running and don't make any further requests
                 print('\nBOT FORCIBLY TERMINATED DUE TO STOP STRINGS\n')
                 return None  # Make sure the program stops here
-        del temp_concent  # Checks are done, we don't need to store the content in lowercase anymore
+        del temp_content  # Checks are done, we don't need to store the content in lowercase anymore
 
         if y == 0 and z == 0 and self._testing is False and self._force_processing is False:
             # Main function of the code: avoid making useless requests to the API
