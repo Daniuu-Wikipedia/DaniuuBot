@@ -97,8 +97,10 @@ class Bot:
             assert n <= 1, 'Cannot generate the requested token'
             return self.get_token(t, n + 1)
 
-    def post(self, params):
+    def post(self, params, force_s = False):
         assert 'action' in params, 'Please provide an action'
+        if force_s is True:
+            self.verify_OAuth('GS.txt')
         t = float(time.time())
         self.ti = [i for i in self.ti if i >= t - 60]  # Clean this mess
         if len(self.ti) >= Bot.max_edit:  # Check this again, after doing the cleaning
@@ -116,6 +118,8 @@ class Bot:
             print(k)
             if 'code' in k['error'] and 'maxlag' in k['error']['code']:
                 print('Maxlag occured, please try to file the request at a later point in space and time.')
+        if force_s is True:
+            self.verify_OAuth()
         return k
 
 
