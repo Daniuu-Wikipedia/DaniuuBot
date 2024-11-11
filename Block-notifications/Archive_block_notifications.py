@@ -1,8 +1,8 @@
-from Core import BetaBot
+from Core import NlBot
 import datetime as dt
 import nldate_utils as nld
 
-bot = BetaBot()  # The bot to be used for all communications with betawiki
+bot = NlBot()  # The bot to be used for all communications with betawiki
 
 # Step 1: parse the content of WP:Blokkeringsmeldingen
 title = 'Wikipedia:Blokkeringsmeldingen'
@@ -82,7 +82,7 @@ for i in remove_sections:
 new_content_archive = [original_content[i] for i in to_new]
 # Second: insert preamble into the archive
 new_content_archive.insert(0, "__NOINDEX__{{mededeling|'''Dit is het archief van %s "
-                              "%d van [[Wikipedia:Blokkeringsmeldingen]]'''}}." % (nld.match[month].lower(),
+                              "%d van [[Wikipedia:Blokkeringsmeldingen]]'''.}}" % (nld.match[month].lower(),
                                                                                    year))
 
 # Post the content of the archive now
@@ -93,8 +93,18 @@ edit_archive = {'action': 'edit',
                 'text': '\n'.join(new_content_archive),
                 'summary': 'Archivering van [[%s]] (%.02d-%d)' % (title, month, year),
                 'notminor': True,
-                'bot': True}
-print(bot.post(edit_archive))  # Log, also on Toolforge
+                'bot': True,
+                'createonly': True}
+out = bot.post(edit_archive)  # Log, also on Toolforge
+print(out)
+assert 'error' not in out, 'ERROR DETECTED, aborting the script!'
+
+# Also protect the archive
+protect_archive = {'action': 'protect',
+                   'title': target_archive,
+                   'protections': 'edit=sysop|move=sysop',
+                   'reason': 'Archiefpagina'}
+print(bot.post(protect_archive))
 
 # Post the new content on the project page
 edit_source = {'action': 'edit',
