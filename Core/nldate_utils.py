@@ -50,14 +50,16 @@ def format_date(date):
 
 def get_date_for_lines(lines):
     """This function will return the most recent contribution date that corresponds with a given request."""
-    for k in lines[::-1]:  # Run the inverse
+    if isinstance(lines, str):  # Single line is passed, no need to invert or loop here!
         try:
-            date_temp = filter_date(k)[0][0]  # Get the date on that line (using Regex)
-            return format_date(date_temp)  # Convert the found date into an actual DateTime
-        except IndexError:  # It's easier to ask for forgiveness, as this sin can be forgiven easily.
-            date_temp = None
-    # No date was found, use an emergency procedure
-    now = dt.datetime.utcnow()  # Get current UTC time
-    if 4 <= now.hour <= 6:
-        return dt.datetime.today() - dt.timedelta(days=1)
-    return dt.datetime.today()
+            date_temp = filter_date(lines)[0][0]
+            return format_date(date_temp)
+        except IndexError:
+            return None  # Explicitly return None to avoid syntax errors
+    elif isinstance(lines, (list, tuple)):  # Mulitple lines of text are passed at once
+        for k in lines[::-1]:  # Run the inverse
+            try:
+                date_temp = filter_date(k)[0][0]  # Get the date on that line (using Regex)
+                return format_date(date_temp)  # Convert the found date into an actual DateTime
+            except IndexError:  # It's easier to ask for forgiveness, as this sin can be forgiven easily.
+                return None
