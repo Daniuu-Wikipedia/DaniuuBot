@@ -41,6 +41,7 @@ class Page:
         self.requests = {}  # This is a list of requests that are in the queue
         self.bot = NlBot()  # Initialize a bot to do operations on Testwiki
         self.id = None
+        self._user = None  # The user who made the last revision - addition 20241111 - https://w.wiki/Bvnp
         self._logfile = 'Log.txt'
 
         # Code implemented solely for testing purposes
@@ -74,12 +75,13 @@ class Page:
             d = {'action': 'query',
                  'prop': 'revisions',
                  'titles': self.name,
-                 'rvprop': 'content|ids|timestamp',
+                 'rvprop': 'content|ids|timestamp|user',
                  'rvlimit': 1,
                  'rvdir': 'older'}
             jos = self.bot.get(d)['query']['pages']
             self.id = int(next(iter(jos.keys())))
             self._timestamp = jos[str(self.id)]['revisions'][0]['timestamp']  # To check for an eventual edit conflict
+            self._user = jos[str(self.id)]['revisions'][0]['user']  # 20241111 - store name of user making last edit
             temp = next(iter(jos.values()))['revisions'][0]['*'].split('\n')
         elif self._testing is True:
             # This code is solely executed if the bot is called in its Test mode
@@ -125,7 +127,7 @@ class Page:
         return None  # Just a dummy function
 
     def update(self, logonly=False, force_removal=False):
-        "This function will update the content of the page"
+        """This function will update the content of the page"""
         print('Bot was called at ' + str(dt.datetime.now()))
         # Following issue of 2 February 2024 (IPBLOK - https://w.wiki/93qd)
         # We will only clear the page between 4:00 and 4:18 UTC
@@ -179,9 +181,8 @@ class Page:
 
         # Prepare the edit summary
         tup = (('%d verzoek(en) gemarkeerd als afgehandeld' % z) if z else '',
-               ('%d verzoek(en) weggebezemd' % y) if y else '',
-               ('%d verzoek(en) nog af te handelen' % remain))
-        summary = ' & '.join((i for i in tup if i))
+               ('%d verzoek(en) weggebezemd' % y) if y else '')
+        summary = ' & '.join((i for i in tup if i)) + ' - voorgaande revisie door %s' % self._user
         # This code will update the page on the wiki
         # The code can only be executed if the bot is called in "operational" mode
         # The bot is operational if self._testing is set to False
