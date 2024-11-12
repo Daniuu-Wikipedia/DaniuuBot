@@ -16,8 +16,15 @@ import json
 parent_dir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[:-1]  # Start directory
 
 # Read the configuration file
-with open('Configuration.json', 'r', encoding='utf-8') as f:
-    jobs = json.load(f)  # And now read the whole lot
+try:
+    with open('Configuration.json', 'r', encoding='utf-8') as f:
+        jobs = json.load(f)  # And now read the whole lot
+except FileNotFoundError:
+    with open(os.path.join(os.getcwd(),
+                           'DaniuuBot',
+                           'Maintenance',
+                           'Configuration.json'), encoding='utf-8') as f:
+        jobs = json.load(f)
 
 # On Toolforge, all jobs are executed in the main directory
 os.chdir(parent_dir[0])
