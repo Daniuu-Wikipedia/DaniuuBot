@@ -16,6 +16,13 @@
                 "archiver.out"
             ],
             "errorlog": "archiver.err"
+        },
+        {
+            "clear": [
+                "logcleaner.err",
+                "logcleaner.out"
+            ],
+            "errorlog": "logcleaner.err"
         }
     ]
 }

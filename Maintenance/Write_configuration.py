@@ -25,9 +25,15 @@ archiver = {'clear': ['archiver.err',
                       'archiver.out'],
             'errorlog': 'archiver.err'}
 
+# Code for the log cleaner job
+logcleaner = {'clear': ['logcleaner.err',
+                        'logcleaner.out'],
+              'errorlog': 'logcleaner.err'}
+
 # And now time to actually write the json
 content = {'jobs': [patrol,
-                    archiver]}
+                    archiver,
+                    logcleaner]}
 
 with open('Configuration.json', 'w', encoding='utf-8') as f:
     f.write(json.dumps(content, indent=4))
