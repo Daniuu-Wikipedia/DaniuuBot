@@ -13,6 +13,8 @@ The code verifies whether any errors occured (like, whether the .err file is emp
 import os
 import json
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))  # 20241123 - fixing bug related to Toolforge
+
 parent_dir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[:-1]  # Start directory
 
 # Read the configuration file
