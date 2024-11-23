@@ -19,11 +19,11 @@ echo -e "${NOCOLOR}I will now resubmit the required jobs"
 
 
 # Job to patrol WP:VV & WP:IPBLOK
-toolforge-jobs run patroller-all --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Run_all.py" --image python3.11 --schedule "*/10 * * * *"
+toolforge-jobs run patroller-all --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Run_all.py" --image python3.11 --emails onfailure --schedule "*/10 * * * *"
 echo -e "Job to patrol request pages ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
 # Archiver
-toolforge-jobs run archiver --command "./botenv/bin/python3.11 ./DaniuuBot/Archiver/Run_all.py" --image python3.11 --schedule "13 2 * * *" --retry 3
+toolforge-jobs run archiver --command "./botenv/bin/python3.11 ./DaniuuBot/Archiver/Run_all.py" --image python3.11 --schedule "13 2 * * *" --retry 3 --emails onfailure
 
 echo -e "Job to run the Archiver submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
