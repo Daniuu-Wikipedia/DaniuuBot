@@ -88,7 +88,7 @@ class Page:
             with open(bs.test_input, 'r', encoding='utf8') as inputfile:
                 temp = inputfile.readlines()  # We don't need to query the database, just some text
         # Final code (always executed)
-        self._content = [i.strip() for i in temp if i.strip()]
+        self._content = [i.strip() for i in temp]  # 20241126 - witregels, op vraag van Matroos Vos (https://w.wiki/CCtg)
         log(self._logfile, 'Done getting the contents from the request page')
         return self._content
 
