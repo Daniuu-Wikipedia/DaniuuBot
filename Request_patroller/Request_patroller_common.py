@@ -325,7 +325,7 @@ class GenReq:
             return dt.datetime(9999, 12, 31)
 
     def is_deleted(self):
-        "Checks whether the target got deleted before"
+        """Checks whether the target got deleted before"""
         return self.deleted is True
 
 
@@ -347,14 +347,31 @@ class GenMulti:
         return self.done or self.deleted
 
     def __hash__(self):
-        "This function will provide a nice hash"
+        """This function will provide a nice hash"""
         return tuple(self.targets).__hash__()
 
     def done_string(self):
-        "This function will generate a string that can be used to indicate that the request has been done"
+        """This function will generate a string that can be used to indicate that the request has been done"""
         martin = self._user if self._user is not None else 'een moderator'
         return "De versie(s) is/zijn verborgen door %s." % martin
 
     def is_deleted(self):
-        "Checks whether the target got deleted before"
+        """Checks whether the target got deleted before"""
         return self.deleted is True
+
+
+# 20241201 - update: account for empty lines in the text
+# Presence of empty lines breaks some features in the old code
+def get_previous_non_empty_line(text, startline=None):
+    """
+    This function will return the index of the first non-empty line in a list of strings, occuring before startline.
+    This method was added to allow the bot to deal with empty lines in the code.
+    The presence of these lines previously caused errors in the bot.
+    """
+    if startline is None or not isinstance(startline, int):
+        startline = len(text) - 1
+    if not text or startline < 0:
+        return None  # You passed only empty lines... that's not right
+    if text[startline].strip():
+        return startline
+    return get_previous_non_empty_line(text, startline - 1)  # Recursion

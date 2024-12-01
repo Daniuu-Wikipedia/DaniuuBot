@@ -137,7 +137,9 @@ class IPBLOK(com.Page):
                     self._done += self._queue[j[0]:j[1]]  # Transfer the requests to the list of done ones
                     todel.append(j)  # Add to the list of indices that should be deleted later on
                     if j not in flagged:  # The request has not yet been flagged manually, fix this
-                        pre = self._queue[j[1] - 1].split()[0]
+                        # 20241201 - adjust to process empty lines as well
+                        nonempty_before = com.get_previous_non_empty_line(self._queue, j[1] - 1)  # 20241201
+                        pre = self._queue[nonempty_before].split()[0]
                         self._done.append(c.get_prefix(pre) + i.done_string())
         return self.clear_lines(self._queue, todel)
 

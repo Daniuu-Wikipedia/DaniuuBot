@@ -130,7 +130,8 @@ class Revdel(com.Page):
         for i, j, u in sto:  # Query the indices and add the request to the 'done' section
             self._done += self._queue[i:j]
             if u is not None:  # u is None indicates that the request was manually flagged
-                pre = self._queue[j - 1].split()[0]
+                non_empty_pre = com.get_previous_non_empty_line(self._queue, j - 1)
+                pre = self._queue[non_empty_pre].split()[0]  # 20241201 - to handle empty lines without IndexError
                 if "*" in pre:
                     prefix = '*' * (pre.count('*') + 1)
                 else:
