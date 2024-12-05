@@ -11,6 +11,40 @@ import datetime as dt
 import nldate_utils as nld
 
 
+# 20241201 - update: account for empty lines in the text
+# Presence of empty lines breaks some features in the old code
+def get_previous_non_empty_line(text, startline=None):
+    """
+    This function will return the index of the first non-empty line in a list of strings, occuring before startline.
+    This method was added to allow the bot to deal with empty lines in the code.
+    The presence of these lines previously caused errors in the bot.
+    """
+    if startline is None or not isinstance(startline, int):
+        startline = len(text) - 1
+    if not text or startline < 0:
+        return None  # You passed only empty lines... that's not right
+    if text[startline].strip():
+        return startline
+    return get_previous_non_empty_line(text, startline - 1)  # Recursion
+
+
+# 20241201 - remove double whitelines
+def purge_whitelines(lines):
+    prev = False
+    delete = []
+    for i, line in enumerate(lines):
+        if line.strip():
+            prev = False
+        elif prev is True:
+            delete.append(i)
+        elif prev is False:
+            prev = True
+    delete.sort(reverse=True)
+    for i in delete:
+        del lines[i]
+    return lines
+
+
 # Below: classes that implement general page patrollers and requests
 class Page:
     "This is a class that allows the processing of a given request page"
@@ -146,10 +180,10 @@ class Page:
         # 20241102 - REGBLOK has an intermediate section - also handle that one as well
         self.process_intermediate()
 
-        t = ('\n'.join(self._preamble),
-             '\n'.join(self._queue),
-             '\n'.join(self._inter),
-             '\n'.join(self._done))
+        t = ('\n'.join(purge_whitelines(self._preamble)),
+             '\n'.join(purge_whitelines(self._queue)),
+             '\n'.join(purge_whitelines(self._inter)),
+             '\n'.join(purge_whitelines(self._done)))
         new = '\n'.join(t)
         log(self._logfile, 'New page text has been prepared')
 
@@ -358,20 +392,3 @@ class GenMulti:
     def is_deleted(self):
         """Checks whether the target got deleted before"""
         return self.deleted is True
-
-
-# 20241201 - update: account for empty lines in the text
-# Presence of empty lines breaks some features in the old code
-def get_previous_non_empty_line(text, startline=None):
-    """
-    This function will return the index of the first non-empty line in a list of strings, occuring before startline.
-    This method was added to allow the bot to deal with empty lines in the code.
-    The presence of these lines previously caused errors in the bot.
-    """
-    if startline is None or not isinstance(startline, int):
-        startline = len(text) - 1
-    if not text or startline < 0:
-        return None  # You passed only empty lines... that's not right
-    if text[startline].strip():
-        return startline
-    return get_previous_non_empty_line(text, startline - 1)  # Recursion
