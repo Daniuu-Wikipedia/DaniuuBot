@@ -40,7 +40,7 @@ def get_prefix(pre):
 
 class Bot:
     'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
-    max_edit = 5  # The maximum number of edits that a single bot can do per minute
+    max_edit = 12  # The maximum number of edits that a single bot can do per minute
 
     def __init__(self, api, m=None):
         'Constructs a bot, designed to interact with one Wikipedia'
