@@ -6,7 +6,7 @@ Functions are mainly related to patrolling request pages
 
 import re
 import Bot_settings as bs
-from Core import log, NlBot
+from Core import log, NlBot, remove_whitespace
 import datetime as dt
 import nldate_utils as nld
 
@@ -30,19 +30,7 @@ def get_previous_non_empty_line(text, startline=None):
 
 # 20241201 - remove double whitelines
 def purge_whitelines(lines):
-    prev = False
-    delete = []
-    for i, line in enumerate(lines):
-        if line.strip():
-            prev = False
-        elif prev is True:
-            delete.append(i)
-        elif prev is False:
-            prev = True
-    delete.sort(reverse=True)
-    for i in delete:
-        del lines[i]
-    return lines
+    return remove_whitespace(lines)
 
 
 # Below: classes that implement general page patrollers and requests
@@ -293,7 +281,7 @@ class Page:
         return date
 
     def clear_lines(self, parent, lines):
-        "This function deletes the given lines from the parent list"
+        """This function deletes the given lines from the parent list"""
         log(self._logfile, 'Starting deletion of lines %s' % lines)
         for i, j in sorted(lines, reverse=True):
             del parent[i:j]
@@ -301,7 +289,7 @@ class Page:
         return len(lines)
 
     def get_date_for_lines(self, lines):
-        "This function will return the most recent contribution date that corresponds with a given request."
+        """This function will return the most recent contribution date that corresponds with a given request."""
         for k in lines[::-1]:  # Run the inverse
             try:
                 date_temp = self.filter_date(k)[0][0]  # Get the date on that line (using Regex)

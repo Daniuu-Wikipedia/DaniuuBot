@@ -53,7 +53,8 @@ class IPBLOK(com.Page):
             self.prepare_regex()  # The regex has not yet been initialized properly
         # Following issue of 2 February 2024: Don't list lines with a donetemp in there!
         # c.log(self._logfile, 'Scanning for requests: %s'%line)
-        if any(('{{%s}}'%i in line.lower() for i in super().donetemp)) or any(('{{%s}}'%i in line.lower() for i in super().donetemp)):
+        if any(('{{%s}}' % i in line.lower() for i in super().donetemp)) or any(
+                ('{{%s}}' % i in line.lower() for i in super().donetemp)):
             return [] if forreq is True else False
 
         k = re.findall(self.regex, line, re.IGNORECASE)  # Make it upper, so the regex can do it's job as it should do
@@ -61,7 +62,7 @@ class IPBLOK(com.Page):
             return None  # Returns None, indicating that the list of matches is empty
         if isinstance(k[0], tuple):
             k = [i[0] for i in k]  # Get the longest matching sequence
-        c.log(self._logfile, 'Done scanning line %s'%line)
+        c.log(self._logfile, 'Done scanning line %s' % line)
         if forreq is True:
             return [Request(i) for i in k if ('{{' in i and '|' in i and (i.count('.') == 3 or i.count(
                 ':') >= 4))]  # Only return the matches that are real calls to the template
@@ -284,23 +285,23 @@ class Request(com.GenReq):
             return 'steward ' * self.main['global'] + self.main['by']
 
     def done_string(self):
-        "This function returns a string that indicates that the user was blocked"
+        """This function returns a string that indicates that the user was blocked"""
         if self:
             return '{{done}} - %s is voor %s geblokkeerd door %s. Dank voor de melding. ~~~~' % (
-            self.blocked(), self.duration(), self.get_name())
+                self.blocked(), self.duration(), self.get_name())
 
     def blocked(self):
-        "Get which IP's are blocked."
+        """Get which IP's are blocked."""
         if self:
             return self.main['user']  # Kijk na welke gebruiker er is geblokkeerd
 
     def short_string(self):
-        "Will return a short string, explaining whether a block was administered"
+        """Will return a short string, explaining whether a block was administered"""
         if self:
             return '%s is voor %s geblokkeerd door %s' % (self.blocked(), self.duration(), self.get_name())
 
     def duration(self):
-        "Get how long the IP has been blocked"
+        """Get how long the IP has been blocked"""
         if not self:
             return None  # Make sure this special case cannot accidentally leak
         dur = self.main['expiry'] - self.main['timestamp']
@@ -320,7 +321,7 @@ class Request(com.GenReq):
         return '%d uur' % hours
 
     def __call__(self):
-        "This function is used by MultiRequest, and handles the entire request at once"
+        """This function is used by MultiRequest, and handles the entire request at once"""
         if not self:  # The request has not yet been completed
             self.check_blocked()
         return self.short_string()  # Especially handy when this has to be combined with MultiRequest
@@ -328,7 +329,7 @@ class Request(com.GenReq):
 
 class MultiRequest(com.GenMulti):
     def check_done(self):
-        "Checks whether all requests were already handled or not."
+        """Checks whether all requests were already handled or not."""
         self.done = all((bool(i) for i in self.targets))
         return self.done
 
@@ -336,21 +337,20 @@ class MultiRequest(com.GenMulti):
         return str(self.targets)
 
     def __eq__(self, other):
-        "This function is required to test equality"
+        """This function is required to test equality"""
         return sorted(self.targets) == sorted(other.targets)
 
     def __hash__(self):
         return tuple(self.targets).__hash__()
 
     def done_string(self):
-        "This will generate a string that indicates whether all listed IP's are blocked"
+        """This will generate a string that indicates whether all listed IP's are blocked"""
         if not self:
             return None  # Just stop this shit
         subs = [i.short_string() for i in self.targets]
-        return '{{d}} - %s %s %s. Dank voor de melding. ~~~~' % (', '.join(subs[:-1]),
-                                                                 ' & ' * (len(subs) > 1),
-                                                                 subs[
-                                                                     -1])  # Generate the string that indicates that all blocks were administered
+        return '{{d}} - %s%s%s. Dank voor de melding. ~~~~' % (', '.join(subs[:-1]),
+                                                               ' & ' * (len(subs) > 1),
+                                                               subs[-1])
 
     @property
     def locked(self):

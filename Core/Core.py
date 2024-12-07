@@ -29,6 +29,7 @@ def log(file, text):
 
 
 # Convenient utility: get prefix for discussion entry
+# This method is developed to add a discussion entry
 def get_prefix(pre):
     if "*" in pre:
         return '*' * (pre.count('*') + 1)
@@ -38,8 +39,60 @@ def get_prefix(pre):
         return ':'
 
 
+# For managing whitespaces in the text of the wikipage
+# 20241207 - allow codes to optimize the whitespaces in a code (separately implemented)
+def get_indent_level(line, before=None, chars=('#', '*', ':', '=')):
+    # Handle end of line
+    if not line.rstrip():  # Conveniently also equip this function to detect empty strings
+        if before is None:
+            return None
+        else:
+            return ''
+    # Step 1: make sure we don't run into trouble :)
+    if before is None:
+        before = ''
+        line = line.lstrip()
+    # Step 2: if right character found, return it
+    if line[0] in chars:
+        return line[0] + get_indent_level(line[1:], before + line[0])
+    return ''  # Abort the recursion if we checked all lines already :)
+
+
+# 20241207 - second method: remove unnecessary whitespaces
+def remove_whitespace(lines):
+    # Define auxiliary variables
+    active = None  # Last detected indentation prefix (remains None until we hit the first non-blank)
+    blank_before = False  # Boolean indicating whether the last scanned line was a blank
+    to_delete = []  # Which lines are to be removed
+    for i, j in enumerate(lines):
+        # Step 1: get the new prefix
+        new_prefix = get_indent_level(j)  # Make sure we only call the function once for each line
+
+        # Step 2: Decide what needs to happen now
+        # Delete two consecutive whitespaces (and whitespaces at the start of the paragraph)
+        if new_prefix is None:
+            if blank_before is True or active is None:
+                to_delete.append(i)
+        # Delete whitespaces when a change in prefix occurs
+        if blank_before is True:
+            if active is not None and new_prefix != active:
+                to_delete.append(i - 1)
+
+        # Step 3: prepare everything for the next iteration
+        blank_before = new_prefix is None
+        if new_prefix is not None:
+            if active is None or active != new_prefix:
+                active = new_prefix
+
+    # Final piece of the puzzle: actually delete the obsolete whitespaces
+    for i in sorted(set(to_delete), reverse=True):
+        del lines[i]
+    return lines
+
+
 class Bot:
-    'This class is designed to facilitate all interactions with Wikipedia (and to get the processing functions out of other calsses)'
+    """This class is designed to facilitate all interactions
+        with Wikipedia (and to get the processing functions out of other classes)"""
     max_edit = 12  # The maximum number of edits that a single bot can do per minute
 
     def __init__(self, api, m=None):
