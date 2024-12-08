@@ -165,6 +165,10 @@ class Page:
             if i['line'] == section and int(i['level']) == (self._level - 1):
                 return int(i['number'])  # Abort run (we found the desired section)
 
+        # 20241208 - bugfix: handling new archive pages that do noy yet have sections
+        if not parsed:
+            return 0, True  # We need to write a new section to the concerning archive page
+
         # 20240722 - allow creation of new sections if required
         if self._allow_new_sections is not True:
             raise ValueError('I could not find the section! You did not allow to create a new one: %s' % section)
@@ -416,7 +420,7 @@ class Page:
                         append_dic['section'] = self.calculate_archive_section(a[0], a[1])
                         # 20240722 - Extend code to write new sections if needed
                         if isinstance(append_dic['section'], tuple):
-                            # No need to check for self._allow_new_sections (is done in self.calculate_archive_section
+                            # No need to check for self._allow_new_sections (is done in self.calculate_archive_section)
                             # We need to write a new section ==> make the change!
                             del append_dic['section']  # Just append at bottom of page
                             new_text = '\n'
