@@ -23,6 +23,13 @@
                 "logcleaner.out"
             ],
             "errorlog": "logcleaner.err"
+        },
+        {
+            "clear": [
+                "redlinkswifi.err",
+                "redlinkswifi.out"
+            ],
+            "errorlog": "redlinkswifi.err"
         }
     ]
 }
