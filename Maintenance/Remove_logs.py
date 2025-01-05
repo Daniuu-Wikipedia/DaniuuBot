@@ -40,6 +40,9 @@ def is_empty_file(file):
 # Now start doing the run
 for d in [parent_dir[0],  # On Toolforge, all jobs are executed in the main directory
           parent_dir[:-3]]:
+    if not isinstance(d, str):
+        d = os.path.join(d)
+    print(f'Patrolling {d:r}')
     os.chdir(d)
     for i in jobs['jobs']:
         if os.path.isfile(i['errorlog']):
