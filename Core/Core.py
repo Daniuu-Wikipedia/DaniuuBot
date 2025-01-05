@@ -8,10 +8,11 @@ This is the general code that the all applications will use when being deployed 
 It just contains a general instance of a Bot, and some handy subclasses that are preset for the main wikis where the bot will be deployed
 """
 import requests
-from requests_oauthlib import OAuth1
 import time
+from requests_oauthlib import OAuth1
 from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
+from os import getcwd
 
 # Before taking any actions, change the UA to something nicer
 set_user_agent('Daniuu-Bot')
@@ -115,10 +116,14 @@ class Bot:
                     self._auth = OAuth1(*[i.strip() for i in secret][
                                          1::2])  # This is the reason why those keys should never be published
             except FileNotFoundError:  # A workaround for the shell file @toolforge
-                from os import getcwd
-                file = getcwd() + '/DaniuuBot/' + file  # An attempt to fix a particular bug
-                with open(file, 'r') as secret:
-                    self._auth = OAuth1(*[i.strip() for i in secret][1::2])
+                try:
+                    file = getcwd() + '/DaniuuBot/' + file  # An attempt to fix a particular bug
+                    with open(file, 'r') as secret:
+                        self._auth = OAuth1(*[i.strip() for i in secret][1::2])
+                except FileNotFoundError:
+                    file = getcwd() + '/bots/old-daniuu/' + file  # An attempt to fix a particular bug
+                    with open(file, 'r') as secret:
+                        self._auth = OAuth1(*[i.strip() for i in secret][1::2])
 
     def verify_token(self):
         if self._token is None:

@@ -7,5 +7,5 @@ cd ~/bots/old-daniuu/DaniuuBot
 find ~/bots/old-daniuu/DaniuuBot -name "*.txt" -exec chmod 600 {} \;
 
 # Prohibit the reading of shell files in the home directory by third parties
-cd ~/Handy_scripts
+cd ~/bots/old-daniuu/Handy_scripts
 chmod 700 *.sh
