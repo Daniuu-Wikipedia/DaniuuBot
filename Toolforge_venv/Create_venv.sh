@@ -8,10 +8,10 @@ cd ~
 set -euo pipefail
 
 # create the venv
-python3 -m venv botenv
+python3 -m venv venv-tf-python311
 
 # activate it
-source botenv/bin/activate
+source venv-tf-python311/bin/activate
 
 # upgrade pip inside the venv and add support for the wheel package format
 pip install -U pip wheel
@@ -22,3 +22,6 @@ pip install pyyaml
 pip install requests_oauthlib
 pip install toolforge
 pip install pytz  # To deal with timezones
+pip install PyMySQL  # Sync with nlwikibots requirements
+pip install pywikibot  # Not used by DaniuuBot, but required for other nlwikibots repositories
+pip install mwparserfromhell  # Also a pretty firm requirement :)
