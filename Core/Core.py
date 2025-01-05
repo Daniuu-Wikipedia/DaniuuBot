@@ -127,6 +127,10 @@ class Bot:
                     file = f'{basedir}/bots/old-daniuu/{file}'
                     with open(file, 'r') as secret:
                         self._auth = OAuth1(*[i.strip() for i in secret][1::2])
+                elif os.path.isdir(r''):
+                    file = f'project/nlwikibots/bots/old-daniuu/{file}'
+                    with open(file, 'r') as secret:
+                        self._auth = OAuth1(*[i.strip() for i in secret][1::2])
                 else:
                     raise ValueError('Requested file not found! Please check the passed directory!')
 
