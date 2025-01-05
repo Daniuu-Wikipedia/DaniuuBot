@@ -28,9 +28,6 @@ except FileNotFoundError:
                            'Configuration.json'), encoding='utf-8') as f:
         jobs = json.load(f)
 
-# On Toolforge, all jobs are executed in the main directory
-os.chdir(parent_dir[0])
-
 
 # Aux method
 def is_empty_file(file):
@@ -41,11 +38,14 @@ def is_empty_file(file):
 
 
 # Now start doing the run
-for i in jobs['jobs']:
-    if os.path.isfile(i['errorlog']):
-        with open(i['errorlog'], 'r', encoding='utf-8') as f:
-            if not is_empty_file(f):
-                continue
-        for j in i['clear']:
-            if os.path.isfile(j):
-                os.remove(j)
+for d in [parent_dir[0],  # On Toolforge, all jobs are executed in the main directory
+          parent_dir[:-3]]:
+    os.chdir(d)
+    for i in jobs['jobs']:
+        if os.path.isfile(i['errorlog']):
+            with open(i['errorlog'], 'r', encoding='utf-8') as f:
+                if not is_empty_file(f):
+                    continue
+            for j in i['clear']:
+                if os.path.isfile(j):
+                    os.remove(j)
