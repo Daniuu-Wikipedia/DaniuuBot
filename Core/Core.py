@@ -110,6 +110,7 @@ class Bot:
 
     def verify_OAuth(self, file="Operational.txt"):
         'This function will verify whether the OAuth-auth has been configured. If not, it will do the configuration.'
+        basedir = getcwd()  # Store the base dir
         if self._auth is None:
             try:
                 with open(file, 'r') as secret:
@@ -117,11 +118,11 @@ class Bot:
                                          1::2])  # This is the reason why those keys should never be published
             except FileNotFoundError:  # A workaround for the shell file @toolforge
                 try:
-                    file = getcwd() + '/DaniuuBot/' + file  # An attempt to fix a particular bug
+                    file = basedir + '/DaniuuBot/' + file  # An attempt to fix a particular bug
                     with open(file, 'r') as secret:
                         self._auth = OAuth1(*[i.strip() for i in secret][1::2])
                 except FileNotFoundError:
-                    file = getcwd() + '/bots/old-daniuu/' + file  # An attempt to fix a particular bug
+                    file = basedir + '/bots/old-daniuu/' + file  # An attempt to fix a particular bug
                     with open(file, 'r') as secret:
                         self._auth = OAuth1(*[i.strip() for i in secret][1::2])
 
