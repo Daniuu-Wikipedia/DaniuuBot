@@ -9,11 +9,10 @@ It just contains a general instance of a Bot, and some handy subclasses that are
 """
 import requests
 import time
+import os
 from requests_oauthlib import OAuth1
 from toolforge import set_user_agent  # To set our user agent to something nicer
 import datetime as dt  # Import support for dates and times
-from os import getcwd
-
 # Before taking any actions, change the UA to something nicer
 set_user_agent('Daniuu-Bot')
 
@@ -110,21 +109,26 @@ class Bot:
 
     def verify_OAuth(self, file="Operational.txt"):
         'This function will verify whether the OAuth-auth has been configured. If not, it will do the configuration.'
-        basedir = getcwd()  # Store the base dir
+        basedir = os.getcwd()  # Store the base dir
         if self._auth is None:
             try:
                 with open(file, 'r') as secret:
                     self._auth = OAuth1(*[i.strip() for i in secret][
                                          1::2])  # This is the reason why those keys should never be published
             except FileNotFoundError:  # A workaround for the shell file @toolforge
-                try:
-                    file = basedir + '/DaniuuBot/' + file  # An attempt to fix a particular bug
+                if os.path.isdir(os.path.join(basedir,
+                                              'DaniuuBot')):
+                    file = f'{basedir}/DaniuuBot/{file}'
                     with open(file, 'r') as secret:
                         self._auth = OAuth1(*[i.strip() for i in secret][1::2])
-                except FileNotFoundError:
-                    file = basedir + '/bots/old-daniuu/' + file  # An attempt to fix a particular bug
+                elif os.path.isdir(os.path.join(basedir,
+                                                'bots',
+                                                'old-daniuu')):
+                    file = f'{basedir}/bots/old-daniuu/{file}'
                     with open(file, 'r') as secret:
                         self._auth = OAuth1(*[i.strip() for i in secret][1::2])
+                else:
+                    raise ValueError('Requested file not found! Please check the passed directory!')
 
     def verify_token(self):
         if self._token is None:
