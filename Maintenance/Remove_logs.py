@@ -41,11 +41,14 @@ def is_empty_file(file):
 
 
 # Now start doing the run
-for i in jobs['jobs']:
-    if os.path.isfile(i['errorlog']):
-        with open(i['errorlog'], 'r', encoding='utf-8') as f:
-            if not is_empty_file(f):
-                continue
-        for j in i['clear']:
-            if os.path.isfile(j):
-                os.remove(j)
+for d in [parent_dir[0],
+          parent_dir[:-3]]:
+    os.chdir(d)
+    for i in jobs['jobs']:
+        if os.path.isfile(i['errorlog']):
+            with open(i['errorlog'], 'r', encoding='utf-8') as f:
+                if not is_empty_file(f):
+                    continue
+            for j in i['clear']:
+                if os.path.isfile(j):
+                    os.remove(j)
