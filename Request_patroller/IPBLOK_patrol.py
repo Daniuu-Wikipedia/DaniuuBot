@@ -298,7 +298,7 @@ class Request(com.GenReq):
     def short_string(self):
         """Will return a short string, explaining whether a block was administered"""
         if self:
-            return '%s is voor %s geblokkeerd door %s' % (self.blocked(), self.duration(), self.get_name())
+            return f'{self.blocked()} is voor {self.duration()} geblokkeerd door {self.get_name()}.'
 
     def duration(self):
         """Get how long the IP has been blocked"""
@@ -310,15 +310,15 @@ class Request(com.GenReq):
         if years > 1000:
             return 'onbepaalde tijd'  # An IP was indeffed
         if years:
-            return '%d jaar' % years
+            return f'{years:d} jaar'
         if months:
-            return '%d maand(en)' % months
+            return f'{months:d} maand(en)'
         if weeks:
-            return '%d we(e)k(en)' % weeks
+            return f'{weeks:d} we(e)k(en)'
         days, hours = dur // dt.timedelta(hours=24), dur // dt.timedelta(hours=1)
         if days:
-            return '%d dag(en)' % days
-        return '%d uur' % hours
+            return f'{days:d} dag(en)'
+        return f'{hours:d} uur'
 
     def __call__(self):
         """This function is used by MultiRequest, and handles the entire request at once"""
