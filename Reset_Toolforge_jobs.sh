@@ -12,20 +12,12 @@ MAGENTA='\033[35m'
 #Script to reset the jobs running on Kubernetes
 echo -e "I will ${RED}delete all existing jobs${NOCOLOR} that are currently running."
 
-toolforge-jobs flush
+toolforge-jobs delete logcleaner
+toolforge-jobs delete redlinkswifi
 
 echo -e "${YELLOW}I have deleted all existing jobs."
 echo -e "${NOCOLOR}I will now resubmit the required jobs"
 
-
-# Job to patrol WP:VV & WP:IPBLOK
-toolforge-jobs run patroller-all --command "./botenv/bin/python ./DaniuuBot/Request_patroller/Run_all.py" --image python3.11 --emails onfailure --schedule "*/10 * * * *"
-echo -e "Job to patrol request pages ${GREEN}successfully${NOCOLOR} submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
-
-# Archiver
-toolforge-jobs run archiver --command "./botenv/bin/python3.11 ./DaniuuBot/Archiver/Run_all.py" --image python3.11 --schedule "13 2 * * *" --retry 3 --emails onfailure
-
-echo -e "Job to run the Archiver submitted to the ${CYAN}Kubernetes engine${NOCOLOR}."
 
 # 20241110 - Internal cleanup of logs
 toolforge-jobs run logcleaner --command "./botenv/bin/python3.11 ./DaniuuBot/Maintenance/Remove_logs.py" --image python3.11 --schedule "@weekly" --emails onfailure
