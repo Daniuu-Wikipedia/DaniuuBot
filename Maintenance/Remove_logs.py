@@ -40,7 +40,6 @@ def is_empty_file(file):
 # Now start doing the run
 for d in [parent_dir[0],  # On Toolforge, all jobs are executed in the main directory
           r'/data/project/nlwikibots/']:
-    print(f'Patrolling {d} {os.path.isdir(d)}')
     os.chdir(d)
     if os.path.isdir(d):
         for i in jobs['jobs']:
