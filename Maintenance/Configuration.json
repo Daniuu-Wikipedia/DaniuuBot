@@ -12,10 +12,10 @@
         },
         {
             "clear": [
-                "archiver.err",
-                "archiver.out"
+                "d-archivering.err",
+                "d-archivering.out"
             ],
-            "errorlog": "archiver.err"
+            "errorlog": "d-archivering.err"
         },
         {
             "clear": [
