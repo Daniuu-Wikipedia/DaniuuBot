@@ -26,7 +26,9 @@ json_parsed = json.loads(parsed_text)
 # Step 3: Write the new Json
 config_json = 'Configuration.json'
 if not os.path.exists(config_json):
-    os.chdir(os.path.join('DaniuuBot',
+    os.chdir(os.path.join('bots',
+                          'old-daniuu',
+                          'DaniuuBot',
                           'Archiver'))
 
 with open(config_json, 'w', encoding='utf8') as outfile:
