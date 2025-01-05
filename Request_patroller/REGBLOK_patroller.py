@@ -17,16 +17,17 @@ def has_lock_message(request_lines, request):
     Checks whether a lock message is present in the request.
     """
     if request.locked is True:
-        if not(any(Request.lockstring in i for i in request_lines)):
+        if not (any(Request.lockstring in i for i in request_lines)):
             return False
     return True
 
 
 class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and REGBLOK
     def __init__(self,
-                 name = 'Wikipedia:Verzoekpagina voor moderatoren/RegBlok',
-                 testing = False):
-        super().__init__(name, testing)
+                 name='Wikipedia:Verzoekpagina voor moderatoren/RegBlok',
+                 testing=False,
+                 logging=False):
+        super().__init__(name, testing, logging)
         self._logfile = 'REGBLOK_log.txt'
 
     # Override separate function from the common file
@@ -46,7 +47,8 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
             print('Watch out! The required headers were not found in the list')
             return None
         self._inter, self._queue = self._queue[ih:], self._queue[:ih]  # Complete the effort
-        c.log(self._logfile, 'Done separating!, stage 2')
+        if self.logging is True:
+            c.log(self._logfile, 'Done separating!, stage 2')
         return self._queue  # Same behavior as the parent function (for the queue at least)
 
     def prepare_regex(self):
@@ -55,7 +57,8 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
         regex_template = r'\{\{(%s)\s*\|\s*' % (
             '|'.join(templates)).lower()  # A pattern that makes handling the templates easier
         self.regex = ('(%s(%s))' % (regex_template, user_string))
-        c.log(self._logfile, 'Regex prepared for REGBLOK')
+        if self.logging is True:
+            c.log(self._logfile, 'Regex prepared for REGBLOK')
         return self.regex  # Searches will be case-insentive here
 
     def check_line(self,
@@ -70,8 +73,8 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
         if self.regex is None:
             self.prepare_regex()  # The regex has not yet been initialized properly
         # Following issue of 2 February 2024: Don't list lines with a donetemp in there!
-        # c.log(self._logfile, 'Scanning for requests: %s'%line)
-        if any(('{{%s}}'%i in line.lower() for i in super().donetemp)) or any(('{{%s}}'%i in line.lower() for i in super().donetemp)):
+        if any(('{{%s}}' % i in line.lower() for i in super().donetemp)) or any(
+                ('{{%s}}' % i in line.lower() for i in super().donetemp)):
             return [] if forreq is True else False
 
         k = re.findall(self.regex, line, re.IGNORECASE)  # Make it upper, so the regex can do it's job as it should do
@@ -79,7 +82,8 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
             return None  # Returns None, indicating that the list of matches is empty
         if isinstance(k[0], tuple):
             k = [i[0] for i in k]  # Get the longest matching sequence
-        c.log(self._logfile, 'Done scanning line %s'%line)
+        if self.logging is True:
+            c.log(self._logfile, 'Done scanning line %s' % line)
         if forreq is True:
             return [Request(i) for i in k if '{{' in i and '|' in i]  # No need to test for IP match here...
         return bool(k)
@@ -113,7 +117,6 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
 
 
 class Request(ParentRequest):
-
     account_forbidden = ('#',
                          '<',
                          '>',

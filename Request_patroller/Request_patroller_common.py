@@ -35,7 +35,7 @@ def purge_whitelines(lines):
 
 # Below: classes that implement general page patrollers and requests
 class Page:
-    "This is a class that allows the processing of a given request page"
+    """This is a class that allows the processing of a given request page"""
     nldate = nld.nldate
 
     testdate = {'January': '01',
@@ -55,7 +55,8 @@ class Page:
 
     def __init__(self,
                  name,
-                 testing=False):
+                 testing=False,
+                 logging=False):
         self.name = name
         self._content = []
         self._preamble, self._queue, self._done = [], [], []  # three lists for three parts of the request page
@@ -64,6 +65,9 @@ class Page:
         self.bot = NlBot()  # Initialize a bot to do operations on Testwiki
         self.id = None
         self._user = None  # The user who made the last revision - addition 20241111 - https://w.wiki/Bvnp
+
+        # Properties related to logging
+        self.logging = logging
         self._logfile = 'Log.txt'
 
         # Code implemented solely for testing purposes
@@ -91,7 +95,8 @@ class Page:
 
     def get_page_content(self):
         """This function will get the last revision of the request page"""
-        log(self._logfile, 'Starting to parse the request page')
+        if self.logging is True:
+            log(self._logfile, 'Starting to parse the request page')
         if self._testing is False:
             # Bot is called in operational mode
             d = {'action': 'query',
@@ -111,12 +116,14 @@ class Page:
                 temp = inputfile.readlines()  # We don't need to query the database, just some text
         # Final code (always executed)
         self._content = [i.strip() for i in temp]  # 20241126 - witregels, op vraag van Matroos Vos (https://w.wiki/CCtg)
-        log(self._logfile, 'Done getting the contents from the request page')
+        if self.logging is True:
+            log(self._logfile, 'Done getting the contents from the request page')
         return self._content
 
     def separate(self, pend, hstart):
         """This function will separate the contents of the page into preamble, actual requests and handled ones"""
-        log(self._logfile, 'Starting separating page into its composing sections')
+        if self.logging is True:
+            log(self._logfile, 'Starting separating page into its composing sections')
         if not self._content:  # The list is still empty
             self.get_page_content()
         t = [i.replace('=', '').strip() for i in self._content]  # Generate a list with all the levels neutralized
@@ -129,7 +136,8 @@ class Page:
         self._preamble = self._content[:pe]
         self._queue = self._content[pe:hs]
         self._done = self._content[hs:]
-        log(self._logfile, 'Done separating!')
+        if self.logging is True:
+            log(self._logfile, 'Done separating!')
         return self._queue
 
     def check_queue_done(self):
@@ -138,12 +146,15 @@ class Page:
         # Methods that check whether a request is done ==> implemented in the Request class
         if not self.requests:
             self.filter_queue()
-        log(self._logfile, 'Now going through the requests and checking whether they are done')
+        if self.logging is True:
+            log(self._logfile, 'Now going through the requests and checking whether they are done')
         for i in self.requests:
             if not isinstance(i, str):  # Ignore strings, these are only added for administrative purposes
-                log(self._logfile, 'Checking request %s' % i)
+                if self.logging is True:
+                    log(self._logfile, 'Checking request %s' % i)
                 i.check_done()
-        log(self._logfile, 'DONE checking requests')
+        if self.logging is True:
+            log(self._logfile, 'DONE checking requests')
 
     def process_intermediate(self):
         return None  # Just a dummy function
@@ -153,17 +164,22 @@ class Page:
         print('Bot was called at ' + str(dt.datetime.now()))
         # Following issue of 2 February 2024 (IPBLOK - https://w.wiki/93qd)
         # We will only clear the page between 4:00 and 4:18 UTC
-        log(self._logfile, 'Starting update process')
+        if self.logging is True:
+            log(self._logfile, 'Starting update process')
         current_time = dt.datetime.utcnow()
         if (current_time.hour == 4 and 0 <= current_time.minute <= 17) or (force_removal is True):
-            log(self._logfile, 'Starting checking what needs to be removed')
+            if self.logging is True:
+                log(self._logfile, 'Starting checking what needs to be removed')
             y = self.check_removal()  # How many requests are deleted
-            log(self._logfile, 'Removal fully processed')
+            if self.logging is True:
+                log(self._logfile, 'Removal fully processed')
         else:
             y = 0  # Automatic way to bypass clearing requests & repeated instances
-        log(self._logfile, 'Patrolling new requests')
+        if self.logging is True:
+            log(self._logfile, 'Patrolling new requests')
         z = self.check_requests()
-        log(self._logfile, 'Done checking new requests')
+        if self.logging is True:
+            log(self._logfile, 'Done checking new requests')
 
         # 20241102 - REGBLOK has an intermediate section - also handle that one as well
         self.process_intermediate()
@@ -173,7 +189,8 @@ class Page:
              '\n'.join(purge_whitelines(self._inter)),
              '\n'.join(purge_whitelines(self._done)))
         new = '\n'.join(t)
-        log(self._logfile, 'New page text has been prepared')
+        if self.logging is True:
+            log(self._logfile, 'New page text has been prepared')
 
         # Following request made at https://w.wiki/7M8A
         # Bot will automatically stop if {{nobots}} is added to the page
@@ -193,7 +210,8 @@ class Page:
             # In testing mode, we want the output to be updated in every iteration
             # Hence, check bypassed in testing mode
             print('Nothing to be done!')
-            log(self._logfile, 'Stopping, no need to do anything')
+            if self.logging is True:
+                log(self._logfile, 'Stopping, no need to do anything')
             print(self.requests)  # For logging on Toolforge
             return self.print_termination()  # No need to go through the remainder of the function
 
@@ -209,7 +227,8 @@ class Page:
         # The code can only be executed if the bot is called in "operational" mode
         # The bot is operational if self._testing is set to False
         if self._testing is False:
-            log(self._logfile, 'Preparing to post the new content')
+            if self.logging is True:
+                log(self._logfile, 'Preparing to post the new content')
             edit_dic = {'action': 'edit',
                         'pageid': self.id,
                         'text': new,
@@ -223,17 +242,20 @@ class Page:
             if logonly is False:
                 result = self.bot.post(
                     edit_dic)  # Make the post request and store the output to check for eventual edit conflicts
-                log(self._logfile, 'Posted!')
+                if self.logging is True:
+                    log(self._logfile, 'Posted!')
                 if 'error' in result:  # An error occured
                     if result['error']['code'] == 'editconflict':
                         print('An edit conflict occured during the processing. I will wait for ten seconds')
                         print('Redoing the things.')
-                        log(self._logfile, 'Recursion starting')
+                        if self.logging is True:
+                            log(self._logfile, 'Recursion starting')
                         return self()  # Rerun the script, we found a nice little new request
             else:
                 print('Script is called in log-only, no changes will be made.')
             print('Removed %d, processed %d, %d remaining' % (y, z, remain))  # Just some code for maintenance purposes
-            log(self._logfile, 'DONE!')
+            if self.logging is True:
+                log(self._logfile, 'DONE!')
         # The bot can also be called in its test mode
         # In test mode, no edits to the wiki should be made
         # All changes are pushed to a dedicated output file, defined in the Bot's settings
@@ -255,13 +277,15 @@ class Page:
         # The bot will now write a message to the terminal
         # The message indicates that the update run was performed without errors
         self.print_termination()
-        log(self._logfile, 'DONE')
+        if self.logging is True:
+            log(self._logfile, 'DONE')
 
     def print_termination(self):
         print('Bot terminated successfully at ' + str(dt.datetime.now()) + '\n')
 
     def filter_date(self, line):
-        log(self._logfile, 'Filtering data for %s' % line)
+        if self.logging is True:
+            log(self._logfile, 'Filtering data for %s' % line)
         pattern = r'(\d{1,2} (%s) \d{4})' % ('|'.join(Page.nldate))
         return re.findall(pattern, line)
 
@@ -273,19 +297,23 @@ class Page:
                                     '%d %m %Y')  # this is the object that can actually do the job for us
 
     def replace_months(self, date):
-        "This function replaces the names of months in the strings"
-        log(self._logfile, 'Replacing months')
+        """This function replaces the names of months in the strings"""
+        if self.logging is True:
+            log(self._logfile, 'Replacing months')
         for i, j in Page.nldate.items():
             date = date.replace(i, j)
-        log(self._logfile, 'Don replacing months')
+        if self.logging is True:
+            log(self._logfile, 'Don replacing months')
         return date
 
     def clear_lines(self, parent, lines):
         """This function deletes the given lines from the parent list"""
-        log(self._logfile, 'Starting deletion of lines %s' % lines)
+        if self.logging is True:
+            log(self._logfile, 'Starting deletion of lines %s' % lines)
         for i, j in sorted(lines, reverse=True):
             del parent[i:j]
-        log(self._logfile, 'DONE deleting lines')
+        if self.logging is True:
+            log(self._logfile, 'DONE deleting lines')
         return len(lines)
 
     def get_date_for_lines(self, lines):
