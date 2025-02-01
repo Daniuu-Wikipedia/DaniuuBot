@@ -141,14 +141,22 @@ class Bot:
             self.get_token()  # Tokens expire after approximately 8 seconds, so generate a new one
         return self._token[0]
 
-    def get(self, payload):
-        "This function will provide functionality that does all the get requests"
+    def get(self, payload, count=None):
+        """This function will provide functionality that does all the get requests"""
         self.verify_OAuth()
         payload['format'] = 'json'  # Set the output format to json
-        return requests.get(self.api, params=payload, auth=self._auth, timeout=31).json()
+        try:
+            return requests.get(self.api, params=payload, auth=self._auth, timeout=31).json()
+        except requests.exceptions.ConnectionError:
+            if count is None:
+                print(f'ERROR: connection error during GET request at {dt.datetime.utcnow()} UTC.')
+                time.sleep(30)  # Wait 30 seconds before trying again
+                return self.get(payload, 1)
+            else:
+                raise ConnectionError('Connection error, even after one retry')
 
     def get_token(self, t='csrf', n=0, store=True):
-        'This function will get a token'
+        """This function will get a token"""
         assert isinstance(t, str), 'Please provide a string as a token!'
         pay = {'action': 'query',
                'meta': 'tokens',
@@ -164,7 +172,7 @@ class Bot:
             assert n <= 1, 'Cannot generate the requested token'
             return self.get_token(t, n + 1)
 
-    def post(self, params, force_s = False):
+    def post(self, params, force_s=False, count=None):
         assert 'action' in params, 'Please provide an action'
         if force_s is True:
             self.verify_OAuth('GS.txt')
@@ -178,16 +186,24 @@ class Bot:
             params['token'] = self.verify_token()  # Generate a new token
         params['format'] = 'json'
         params['maxlag'] = 5  # Using the standard that's implemented in PyWikiBot
-        self.ti.append(float(time.time()))
-        k = requests.post(self.api, data=params, auth=self._auth, timeout=31).json()
-        if 'error' in k:
-            print('An error occured somewhere')  # We found an error
-            print(k)
-            if 'code' in k['error'] and 'maxlag' in k['error']['code']:
-                print('Maxlag occured, please try to file the request at a later point in space and time.')
-        if force_s is True:
-            self.verify_OAuth()
-        return k
+        try:
+            self.ti.append(float(time.time()))
+            k = requests.post(self.api, data=params, auth=self._auth, timeout=31).json()
+            if 'error' in k:
+                print('An error occured somewhere')  # We found an error
+                print(k)
+                if 'code' in k['error'] and 'maxlag' in k['error']['code']:
+                    print('Maxlag occured, please try to file the request at a later point in space and time.')
+            if force_s is True:
+                self.verify_OAuth()
+            return k
+        except requests.exceptions.ConnectionError:
+            if count is None:
+                print(f'ERROR: connection error during POST request at {dt.datetime.utcnow()} UTC.')
+                time.sleep(30)
+                return self.post(params, force_s, 1)
+            else:
+                raise ConnectionError('Failed to connect to the wiki, even after retry (from POST method)')
 
 
 class NlBot(Bot):
