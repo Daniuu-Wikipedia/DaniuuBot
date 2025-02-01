@@ -31,7 +31,7 @@ class IPBLOK(com.Page):
             c.clear_log_file(self._logfile)
             c.log(self._logfile, 'Initialization done')
 
-    def separate(self):
+    def separate(self, **kwargs):
         return super().separate('Nieuwe verzoeken', 'Afgehandelde verzoeken')
 
     def prepare_regex(self):
@@ -128,7 +128,7 @@ class IPBLOK(com.Page):
         return self.requests  # Return the updated dictionary
 
     def check_requests(self):
-        "This function will mark the done requests as done (and is called by the update method)"
+        """This function will mark the done requests as done (and is called by the update method)"""
         if not self._queue:
             self.separate()
         self.check_queue_done()  # First run this one to check whether the requests in the queue are done or not
@@ -185,7 +185,9 @@ class IPBLOK(com.Page):
                         to_del.append((i, j))
             except IndexError:  # This popped up once because somebody did not take the time to sign off the request
                 self._done.insert(j,
-                                  '**{{opm}}: Dit verzoek bevat mogelijks geen correcte datumstempel. Als deze melding klopt, kan u de datum toevoegen via {{tl|afzx}} en melding terug verwijderen. ~~~~')
+                                  '**{{opm}}: Dit verzoek bevat mogelijks geen correcte datumstempel. Als deze '
+                                  'melding klopt, kan u de datum toevoegen via {{tl|afzx}} en melding terug '
+                                  'verwijderen. ~~~~')
         if self.logging is True:
             c.log(self._logfile, 'Done checking which requests could be removed')
         return self.clear_lines(self._done, to_del)
@@ -227,7 +229,7 @@ class Request(com.GenReq):
         del output  # A little bit of cleaning
 
     def process_blocks(self, target_name='address'):
-        "This function will ensure the blocks are properly formatted"
+        """This function will ensure the blocks are properly formatted"""
         # Begin with the global blocks
         for i in self.gb:
             i['global'] = True  # Just adding this for further use in the API
@@ -248,7 +250,7 @@ class Request(com.GenReq):
                 i['expiry'] = self.convert_api_date(end)
 
     def check_blocked(self):  # For the test phase
-        "This function will check whether a given IP is blocked. A 10 minute delay prior to flagging is used"
+        """This function will check whether a given IP is blocked. A 10 minute delay prior to flagging is used"""
         # Previously, the setting controlling the delay in processing the request was implemented as keyword arguments
         # Settings have been fully moved to the Bot_settings.py file
         # The move was done to centralize all this kind of settings
@@ -276,18 +278,18 @@ class Request(com.GenReq):
                     return self.main
 
     def __bool__(self):
-        "This function will convert the entire function into a boolean"
+        """This function will convert the entire function into a boolean"""
         if self.main is None:
             self.check_blocked()
         return self.main is not None
 
     def get_and_check_block(self):
-        "This function will combine some of the functions above"
+        """This function will combine some of the functions above"""
         self.get_blocks()
         self.check_blocked()
 
     def get_name(self):
-        "This method will return the name of the sysop (or steward) who administered the block"
+        """This method will return the name of the sysop (or steward) who administered the block"""
         if self:
             return 'steward ' * self.main['global'] + self.main['by']
 

@@ -33,7 +33,7 @@ class REGBLOK(IPBLOK):  # There is quite some resemblance between IPblock and RE
     # Override separate function from the common file
     # REGBLOK is quite a special page, since it uses the 5 sysops option (separate header...)
     # Those requests require special treatment (unlike WP¨:VV & WP:IPBLOK)
-    def separate(self):
+    def separate(self, **kwargs):
         super().separate()
         # Extra step for REGBLOK specifically: the 5-sysops option should be sent to a different list
         # We don't want those requests to be processed with the rest of the regular queue

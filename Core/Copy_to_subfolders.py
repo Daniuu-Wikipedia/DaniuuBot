@@ -33,7 +33,7 @@ for subdir in subdirs:
         core_file_path = os.path.join(os.getcwd(), file)
         dest_path = os.path.join(parent_dir, subdir, file)
         shutil.copy2(core_file_path, dest_path)
-    if '__pycache__' in os.listdir(os.path.join(parent_dir, subdir)):
-        shutil.rmtree(os.path.join(parent_dir, subdir, '__pycache__'))
+    #if '__pycache__' in os.listdir(os.path.join(parent_dir, subdir)):
+    #    shutil.rmtree(os.path.join(parent_dir, subdir, '__pycache__'))
 
 print("Core.py has been moved to all specified subdirectories.")
