@@ -150,10 +150,12 @@ class Bot:
         except requests.exceptions.ConnectionError:
             if count is None:
                 print(f'ERROR: connection error during GET request at {dt.datetime.utcnow()} UTC.')
-                time.sleep(30)  # Wait 30 seconds before trying again
+                time.sleep(60)  # Wait 60 seconds before trying again
                 return self.get(payload, 1)
             else:
-                raise ConnectionError('Connection error, even after one retry')
+                print(f'ERROR: ABORTED at {dt.datetime.utcnow()} UTC.')
+                from sys import exit
+                exit()
 
     def get_token(self, t='csrf', n=0, store=True):
         """This function will get a token"""
@@ -200,7 +202,7 @@ class Bot:
         except requests.exceptions.ConnectionError:
             if count is None:
                 print(f'ERROR: connection error during POST request at {dt.datetime.utcnow()} UTC.')
-                time.sleep(30)
+                time.sleep(60)
                 return self.post(params, force_s, 1)
             else:
                 raise ConnectionError('Failed to connect to the wiki, even after retry (from POST method)')
