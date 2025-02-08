@@ -156,24 +156,32 @@ class Page:
         pdic = {'action': 'parse',
                 'page': archive_title,
                 'prop': 'sections'}
-        parsed = Page.bot.get(pdic)['parse']['sections']
+        response = Page.bot.get(pdic)
+        # 20250208 - add fix for "page does not yet exist" bug
+        # Implementing the functionality to raise that page as being faulty
+        # Should be fixed in the future when the bot automatically starts dealing with archive pages
+        if 'error' in response:
+            with open(gs.abort_file, 'a', encoding='utf-8') as abort_file:
+                abort_file.write(self.name + '\n')
+            raise ValueError(f'Trying to get sections for a non-existing archive: {self.name}')
+        response = response['parse']['sections']
 
         # 20240722 - extension to allow writing to custom sections & making new sections
         if section is None:
             section = self.archive_target_section
-        for i in parsed:
+        for i in response:
             if i['line'] == section and int(i['level']) == (self._level - 1):
                 return int(i['number'])  # Abort run (we found the desired section)
 
         # 20241208 - bugfix: handling new archive pages that do noy yet have sections
-        if not parsed:
+        if not response:
             return 0, True  # We need to write a new section to the concerning archive page
 
         # 20240722 - allow creation of new sections if required
         if self._allow_new_sections is not True:
             raise ValueError('I could not find the section! You did not allow to create a new one: %s' % section)
         return max(
-            (i['number'] for i in parsed)), True  # If the section is not yet there, just append it (BE CAREFUL AT
+            (i['number'] for i in response)), True  # If the section is not yet there, just append it (BE CAREFUL AT
         # STARTUP)
 
     # Utility to get the content of the page
