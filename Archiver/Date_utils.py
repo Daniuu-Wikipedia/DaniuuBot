@@ -47,6 +47,14 @@ def obscure_archive_number(date=None):
     return 'b'
 
 
+# 20250214 - also add support for REGBLOK talk
+def regblok_talk_archive_number(date=None):
+    if date is None:
+        date = dt.datetime.now(timezone)
+    start, startyear = 34, 2023
+    return str(start + date.year - startyear)
+
+
 # Format archive for any given date
 def format_archive_for_date(date, archive_with_parameters):
     # Note: method is usually called with date = date at which request got filed
@@ -60,6 +68,8 @@ def format_archive_for_date(date, archive_with_parameters):
     temp = temp.replace('$DAY', str(date.day))
     if '$REGBLOKNR' in temp:
         temp = temp.replace('$REGBLOKNR', determine_regblok_archive_number(date))
+    if '$TALKREGBL' in temp:
+        temp = temp.replace('$TALKREGBL', regblok_talk_archive_number(date))
     if '$TERUG' in temp:
         temp = temp.replace('$TERUG', obscure_archive_number(date))
     return temp
