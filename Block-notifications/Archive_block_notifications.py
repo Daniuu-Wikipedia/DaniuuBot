@@ -81,7 +81,7 @@ for i in remove_sections:
 # Now, time to get the actual content :)
 new_content_archive = [original_content[i] for i in to_new]
 # Second: insert preamble into the archive
-new_content_archive.insert(0, "__NOINDEX__{{mededeling|'''Dit is het archief van %s "
+new_content_archive.insert(0, "__NOINDEX__\n{{mededeling|'''Dit is het archief van %s "
                               "%d van [[Wikipedia:Blokkeringsmeldingen]]'''.}}" % (nld.match[month].lower(),
                                                                                    year))
 
