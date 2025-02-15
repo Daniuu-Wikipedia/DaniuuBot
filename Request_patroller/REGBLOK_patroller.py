@@ -154,7 +154,8 @@ class Request(ParentRequest):
         self.locked = 'locked' in out
         return self.locked
 
-    def process_blocks(self, target_name='target'):
+    def process_blocks(self, target_name='address'):
+        # 20250215 - bugfix
         super().process_blocks(target_name)
 
     def verify_reason(self):
