@@ -307,7 +307,7 @@ class Request(com.GenReq):
     def short_string(self):
         """Will return a short string, explaining whether a block was administered"""
         if self:
-            return f'{self.blocked()} is voor {self.duration()} geblokkeerd door {self.get_name()}.'
+            return f'{self.blocked()} is voor {self.duration()} geblokkeerd door {self.get_name()}'
 
     def duration(self):
         """Get how long the IP has been blocked"""
