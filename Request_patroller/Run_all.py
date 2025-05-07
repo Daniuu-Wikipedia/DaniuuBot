@@ -21,7 +21,9 @@ print('DONE IPBLOK')
 del ip
 
 # Third job: run REGBLOK patrol
+print('Doing REGBLOK')
 rb = REGBLOK_patroller.REGBLOK()
 rb()
 del rb  # Clear some memory
+print('DONE REGBLOK')
 # End of script
