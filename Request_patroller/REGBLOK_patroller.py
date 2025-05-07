@@ -150,9 +150,12 @@ class Request(ParentRequest):
         payload = {'action': 'query',
                    'meta': 'globaluserinfo',
                    'guiuser': self.target}
-        out = Request.bot.get(payload)['query']['globaluserinfo']
-        self.locked = 'locked' in out
-        return self.locked
+        try:
+            out = Request.bot.get(payload)['query']['globaluserinfo']
+            self.locked = 'locked' in out
+        finally:  # 20250507 - to fix issue with https://w.wiki/E2y7 (IPs cannot be locked)
+            return self.locked  # Should be False
+
 
     def process_blocks(self, target_name='address'):
         # 20250215 - bugfix: incorrect setting of default target_name
