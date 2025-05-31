@@ -212,9 +212,10 @@ class Request(com.GenReq):
         return origin.split('|')[1].strip()  # Also add some support to avoid capitalizing user names
 
     def get_blocks(self,
+                   # 20250531 - to extend this script to temporary accounts, replace with bgtargets & bkusers
                    property_l='bkip',
                    property_g='bgip'):
-        "This function will check whether the user was blocked or not"
+        """This function will check whether the user was blocked or not"""
         dic = {'action': 'query',
                'list': 'blocks|globalblocks',
                property_l: self.target,
