@@ -156,7 +156,6 @@ class Request(ParentRequest):
         finally:  # 20250507 - to fix issue with https://w.wiki/E2y7 (IPs cannot be locked)
             return self.locked  # Should be False
 
-
     def process_blocks(self, target_name='address'):
         # 20250215 - bugfix: incorrect setting of default target_name
         super().process_blocks(target_name)
