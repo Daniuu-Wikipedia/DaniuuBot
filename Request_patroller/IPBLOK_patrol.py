@@ -39,10 +39,12 @@ class IPBLOK(com.Page):
         # Prepare the regex pattern
         ip4 = r'(\d{1,3}\.){3}\d{1,3}'  # Regex pattern used to detect ip4-adresses (and ranges)
         ip6 = r'([\dABCDEF]{1,4}:){4,7}([\dABCDEF:]{1,4})+?'  # Regex pattern used to detect ip4-adresses (and ranges)
+        # 20250714 - Adding support for temporary account to regex
+        temp_account = r'(~\d{4}(-\d+)+)'
         templates = ('lg', 'lgipcw', 'lgcw', 'linkgebruiker', 'Link IP-gebruiker cross-wiki', 'lgx')
         regex_template = r'\{\{(%s)\s*\|\s*' % (
             '|'.join(templates))  # A pattern that makes handling the templates easier
-        self.regex = ('(%s(%s|%s))' % (regex_template, ip4, ip6))
+        self.regex = ('(%s(%s|%s|%s))' % (regex_template, ip4, ip6, temp_account))
         if self.logging is True:
             c.log(self._logfile, 'Regex prepared for IPBLOK')
         return self.regex  # Convert everything to capitals for consistency
@@ -67,8 +69,9 @@ class IPBLOK(com.Page):
         if self.logging is True:
             c.log(self._logfile, 'Done scanning line %s' % line)
         if forreq is True:
+            # 20250714 - adjust condition to also add temporary accounts to the system
             return [Request(i) for i in k if ('{{' in i and '|' in i and (i.count('.') == 3 or i.count(
-                ':') >= 4))]  # Only return the matches that are real calls to the template
+                ':') >= 4 or '~' in i))]  # Only return the matches that are real calls to the template
         return bool(k)
 
     def filter_queue(self):
@@ -214,8 +217,12 @@ class Request(com.GenReq):
     def get_blocks(self,
                    # 20250531 - to extend this script to temporary accounts, replace with bgtargets & bkusers
                    property_l='bkip',
-                   property_g='bgip'):
+                   property_g='bgip',
+                   temp=False):  # 20250714 - additional argument for temporary accounts
         """This function will check whether the user was blocked or not"""
+        # 20250714 - add support for temporary accounts
+        if '~' in self.target and temp is False:  # Temporary accounts need to be processed as accounts
+            return self.get_blocks('bkusers', 'bgtargets', True)
         dic = {'action': 'query',
                'list': 'blocks|globalblocks',
                property_l: self.target,
@@ -271,6 +278,7 @@ class Request(com.GenReq):
 
         # Now check the global blocks
         self.gb.sort(key=lambda i: i['timestamp'], reverse=True)
+        print(self.target, self.gb)
         for i in self.gb:
             if i['timestamp'] + dt.timedelta(
                     minutes=delay) <= Request.now:  # This gives the blocking sysop the time to place a block
