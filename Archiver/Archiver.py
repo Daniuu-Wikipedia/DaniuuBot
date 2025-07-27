@@ -221,7 +221,7 @@ class Page:
         log(self._logfile, 'Replacing months')
         for i, j in Page.nldate.items():
             date = date.replace(i, j)
-        log(self._logfile, 'Don replacing months')
+        log(self._logfile, 'Done replacing months')
         return date
 
     def filter_date(self, line):
