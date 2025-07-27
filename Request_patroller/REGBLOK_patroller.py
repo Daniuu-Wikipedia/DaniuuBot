@@ -142,8 +142,9 @@ class Request(ParentRequest):
 
     def get_blocks(self,
                    property_l='bkusers',
-                   property_g='bgtargets'):
-        super().get_blocks(property_l, property_g)  # Pass our keywords directly
+                   property_g='bgtargets',
+                   temp=False):
+        super().get_blocks(property_l, property_g, temp)  # Pass our keywords directly
 
     # Add-on for accounts: is the account globally locked
     def check_locked(self):
