@@ -167,7 +167,7 @@ class Page:
         if self.logging is True:
             log(self._logfile, 'Starting update process')
         current_time = dt.datetime.utcnow()
-        if (current_time.hour == 4 and 0 <= current_time.minute <= 17) or (force_removal is True):
+        if (current_time.hour == 4 and (0 <= current_time.minute <= 30)) or (force_removal is True):
             if self.logging is True:
                 log(self._logfile, 'Starting checking what needs to be removed')
             y = self.check_removal()  # How many requests are deleted
