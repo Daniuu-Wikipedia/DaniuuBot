@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/Tools_venv
+cd ~/bots/old-daniuu/DaniuuBot/Toolforge_venv
 cp Create_venv.sh ~/Create_venv.sh
 
 # Shell file to create the virtual environment using the desired Python interpreter
