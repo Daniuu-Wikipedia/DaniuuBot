@@ -8,10 +8,10 @@ cd ~
 set -euo pipefail
 
 # create the venv
-python3 -m venv venv-tf-python311
+python3 -m venv venv-tf-python313
 
 # activate it
-source venv-tf-python311/bin/activate
+source venv-tf-python313/bin/activate
 
 # upgrade pip inside the venv and add support for the wheel package format
 pip install -U pip wheel
