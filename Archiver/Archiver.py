@@ -326,7 +326,7 @@ class Page:
         for start, end in zip(suited[:-1], suited[1:]):
             last_comment = self.get_date_for_lines(self._hot[start:end])
             if last_comment < cutoff:
-                reqdate = self.get_date_for_lines(self._hot[start:end], reverse=False)  # Date of actual request
+                reqdate = self.get_date_for_lines(self._hot[start:end])  # Date of actual request
                 dest = du.format_archive_for_date(reqdate, self.archive_target)
                 # 20240722 - changes to enable writing to custom sections & creation of new section
                 dsec = du.format_archive_for_date(reqdate, self.archive_target_section)
@@ -441,6 +441,8 @@ class Page:
                         if 'error' in response:
                             with open(gs.abort_file, 'a', encoding='utf-8') as abort_file:
                                 abort_file.write(self.name + '\n')
+                            print(response)
+                            print(append_dic)
                             raise c.API_Error(self.name)  # Abort all running for safety reasons
                         del response  # No need to keep it stored, avoid overlap from previous runs
 

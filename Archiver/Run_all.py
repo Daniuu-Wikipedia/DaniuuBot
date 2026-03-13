@@ -9,6 +9,10 @@ import json  # Default library
 import Archiver
 import Date_utils
 import os
+import toolforge
+
+
+toolforge.set_user_agent('DaniuuBot')
 
 
 def prepare_run(run_dict):
