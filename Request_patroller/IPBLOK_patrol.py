@@ -4,7 +4,7 @@ Created on Sun Jun 20 12:21:36 2021
 
 @author: Daniuu
 
-This script is designed to automatically patrol the Dutch Wikipedia IPBLOK-request page
+This script is designed to automatically patrol the Dutch Wikipedia TABLOK-request page
 Please note: this script is still in an experimental phase, 
 """
 
@@ -19,7 +19,7 @@ class IPBLOK(com.Page):
     """This class contains the main content for the page related operations"""
 
     def __init__(self,
-                 name='Wikipedia:Verzoekpagina voor moderatoren/IPBlok',
+                 name='Wikipedia:Verzoekpagina voor moderatoren/TABlok',
                  testing=False,
                  logging=False):
         # Argument "testing" can be set to True if the bot needs to be tested
