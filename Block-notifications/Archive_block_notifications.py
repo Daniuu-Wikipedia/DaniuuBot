@@ -78,6 +78,10 @@ if to_new[-1] in sections:  # Deal with the last line as well (in all cases :) )
 for i in remove_sections:
     to_new.remove(i)
 
+# 20260716 - fix header always being copied, even if not needed
+while to_new and to_new[-1] in sections:
+    del to_new[-1]  # Manually resolve issue...
+
 # Now, time to get the actual content :)
 new_content_archive = [original_content[i] for i in to_new]
 # Second: insert preamble into the archive
