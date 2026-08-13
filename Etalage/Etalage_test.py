@@ -11,16 +11,20 @@ import os
 import random
 from datetime import datetime
 
-bot = Core.TestBot()
+bot = Core.NlBot()
 
 GLOBAL_SETTING = {'n_last': 1,
                   'n_penul': 1}
+
+TARGET_CAT = 'Categorie:Wikipedia:Etalage-artikelen'
+
+TARGET_PAGE = 'User:Daniuu/Etalage'
 
 
 def get_etalage_pages_from_wiki():
     actd = {'action': 'query',
             'list': 'categorymembers',
-            'cmtitle': 'Category:Wikipedia:Etalage-artikelen', 
+            'cmtitle': TARGET_CAT,
             'cmprop': 'title|timestamp',
             'cmnamespace': 0,
             'cmtype': 'page',
@@ -101,7 +105,7 @@ def write_json_files(payload=None, preceding_permutation=None):
     return
 
 
-def daily_update(fresh=1, total=3, new_stuff=0):
+def daily_update(fresh=1, total=8, new_stuff=0):
     # Read data from configuration file
     # Figure out where the config file is located
     location = locate_configuration_file()
@@ -162,10 +166,10 @@ def daily_update(fresh=1, total=3, new_stuff=0):
     
     # Post the updated text to the wiki
     edit_dic = {'action': 'edit',
-                'title': 'User:Daniuu/Etalage',
+                'title': TARGET_PAGE,
                 'nocreate': True,
                 'text': '\n'.join(wikitext),
-                'summary': 'Test mode, alles netjes gesorteerd (maar meest recente niet onderaan)',
+                'summary': 'Testen v/e nieuw script',
                 'bot': True}
     result = bot.post(edit_dic)
     
